@@ -80,7 +80,7 @@
 						<arg>-doc-source-url</arg>
 						<arg>https://github.com/gnieh/sohva/tree/master€{FILE_PATH}.scala</arg>
 						<arg>-sourcepath</arg>
-						<arg>${basedir}/src/main/scala</arg>
+						<arg>${basedir}</arg>
 					</args>
 				</configuration>
 			</plugin>
