@@ -24,13 +24,12 @@ import scala.util.DynamicVariable
 
 import net.liftweb.json._
 
-/**
- * A CouchDB instance.
- * Allows users to access the different databases and information.
- * This is the key class to start with when one wants to work with couchdb.
- * Through this one you will get access to the databases.
+/** A CouchDB instance.
+ *  Allows users to access the different databases and information.
+ *  This is the key class to start with when one wants to work with couchdb.
+ *  Through this one you will get access to the databases.
  *
- * @author Lucas Satabin
+ *  @author Lucas Satabin
  *
  */
 case class CouchDB(val host: String = "localhost",
@@ -68,12 +67,11 @@ case class CouchDB(val host: String = "localhost",
 
 }
 
-/**
- * Gives the user access to the different operations available on a database.
- * Among other operation this is the key class to get access to the documents
- * of this database.
+/** Gives the user access to the different operations available on a database.
+ *  Among other operation this is the key class to get access to the documents
+ *  of this database.
  *
- * @author Lucas Satabin
+ *  @author Lucas Satabin
  */
 case class Database(val name: String,
                     private val couch: CouchDB) {
@@ -85,9 +83,8 @@ case class Database(val name: String,
   @inline
   def exists_? = couch.contains(name)
 
-  /**
-   * Creates this database in the couchdb instance if it does not already exist.
-   * Returns <code>true</code> iff the database was actually created.
+  /** Creates this database in the couchdb instance if it does not already exist.
+   *  Returns <code>true</code> iff the database was actually created.
    */
   def create = if (exists_?) {
     false
@@ -98,9 +95,8 @@ case class Database(val name: String,
     }
   }
 
-  /**
-   * Deletes this database in the couchdb instance if it exists.
-   * Returns <code>true</code> iff the database was actually deleted.
+  /** Deletes this database in the couchdb instance if it exists.
+   *  Returns <code>true</code> iff the database was actually deleted.
    */
   def delete = if (exists_?) {
     http(request.DELETE ># simpleResult)() match {
@@ -115,10 +111,9 @@ case class Database(val name: String,
   def getDocById[T: Manifest](id: String): Option[T] =
     http((request / id) ># docResult[T])()
 
-  /**
-   * Creates or updates the given object as a document into this database
-   * The given object must have an `_id' and an optional `_rev' fields
-   * to conform to the couchdb document structure.
+  /** Creates or updates the given object as a document into this database
+   *  The given object must have an `_id` and an optional `_rev` fields
+   *  to conform to the couchdb document structure.
    */
   def saveDoc[T: Manifest](doc: T with Doc) =
     http((request / doc._id <<< compact(render(Extraction.decompose(doc)))) ># docUpdateResult)() match {
@@ -139,9 +134,8 @@ case class Database(val name: String,
   def securityDoc =
     http(request / "_security" ># SecurityDoc)()
 
-  /**
-   * Creates or updates the security document.
-   * Security documents are special documents with no `_id' nor `_rev' fields.
+  /** Creates or updates the security document.
+   *  Security documents are special documents with no `_id` nor `_rev` fields.
    */
   def saveSecurityDoc(doc: SecurityDoc) = {
     http((request / "_security" <<< compact(render(Extraction.decompose(doc)))) ># docUpdateResult)() match {
@@ -175,11 +169,10 @@ case class Database(val name: String,
 
 }
 
-/**
- * A security document is a special document for couchdb. It has no `_id' or
- * `_rev' field.
+/** A security document is a special document for couchdb. It has no `_id` or
+ *  `_rev` field.
  *
- * @author Lucas Satabin
+ *  @author Lucas Satabin
  */
 case class SecurityDoc(admins: SecurityList, readers: SecurityList)
 object SecurityDoc extends (JValue => Option[SecurityDoc]) {
@@ -187,11 +180,10 @@ object SecurityDoc extends (JValue => Option[SecurityDoc]) {
 }
 case class SecurityList(names: List[String], roles: List[String])
 
-/**
- * A design gives access to the different views.
- * Use this class to get or create new views.
+/** A design gives access to the different views.
+ *  Use this class to get or create new views.
  *
- * @author Lucas Satabin
+ *  @author Lucas Satabin
  */
 case class Design(db: Database, val name: String) {
 
@@ -215,9 +207,8 @@ case class Design(db: Database, val name: String) {
 
   }
 
-  /**
-   * Returns the (typed) view in this design document.
-   * The different types are:
+  /** Returns the (typed) view in this design document.
+   *  The different types are:
    *  - Key: type of the key for this view
    *  - Value: Type of the value returned in the result
    *  - Doc: Type of the full document in the case where the view is queried with `include_docs` set to `true`
@@ -232,20 +223,18 @@ case class Design(db: Database, val name: String) {
 
 }
 
-/**
- * A view can be queried to get the result.
+/** A view can be queried to get the result.
  *
- * @author Lucas Satabin
+ *  @author Lucas Satabin
  */
 case class View[Key: Manifest, Value: Manifest, Doc: Manifest](design: Design,
                                                                view: String) {
 
   private lazy val request = design.request / "_view" / view
 
-  /**
-   * Queries the view on the server and returned the typed result.
-   * BE CAREFUL: If the types given to the constructor are not correct,
-   * strange things may happen! By 'strange', I mean exceptions
+  /** Queries the view on the server and returned the typed result.
+   *  BE CAREFUL: If the types given to the constructor are not correct,
+   *  strange things may happen! By 'strange', I mean exceptions
    */
   def query(key: Option[Key] = None,
             keys: List[Key] = Nil,

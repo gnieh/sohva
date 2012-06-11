@@ -32,10 +32,10 @@
 			<artifactId>dispatch-lift-json_${scala.version}</artifactId>
 			<version>0.8.5</version>
 			<exclusions>
-			<exclusion>
-			<artifactId>lift-json_2.9.0-1</artifactId>
-			<groupId>net.liftweb</groupId>
-			</exclusion>
+				<exclusion>
+					<artifactId>lift-json_2.9.0-1</artifactId>
+					<groupId>net.liftweb</groupId>
+				</exclusion>
 			</exclusions>
 		</dependency>
 		<dependency>
@@ -43,10 +43,10 @@
 			<artifactId>lift-json_${scala.version}</artifactId>
 			<version>2.4</version>
 			<exclusions>
-			<exclusion>
-			<artifactId>scalap</artifactId>
-			<groupId>org.scala-lang</groupId>
-			</exclusion>
+				<exclusion>
+					<artifactId>scalap</artifactId>
+					<groupId>org.scala-lang</groupId>
+				</exclusion>
 			</exclusions>
 		</dependency>
 	</dependencies>
@@ -61,6 +61,7 @@
 				<version>2.15.0</version>
 				<executions>
 					<execution>
+						<id>compile</id>
 						<goals>
 							<goal>compile</goal>
 							<goal>testCompile</goal>
@@ -74,6 +75,14 @@
 						</configuration>
 					</execution>
 				</executions>
+				<configuration>
+					<args>
+						<arg>-doc-source-url</arg>
+						<arg>https://github.com/gnieh/sohva/tree/master€{FILE_PATH}.scala</arg>
+						<arg>-sourcepath</arg>
+						<arg>${basedir}/src/main/scala</arg>
+					</args>
+				</configuration>
 			</plugin>
 			<plugin>
 				<artifactId>maven-assembly-plugin</artifactId>
@@ -107,10 +116,10 @@
 			</plugin>
 		</plugins>
 	</build>
-	
+
 	<groupId>gnieh</groupId>
 	<version>0.1-SNAPHSOT</version>
-	<name>${artifactId}</name>
+	<name>${project.artifactId}</name>
 	<url>https://www.github.com/gnieh/sohva</url>
 	<description>A simple and lightweight Scala client for CouchDB</description>
 </project>
