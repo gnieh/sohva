@@ -33,13 +33,13 @@ object Arm {
 
   /** Using environment
    *  Example:
-   *  <pre>
+   *  {{{
    *  using(new FileOutputStream("test.txt")) {fos =>
-   *   fos.write(...)
+   *    fos.write(...)
    *  } {
-   *   case e: FileNotFoundException => ...
+   *    case e: FileNotFoundException => ...
    *  }
-   *  </pre>
+   *  }}}
    */
   def using[T, U >: Null <: Closeable](cl: => U)(body: U => T)(implicit handler: PartialFunction[Throwable, T]): T = {
     // XXX `truie' is needed because the value of a call-by-name parameter is recomputed at each access
