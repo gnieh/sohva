@@ -22,7 +22,11 @@ import dispatch.liftjson.Js._
 
 import scala.util.DynamicVariable
 
+import java.io.{ File, InputStream, FileOutputStream, BufferedInputStream }
+
 import net.liftweb.json._
+
+import eu.medsea.util.MimeUtil
 
 /** A CouchDB instance.
  *  Allows users to access the different databases and information.
@@ -89,8 +93,8 @@ case class Database(val name: String,
   def create = if (exists_?) {
     false
   } else {
-    http(request.PUT ># simpleResult)() match {
-      case OkResult(res) =>
+    http(request.PUT ># OkResult)() match {
+      case OkResult(res, _, _) =>
         res
     }
   }
@@ -99,8 +103,8 @@ case class Database(val name: String,
    *  Returns <code>true</code> iff the database was actually deleted.
    */
   def delete = if (exists_?) {
-    http(request.DELETE ># simpleResult)() match {
-      case OkResult(res) =>
+    http(request.DELETE ># OkResult)() match {
+      case OkResult(res, _, _) =>
         res
     }
   } else {
@@ -125,8 +129,92 @@ case class Database(val name: String,
 
   /** Deletes the document from the database */
   def deleteDoc[T: Manifest](doc: T with Doc) = {
-    http((request / doc._id).DELETE <<? Map("rev" -> doc._rev.getOrElse("")) ># simpleResult)() match {
-      case OkResult(ok) => ok
+    http((request / doc._id).DELETE <<?
+      Map("rev" -> doc._rev.getOrElse("")) ># OkResult)() match {
+      case OkResult(ok, _, _) => ok
+    }
+  }
+
+  /** Attaches the given file to the given document id.
+   *  If no mime type is given, sohva tries to guess the mime type of the file
+   *  itself. It it does not manage to identify the mime type, the file won't be
+   *  attached...
+   *  This method returns `true` iff the file was attached to the document.
+   */
+  def attachTo(docId: String, file: File, contentType: Option[String] = None): Boolean = {
+    // first get the last revision of the document (if it exists)
+    val rev = http((request / docId).HEAD >:> extractRev) {
+      case (404, _) => None
+    }
+    val mime = contentType match {
+      case Some(mime) => mime
+      case None => MimeUtil.getMimeType(file)
+    }
+    println(mime)
+
+    if (mime == MimeUtil.UNKNOWN_MIME_TYPE) {
+      false // unknown mime type, cannot attach the file
+    } else {
+      val params = rev match {
+        case Some(r) =>
+          List("rev" -> r)
+        case None =>
+          // doc does not exist? well... good... does it matter? no! 
+          // couchdb will create it for us, don't worry
+          Nil
+      }
+      http(request / docId / file.getName <<?
+        params <<< (file, mime) ># OkResult)() match {
+        case OkResult(ok, _, _) => ok
+      }
+    }
+  }
+
+  /** Attaches the given file (given as an input stream) to the given document id.
+   *  If no mime type is given, sohva tries to guess the mime type of the file
+   *  itself. It it does not manage to identify the mime type, the file won't be
+   *  attached...
+   *  This method returns `true` iff the file was attached to the document.
+   */
+  def attachTo(docId: String,
+               attachment: String,
+               stream: InputStream,
+               contentType: Option[String]): Boolean = {
+    // create a temporary file with the content of the input stream
+    val file = File.createTempFile(attachment, null)
+    import Arm._
+    using(new FileOutputStream(file)) { fos =>
+      using(new BufferedInputStream(stream)) { bis =>
+        val array = new Array[Byte](bis.available)
+        bis.read(array)
+        fos.write(array)
+      }
+    }
+    attachTo(docId, file, contentType)
+  }
+
+  /** Returns the given attachment for the given docId */
+  def getAttachment(docId: String, attachment: String) = {
+    http(request / docId / attachment >> identity[InputStream] _)()
+  }
+
+  /** Deletes the given attachment for the given docId */
+  def deleteAttachment(docId: String, attachment: String) = {
+    // first get the last revision of the document (if it exists)
+    val rev = http((request / docId).HEAD >:> extractRev) {
+      case (404, _) => None
+    }
+    val params = rev match {
+      case Some(r) =>
+        List("rev" -> r)
+      case None =>
+        // doc does not exist? well... good... does it matter? no! 
+        // couchdb will create it for us, don't worry
+        Nil
+    }
+    http((request / docId / attachment <<?
+      params).DELETE ># OkResult)() match {
+      case OkResult(ok, _, _) => ok
     }
   }
 
@@ -158,14 +246,19 @@ case class Database(val name: String,
   private def infoResult(json: JValue) =
     json.extractOpt[InfoResult]
 
-  private def simpleResult(json: JValue) =
-    json.extract[OkResult]
-
   private def docResult[T: Manifest](json: JValue) =
     json.extractOpt[T]
 
   private def docUpdateResult(json: JValue) =
     json.extract[DocUpdate]
+
+  private def extractRev(headers: Map[String, Set[String]]) = {
+    headers.get("Etag") match {
+      case Some(etags) if etags.size > 0 =>
+        Some(etags.head.stripPrefix("\"").stripSuffix("\""))
+      case _ => None
+    }
+  }
 
 }
 
@@ -301,7 +394,7 @@ private[sohva] case class DesignDoc(_id: String,
 private[sohva] case class ViewDoc(map: String,
                                   reduce: Option[String])
 
-final case class OkResult(ok: Boolean)
+final case class OkResult(ok: Boolean, id: Option[String], rev: Option[String])
 object OkResult extends (JValue => OkResult) {
   def apply(json: JValue) = json.extract[OkResult]
 }
@@ -347,6 +440,12 @@ final case class ErrorResult(error: String, reason: String)
 object ErrorResult {
   def apply(json: JValue) = json.extract[ErrorResult]
 }
+
+final case class Attachment(content_type: String,
+                            revpos: Int,
+                            digest: String,
+                            length: Int,
+                            stub: Boolean)
 
 case class CouchException(val status: Int, val error: String, val reason: String)
   extends Exception("status: " + status + "\nerror: " + error + "\nbecause: " + reason)

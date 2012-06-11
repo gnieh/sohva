@@ -26,12 +26,11 @@ import dispatch.liftjson.Js._
 
 import net.liftweb.json._
 
-/**
- * provides the API to work with couchdb users:
+/** provides the API to work with couchdb users:
  *  - add a new user into the database,
  *  - delete a user from the database
  *
- * @author Lucas Satabin
+ *  @author Lucas Satabin
  */
 class Users(private var couch: CouchDB,
             adminName: String,
@@ -86,28 +85,25 @@ class Users(private var couch: CouchDB,
 
 }
 
-/**
- * An instance of a Couch session, that allows the user to login and
- * send request identified with the login credentials.
- * This performs a cookie based authentication against the couchdb server
+/** An instance of a Couch session, that allows the user to login and
+ *  send request identified with the login credentials.
+ *  This performs a cookie based authentication against the couchdb server
  *
- * @author Lucas Satabin
+ *  @author Lucas Satabin
  *
  */
 class CouchSession[User: Manifest](private var _couch: CouchDB) {
 
-  /**
-   * Returns the couchdb instance for this session.
-   * It is <b>HIGHLY RECOMMENDED</b> to retrieve the couchdb instance
-   * through this method whenever one wants to send a request during this session
+  /** Returns the couchdb instance for this session.
+   *  It is <b>HIGHLY RECOMMENDED</b> to retrieve the couchdb instance
+   *  through this method whenever one wants to send a request during this session
    */
   def couch = _couch
 
-  /**
-   * Performs a login and returns true if login succeeded.
-   * from now on, if login succeeded the couch instance is identified and
-   * all requests will be done with the given credentials.
-   * This performs a cookie authentication.
+  /** Performs a login and returns true if login succeeded.
+   *  from now on, if login succeeded the couch instance is identified and
+   *  all requests will be done with the given credentials.
+   *  This performs a cookie authentication.
    */
   def login(name: String, password: String) = {
     http((_couch.request / "_session" <<
@@ -119,7 +115,7 @@ class CouchSession[User: Manifest](private var _couch: CouchDB) {
   /** Logs the session out */
   def logout = {
     http((_couch.request / "_session").DELETE ># OkResult)() match {
-      case OkResult(true) =>
+      case OkResult(true, _, _) =>
         _couch = _couch.as("")
         true
       case _ =>
@@ -181,18 +177,16 @@ case class AuthResult(ok: Boolean, userCtx: UserCtx, info: Option[AuthInfo])
 /** The user context giving his name and roles */
 case class UserCtx(name: String, roles: List[String])
 
-/**
- * Authentication information indicating the authentication database,
- * the handler used and the authentication method
+/** Authentication information indicating the authentication database,
+ *  the handler used and the authentication method
  */
 case class AuthInfo(authentication_db: String,
                     authentication_handlers: List[String],
                     authenticated: String)
 
-/**
- * A couchdb user has a name, a password hash, a salt and a lit of roles.
- * the second argument list shouldn't be changed and contains by default
- * the values couchdb is expected for a user document.
+/** A couchdb user has a name, a password hash, a salt and a lit of roles.
+ *  the second argument list shouldn't be changed and contains by default
+ *  the values couchdb is expected for a user document.
  */
 case class CouchUser(val name: String,
                      val password_sha: String,

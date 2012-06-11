@@ -21,9 +21,8 @@ import net.liftweb.json._
 
 import java.text.SimpleDateFormat
 
-/**
- * Contains all the classes needed to interact with a couchdb server.
- * Classes in this package allows the user to:
+/** Contains all the classes needed to interact with a couchdb server.
+ *  Classes in this package allows the user to:
  *  - create/delete new databases into a couchdb instance,
  *  - create/update/delete documents into a couchdb database,
  *  - create/update/delete designs and views,
@@ -31,13 +30,12 @@ import java.text.SimpleDateFormat
  *  - create/update/delete couchdb users,
  *  - use couchdb authentication API to create sessions and use built-in permission system.
  *
- * @author Lucas Satabin
+ *  @author Lucas Satabin
  *
  */
 package object sohva {
 
-  /**
-   * A couchdb document must have an `_id` field and an optional `_rev` field.
+  /** A couchdb document must have an `_id` field and an optional `_rev` field.
    */
   type Doc = {
     val _id: String
@@ -49,18 +47,27 @@ package object sohva {
   }
 
   /** Executes the given request and catch the exceptions given as optional parameter. */
-  def http[T](handler: Handler[T])(exc: PartialFunction[(Int, ErrorResult), T] = null): T =
+  def http[T](handler: Handler[T])(exc: PartialFunction[(Int, Option[ErrorResult]), T] = null): T =
     try {
       Http(handler)
     } catch {
       case StatusCode(code, contents) =>
-        parse(contents).extractOpt[ErrorResult] match {
-          case Some(result) if exc != null && exc.isDefinedAt(code, result) =>
-            exc(code, result)
-          case Some(ErrorResult(error, reason)) =>
-            throw CouchException(code, error, reason)
-          case None =>
-            throw CouchException(code, contents, null)
+
+        val error = try {
+          parse(contents).extractOpt[ErrorResult]
+        } catch {
+          case e => None
+        }
+
+        if (exc != null && exc.isDefinedAt(code, error)) {
+          exc(code, error)
+        } else {
+          error match {
+            case Some(ErrorResult(error, reason)) =>
+              throw CouchException(code, error, reason)
+            case None =>
+              throw CouchException(code, contents, null)
+          }
         }
     }
 

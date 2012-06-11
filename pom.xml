@@ -42,12 +42,11 @@
 			<groupId>net.liftweb</groupId>
 			<artifactId>lift-json_${scala.version}</artifactId>
 			<version>2.4</version>
-			<exclusions>
-				<exclusion>
-					<artifactId>scalap</artifactId>
-					<groupId>org.scala-lang</groupId>
-				</exclusion>
-			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>net.sf.mime-util</groupId>
+			<artifactId>mime-util</artifactId>
+			<version>1.2</version>
 		</dependency>
 	</dependencies>
 
