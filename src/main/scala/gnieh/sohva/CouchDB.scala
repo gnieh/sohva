@@ -150,7 +150,6 @@ case class Database(val name: String,
       case Some(mime) => mime
       case None => MimeUtil.getMimeType(file)
     }
-    println(mime)
 
     if (mime == MimeUtil.UNKNOWN_MIME_TYPE) {
       false // unknown mime type, cannot attach the file
