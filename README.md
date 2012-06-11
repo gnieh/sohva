@@ -26,9 +26,9 @@ Once you have a CouchDB instance, you can access to a database by using the `dat
 
 Pretty easy, huh?
 
-Working with documents is a piece of cake as well. Before continuing, one has to know a bit about couchdb and documents, but I am pretty sure you do, otherwise you wouldn't be here... In that case, you should first have a look at the couchdb documentation first and then come back here!
+Working with documents is a piece of cake as well. Before continuing, one has to know a bit about couchdb and documents, but I am pretty sure you do, otherwise you wouldn't be here... However if anybody has no idea about couchdb, you should probably first have a look at the couchdb documentation first and then come back here!
 
-So a couchdb document is a json object that *must* have at least one field named `_id` and containing the document id. In addition the class representing the object must have an optional fiels named `_rev` that will hold the document revision.
+So a couchdb document is a json object that *must* have at least one field named `_id` and containing the document id. In addition the class representing the object must have an optional field named `_rev` that will hold the document revision.
 
 Let's say one want to save a test document into the above created database, the class representing this document may look like this:
 
