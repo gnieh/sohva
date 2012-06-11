@@ -203,18 +203,17 @@ case class Database(val name: String,
     val rev = http((request / docId).HEAD >:> extractRev) {
       case (404, _) => None
     }
-    val params = rev match {
+    rev match {
       case Some(r) =>
-        List("rev" -> r)
+        http((request / docId / attachment <<?
+          List("rev" -> r)).DELETE ># OkResult)() match {
+          case OkResult(ok, _, _) => ok
+        }
       case None =>
-        // doc does not exist? well... good... does it matter? no! 
-        // couchdb will create it for us, don't worry
-        Nil
+        // doc does not exist? well... good... just do nothing
+        false
     }
-    http((request / docId / attachment <<?
-      params).DELETE ># OkResult)() match {
-      case OkResult(ok, _, _) => ok
-    }
+
   }
 
   /** Returns the security document of this database if any defined */
