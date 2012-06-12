@@ -192,10 +192,15 @@ case class Database(val name: String,
     attachTo(docId, file, contentType)
   }
 
-  /** Returns the given attachment for the given docId */
-  def getAttachment(docId: String, attachment: String) = {
-    http(request / docId / attachment >> identity[InputStream] _)()
-  }
+  /** Returns the given attachment for the given docId.
+   *  It returns the mime type if any given in the response and the input stream
+   *  to read the response from the server.
+   */
+  def getAttachment(docId: String, attachment: String) =
+    http(request / docId / attachment >:+ { (headers, req) =>
+      val mime = headers("content-type").headOption
+      req >> { is: InputStream => (mime, is) }
+    })()
 
   /** Deletes the given attachment for the given docId */
   def deleteAttachment(docId: String, attachment: String) = {
