@@ -120,5 +120,10 @@
 	<version>0.1-SNAPHSOT</version>
 	<name>${project.artifactId}</name>
 	<url>https://www.github.com/gnieh/sohva</url>
-	<description>A simple and lightweight Scala client for CouchDB</description>
+	<description>A simple Scala client for CouchDB</description>
+	<scm>
+		<url>https://github.com/gnieh/sohva</url>
+		<connection>scm:git:git://github.com/gnieh/sohva.git</connection>
+		<developerConnection>scm:git:git@github.com:gnieh/sohva.git</developerConnection>
+	</scm>
 </project>

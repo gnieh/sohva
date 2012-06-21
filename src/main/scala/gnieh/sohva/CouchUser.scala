@@ -107,8 +107,13 @@ class CouchSession[User: Manifest](private var _couch: CouchDB) {
    */
   def login(name: String, password: String) = {
     http((_couch.request / "_session" <<
-      Map("name" -> name, "password" -> password)) <:< Map("Content-Type" -> "application/x-www-form-urlencoded", "X-CouchDB-WWW-Authenticate" -> "Cookie") >:> setCookie _) {
-      case (401, _) => false
+      Map("name" -> name, "password" -> password)) <:<
+      Map("Accept" -> "application/json, text/javascript, */*",
+        "Content-Type" -> "application/x-www-form-urlencoded",
+        "Cache-Control" -> "no-cache",
+        "Pragma" -> "no-cache",
+        "Cookie" -> "AuthSession=") >:> setCookie _) {
+      case (401, result) => false
     }
   }
 

@@ -43,9 +43,9 @@ case class CouchDB(val host: String = "localhost",
 
   // the base request to this couch instance
   private[sohva] val request = (cookie, admin) match {
-    case (Some(c), _) => :/(host, port) <:< Map("Cookie" -> c, "Referer" -> "http://localhost")
-    case (_, Some((name, pwd))) => :/(host, port).as_!(name, pwd) <:< Map("Referer" -> "http://localhost")
-    case _ => :/(host, port) <:< Map("Referer" -> "http://localhost")
+    case (Some(c), _) => :/(host, port) <:< Map("Connection" -> "keep-alive", "Cookie" -> c, "Referer" -> "http://localhost:5984/_utils")
+    case (_, Some((name, pwd))) => :/(host, port).as_!(name, pwd) <:< Map("Connection" -> "keep-alive", "Referer" -> "http://localhost:5984/_utils")
+    case _ => :/(host, port) <:< Map("Connection" -> "keep-alive", "Referer" -> "http://localhost:5984/_utils")
   }
 
   /** Returns this couchdb instance as the user authenticated by the given session id */
@@ -120,7 +120,8 @@ case class Database(val name: String,
    *  to conform to the couchdb document structure.
    */
   def saveDoc[T: Manifest](doc: T with Doc) =
-    http((request / doc._id <<< compact(render(Extraction.decompose(doc)))) ># docUpdateResult)() match {
+    http((request / doc._id <:< Map("Content-Type" -> "application/json") <<<
+      compact(render(Extraction.decompose(doc)))) ># docUpdateResult)() match {
       case DocUpdate(true, id, _) =>
         getDocById[T](id)
       case DocUpdate(false, _, _) =>
@@ -229,7 +230,8 @@ case class Database(val name: String,
    *  Security documents are special documents with no `_id` nor `_rev` fields.
    */
   def saveSecurityDoc(doc: SecurityDoc) = {
-    http((request / "_security" <<< compact(render(Extraction.decompose(doc)))) ># docUpdateResult)() match {
+    http((request / "_security" <:< Map("Content-Type" -> "application/json") <<<
+      compact(render(Extraction.decompose(doc)))) ># docUpdateResult)() match {
       case DocUpdate(true, id, _) =>
         getDocById[SecurityDoc](id)
       case DocUpdate(false, _, _) =>
@@ -449,6 +451,10 @@ final case class Attachment(content_type: String,
                             digest: String,
                             length: Int,
                             stub: Boolean)
+
+trait WithAttachments {
+  var _attachments: Option[Map[String, Attachment]] = None
+}
 
 case class CouchException(val status: Int, val error: String, val reason: String)
   extends Exception("status: " + status + "\nerror: " + error + "\nbecause: " + reason)

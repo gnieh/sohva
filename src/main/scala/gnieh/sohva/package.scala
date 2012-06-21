@@ -21,6 +21,9 @@ import net.liftweb.json._
 
 import java.text.SimpleDateFormat
 
+import org.apache.http.client.params.{ ClientPNames, CookiePolicy }
+import org.apache.http.params.CoreProtocolPNames
+
 /** Contains all the classes needed to interact with a couchdb server.
  *  Classes in this package allows the user to:
  *  - create/delete new databases into a couchdb instance,
@@ -42,14 +45,26 @@ package object sohva {
     val _rev: Option[String]
   }
 
-  implicit val formats = new DefaultFormats {
+  private[sohva] val standardFormats = new DefaultFormats {
     override def dateFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SS")
   }
+
+  implicit val formats = standardFormats
+
+  private lazy val sohvaHttp =
+    new Http {
+      override def make_client = {
+        val client = super.make_client
+        // does not automatically manage cookies
+        client.getParams.setParameter(ClientPNames.COOKIE_POLICY, CookiePolicy.IGNORE_COOKIES)
+        client
+      }
+    }
 
   /** Executes the given request and catch the exceptions given as optional parameter. */
   def http[T](handler: Handler[T])(exc: PartialFunction[(Int, Option[ErrorResult]), T] = null): T =
     try {
-      Http(handler)
+      sohvaHttp(handler)
     } catch {
       case StatusCode(code, contents) =>
 
