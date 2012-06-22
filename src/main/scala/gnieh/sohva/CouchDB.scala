@@ -113,14 +113,14 @@ case class Database(val name: String,
 
   /** Returns the document identified by the given id if it exists */
   def getDocById[T: Manifest](id: String): Option[T] =
-    http((request / id) ># docResult[T])()
+    http((request / Request.encode_%(id)) ># docResult[T])()
 
   /** Creates or updates the given object as a document into this database
    *  The given object must have an `_id` and an optional `_rev` fields
    *  to conform to the couchdb document structure.
    */
   def saveDoc[T: Manifest](doc: T with Doc) =
-    http((request / doc._id <:< Map("Content-Type" -> "application/json") <<<
+    http((request / Request.encode_%(doc._id) <:< Map("Content-Type" -> "application/json") <<<
       compact(render(Extraction.decompose(doc)))) ># docUpdateResult)() match {
       case DocUpdate(true, id, _) =>
         getDocById[T](id)
@@ -130,7 +130,7 @@ case class Database(val name: String,
 
   /** Deletes the document from the database */
   def deleteDoc[T: Manifest](doc: T with Doc) = {
-    http((request / doc._id).DELETE <<?
+    http((request / Request.encode_%(doc._id)).DELETE <<?
       Map("rev" -> doc._rev.getOrElse("")) ># OkResult)() match {
       case OkResult(ok, _, _) => ok
     }
@@ -144,7 +144,7 @@ case class Database(val name: String,
    */
   def attachTo(docId: String, file: File, contentType: Option[String] = None): Boolean = {
     // first get the last revision of the document (if it exists)
-    val rev = http((request / docId).HEAD >:> extractRev) {
+    val rev = http((request / Request.encode_%(docId)).HEAD >:> extractRev) {
       case (404, _) => None
     }
     val mime = contentType match {
@@ -198,7 +198,7 @@ case class Database(val name: String,
    *  to read the response from the server.
    */
   def getAttachment(docId: String, attachment: String) =
-    http(request / docId / attachment >:+ { (headers, req) =>
+    http(request / Request.encode_%(docId) / attachment >:+ { (headers, req) =>
       val mime = headers("content-type").headOption
       req >> { is: InputStream => (mime, is) }
     })()
@@ -206,12 +206,12 @@ case class Database(val name: String,
   /** Deletes the given attachment for the given docId */
   def deleteAttachment(docId: String, attachment: String) = {
     // first get the last revision of the document (if it exists)
-    val rev = http((request / docId).HEAD >:> extractRev) {
+    val rev = http((request / Request.encode_%(docId)).HEAD >:> extractRev) {
       case (404, _) => None
     }
     rev match {
       case Some(r) =>
-        http((request / docId / attachment <<?
+        http((request / Request.encode_%(docId) / attachment <<?
           List("rev" -> r)).DELETE ># OkResult)() match {
           case OkResult(ok, _, _) => ok
         }
@@ -456,5 +456,6 @@ trait WithAttachments {
   var _attachments: Option[Map[String, Attachment]] = None
 }
 
-case class CouchException(val status: Int, val error: String, val reason: String)
+class CouchException(val status: Int, val error: String, val reason: String)
   extends Exception("status: " + status + "\nerror: " + error + "\nbecause: " + reason)
+class ConflictException(error: String, reason: String) extends CouchException(409, error, reason)

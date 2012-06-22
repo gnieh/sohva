@@ -79,9 +79,15 @@ package object sohva {
         } else {
           error match {
             case Some(ErrorResult(error, reason)) =>
-              throw CouchException(code, error, reason)
+              if (code == 409)
+                throw new ConflictException(error, reason)
+              else
+                throw new CouchException(code, error, reason)
             case None =>
-              throw CouchException(code, contents, null)
+              if (code == 409)
+                throw new ConflictException(contents, null)
+              else
+                throw new CouchException(code, contents, null)
           }
         }
     }

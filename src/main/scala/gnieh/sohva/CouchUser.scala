@@ -64,7 +64,7 @@ class Users(private var couch: CouchDB,
 
     // create the doc on the server
     couch
-      .as(adminName, adminPassword)
+      .as(adminName, adminPassword) // add user as db admin to allow us setting roles
       .database("_users")
       .saveDoc(user)
 
