@@ -44,7 +44,7 @@ package object sohva {
     val _id: String
     val _rev: Option[String]
   }
-
+  
   private[sohva] val standardFormats = new DefaultFormats {
     override def dateFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SS")
   }
@@ -59,7 +59,10 @@ package object sohva {
         client.getParams.setParameter(ClientPNames.COOKIE_POLICY, CookiePolicy.IGNORE_COOKIES)
         client
       }
-    }
+      
+      override def make_logger = 
+        new LogbackLogger
+  }
 
   /** Executes the given request and catch the exceptions given as optional parameter. */
   def http[T](handler: Handler[T])(exc: PartialFunction[(Int, Option[ErrorResult]), T] = null): T =
