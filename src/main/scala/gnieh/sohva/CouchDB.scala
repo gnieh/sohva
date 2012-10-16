@@ -5,7 +5,7 @@
 * you may not use this file except in compliance with the License.
 * You may obtain a copy of the License at
 *
-* http://www.apache.org/licenses/LICENSE-2.0
+*couch.http://www.apache.org/licenses/LICENSE-2.0
 *
 * Unless required by applicable law or agreed to in writing, software
 * distributed under the License is distributed on an "AS IS" BASIS,
@@ -18,11 +18,21 @@ package gnieh.sohva
 import util._
 
 import dispatch._
-import dispatch.liftjson.Js._
+
+import com.ning.http.client.{
+  RequestBuilder,
+  Response
+}
 
 import scala.util.DynamicVariable
 
-import java.io.{ File, InputStream, FileOutputStream, BufferedInputStream }
+import java.io.{
+  File,
+  InputStream,
+  FileOutputStream,
+  BufferedInputStream
+}
+import java.text.SimpleDateFormat
 
 import net.liftweb.json._
 
@@ -38,22 +48,25 @@ import eu.medsea.util.MimeUtil
  */
 case class CouchDB(val host: String = "localhost",
                    val port: Int = 5984,
+                   val version: String = "1.2",
                    private val admin: Option[(String, String)] = None,
                    private val cookie: Option[String] = None) {
 
   // the base request to this couch instance
   private[sohva] val request = (cookie, admin) match {
-    case (Some(c), _) => :/(host, port) <:< Map("Connection" -> "keep-alive", "Cookie" -> c, "Referer" -> "http://localhost:5984/_utils")
-    case (_, Some((name, pwd))) => :/(host, port).as_!(name, pwd) <:< Map("Connection" -> "keep-alive", "Referer" -> "http://localhost:5984/_utils")
-    case _ => :/(host, port) <:< Map("Connection" -> "keep-alive", "Referer" -> "http://localhost:5984/_utils")
+    case (Some(c), _) => :/(host, port) <:< Map("Cookie" -> c)
+    case (_, Some((name, pwd))) => :/(host, port).as_!(name, pwd)
+    case _ => :/(host, port)
   }
 
+  def shutdown = _http.shutdown
+
   /** Returns this couchdb instance as the user authenticated by the given session id */
-  def as(cookie: String) =
+  def as_!(cookie: String) =
     this.copy(cookie = Some(cookie), admin = None)
 
   /** Returns this couchdb instance as the user authenticated by the given name and password */
-  def as(name: String, password: String) =
+  def as_!(name: String, password: String) =
     this.copy(admin = Some((name, password)), cookie = None)
 
   /** Returns the database on the given couch instance */
@@ -62,9 +75,38 @@ case class CouchDB(val host: String = "localhost",
 
   /** Indicates whether this couchdb instance contains the given database */
   def contains(dbName: String) =
-    http(request / "_all_dbs" ># containsName(dbName))()
+    http(request / "_all_dbs").map(containsName(dbName))
 
   // helper methods
+
+  lazy val _http = new Http {
+    //    override def threadPoolSize = 1
+    import com.ning.http.client._
+    import providers.netty._
+    //    override lazy val client = {
+    //      val config = new NettyAsyncHttpProviderConfig
+    //      config.addProperty(NettyAsyncHttpProviderConfig.USE_BLOCKING_IO, "true")
+    //      new AsyncHttpClient(new NettyAsyncHttpProvider(new AsyncHttpClientConfig.Builder().setAsyncHttpClientProviderConfig(config).build()));
+    //    }
+  }
+
+  /** Executes the given request and transform couchdb specific exceptions. */
+  private[sohva] def http(request: RequestBuilder): Promise[JValue] =
+    _http(request > handleCouchResponse _)
+
+  private def handleCouchResponse(response: Response) = {
+    val json = as.lift.Json(response)
+    val code = response.getStatusCode
+    if (code / 100 != 2) {
+      // something went wrong...
+      val error = json.extractOpt[ErrorResult]
+      if (code == 409)
+        throw new ConflictException(error)
+      else
+        throw new CouchException(code, error)
+    }
+    json
+  }
 
   private def containsName(name: String)(json: JValue) =
     json.extract[List[String]].contains(name)
@@ -78,10 +120,10 @@ case class CouchDB(val host: String = "localhost",
  *  @author Lucas Satabin
  */
 case class Database(val name: String,
-                    private val couch: CouchDB) {
+                    private[sohva] val couch: CouchDB) {
 
   /** Returns the information about this database */
-  def info = http(request ># infoResult)()
+  def info = couch.http(request).map(infoResult)
 
   /** Indicates whether this database exists */
   @inline
@@ -90,51 +132,50 @@ case class Database(val name: String,
   /** Creates this database in the couchdb instance if it does not already exist.
    *  Returns <code>true</code> iff the database was actually created.
    */
-  def create = if (exists_?) {
-    false
+  def create = exists_?.flatMap(ex => if (ex) {
+    Promise(false)
   } else {
-    http(request.PUT ># OkResult)() match {
+    couch.http(request.PUT).map(json => OkResult(json) match {
       case OkResult(res, _, _) =>
         res
-    }
-  }
+    })
+  })
 
   /** Deletes this database in the couchdb instance if it exists.
    *  Returns <code>true</code> iff the database was actually deleted.
    */
-  def delete = if (exists_?) {
-    http(request.DELETE ># OkResult)() match {
+  def delete = exists_?.flatMap(ex => if (ex) {
+    couch.http(request.DELETE).map(json => OkResult(json) match {
       case OkResult(res, _, _) =>
         res
-    }
+    })
   } else {
-    false
-  }
+    Promise(false)
+  })
 
   /** Returns the document identified by the given id if it exists */
-  def getDocById[T: Manifest](id: String): Option[T] =
-    http((request / Request.encode_%(id)) ># docResult[T])()
+  def getDocById[T: Manifest](id: String): Promise[Option[T]] =
+    couch.http(request / encode_%(id)).map(docResult[T])
 
   /** Creates or updates the given object as a document into this database
    *  The given object must have an `_id` and an optional `_rev` fields
    *  to conform to the couchdb document structure.
    */
   def saveDoc[T: Manifest](doc: T with Doc) =
-    http((request / Request.encode_%(doc._id) <:< Map("Content-Type" -> "application/json") <<<
-      compact(render(Extraction.decompose(doc)))) ># docUpdateResult)() match {
+    couch.http((request / encode_%(doc._id) <:< Map("Accept" -> " application/json", "Content-Type" -> "application/json") <<
+      pretty(render(Extraction.decompose(doc)))).PUT).flatMap(json => docUpdateResult(json) match {
       case DocUpdate(true, id, _) =>
         getDocById[T](id)
       case DocUpdate(false, _, _) =>
-        None
-    }
+        Promise(None)
+    })
 
   /** Deletes the document from the database */
-  def deleteDoc[T: Manifest](doc: T with Doc) = {
-    http((request / Request.encode_%(doc._id)).DELETE <<?
-      Map("rev" -> doc._rev.getOrElse("")) ># OkResult)() match {
+  def deleteDoc[T: Manifest](doc: T with Doc) =
+    couch.http((request / encode_%(doc._id)).DELETE <<?
+      Map("rev" -> doc._rev.getOrElse(""))).map(json => OkResult(json) match {
       case OkResult(ok, _, _) => ok
-    }
-  }
+    })
 
   /** Attaches the given file to the given document id.
    *  If no mime type is given, sohva tries to guess the mime type of the file
@@ -142,30 +183,37 @@ case class Database(val name: String,
    *  attached...
    *  This method returns `true` iff the file was attached to the document.
    */
-  def attachTo(docId: String, file: File, contentType: Option[String] = None): Boolean = {
+  def attachTo(docId: String, file: File, contentType: Option[String]) = {
     // first get the last revision of the document (if it exists)
-    val rev = http((request / Request.encode_%(docId)).HEAD >:> extractRev) {
-      case (404, _) => None
-    }
+    val rev = Http(
+      (request / encode_%(docId)).HEAD OK extractRev).either.map {
+        case Left(StatusCode(404)) => None
+        case Left(t) => throw t
+        case Right(v) => v
+      }
     val mime = contentType match {
       case Some(mime) => mime
       case None => MimeUtil.getMimeType(file)
     }
 
     if (mime == MimeUtil.UNKNOWN_MIME_TYPE) {
-      false // unknown mime type, cannot attach the file
+      Promise(false) // unknown mime type, cannot attach the file
     } else {
-      val params = rev match {
-        case Some(r) =>
-          List("rev" -> r)
-        case None =>
-          // doc does not exist? well... good... does it matter? no! 
-          // couchdb will create it for us, don't worry
-          Nil
-      }
-      http(request / docId / file.getName <<?
-        params <<< (file, mime) ># OkResult)() match {
-        case OkResult(ok, _, _) => ok
+      rev.flatMap { r =>
+        val params = r match {
+          case Some(r) =>
+            List("rev" -> r)
+          case None =>
+            // doc does not exist? well... good... does it matter? no! 
+            // couchdb will create it for us, don't worry
+            Nil
+        }
+        couch.http(request / docId / file.getName
+          <<? params <<< file <:< Map("Content-Type" -> mime)).map { json =>
+          OkResult(json) match {
+            case OkResult(ok, _, _) => ok
+          }
+        }
       }
     }
   }
@@ -179,7 +227,7 @@ case class Database(val name: String,
   def attachTo(docId: String,
                attachment: String,
                stream: InputStream,
-               contentType: Option[String]): Boolean = {
+               contentType: Option[String]): Promise[Boolean] = {
     // create a temporary file with the content of the input stream
     val file = File.createTempFile(attachment, null)
     import Arm._
@@ -198,44 +246,46 @@ case class Database(val name: String,
    *  to read the response from the server.
    */
   def getAttachment(docId: String, attachment: String) =
-    http(request / Request.encode_%(docId) / attachment >:+ { (headers, req) =>
-      val mime = headers("content-type").headOption
-      req >> { is: InputStream => (mime, is) }
-    })()
+    Http(request / encode_%(docId) / attachment OK readFile)
 
   /** Deletes the given attachment for the given docId */
   def deleteAttachment(docId: String, attachment: String) = {
     // first get the last revision of the document (if it exists)
-    val rev = http((request / Request.encode_%(docId)).HEAD >:> extractRev) {
-      case (404, _) => None
+    val rev = Http((request / encode_%(docId)).HEAD OK extractRev).either.map {
+      case Left(StatusCode(404)) => None
+      case Left(t) => throw t
+      case Right(v) => v
     }
-    rev match {
-      case Some(r) =>
-        http((request / Request.encode_%(docId) / attachment <<?
-          List("rev" -> r)).DELETE ># OkResult)() match {
-          case OkResult(ok, _, _) => ok
-        }
-      case None =>
-        // doc does not exist? well... good... just do nothing
-        false
+    rev.flatMap { r =>
+      r match {
+        case Some(r) =>
+          couch.http((request / encode_%(docId) / attachment <<?
+            List("rev" -> r)).DELETE).map(json => OkResult(json) match {
+            case OkResult(ok, _, _) => ok
+          })
+        case None =>
+          // doc does not exist? well... good... just do nothing
+          Promise(false)
+      }
     }
-
   }
 
   /** Returns the security document of this database if any defined */
   def securityDoc =
-    http(request / "_security" ># SecurityDoc)()
+    couch.http(request / "_security").map(SecurityDoc)
 
   /** Creates or updates the security document.
    *  Security documents are special documents with no `_id` nor `_rev` fields.
    */
   def saveSecurityDoc(doc: SecurityDoc) = {
-    http((request / "_security" <:< Map("Content-Type" -> "application/json") <<<
-      compact(render(Extraction.decompose(doc)))) ># docUpdateResult)() match {
-      case DocUpdate(true, id, _) =>
-        getDocById[SecurityDoc](id)
-      case DocUpdate(false, _, _) =>
-        None
+    couch.http(request / "_security" <:< Map("Content-Type" -> "application/json") <<
+      compact(render(Extraction.decompose(doc)))).flatMap { json =>
+      docUpdateResult(json) match {
+        case DocUpdate(true, id, _) =>
+          getDocById[SecurityDoc](id)
+        case DocUpdate(false, _, _) =>
+          Promise(None)
+      }
     }
   }
 
@@ -248,6 +298,13 @@ case class Database(val name: String,
   private[sohva] val request =
     couch.request / name
 
+  private def encode_%(in: String) =
+    in
+  //  java.net.URLEncoder.encode(in, "UTF-8")
+
+  private def readFile(response: Response) =
+    (response.getContentType, response.getResponseBodyAsStream)
+
   private def infoResult(json: JValue) =
     json.extractOpt[InfoResult]
 
@@ -257,11 +314,11 @@ case class Database(val name: String,
   private def docUpdateResult(json: JValue) =
     json.extract[DocUpdate]
 
-  private def extractRev(headers: Map[String, Set[String]]) = {
-    headers.get("Etag") match {
-      case Some(etags) if etags.size > 0 =>
-        Some(etags.head.stripPrefix("\"").stripSuffix("\""))
-      case _ => None
+  private def extractRev(response: Response) = {
+    response.getHeader("Etag") match {
+      case null | "" => None
+      case etags =>
+        Some(etags.stripPrefix("\"").stripSuffix("\""))
     }
   }
 
@@ -290,17 +347,20 @@ case class Design(db: Database, val name: String) {
   /** Adds or update the view with the given name, map function and reduce function */
   def updateView(viewName: String, mapFun: String, reduceFun: Option[String]) = {
 
-    http(request ># designDoc) {
-      case (404, _) => None
-    } match {
+    val doc = Http(request OK as.lift.Json).either.map {
+      case Left(StatusCode(404)) => None
+      case Left(t) => throw t
+      case Right(r) => designDoc(r)
+    }
+    doc.flatMap {
       case Some(design) =>
         val view = ViewDoc(mapFun, reduceFun)
         // the updated design
         val newDesign = design.copy(views = design.views + (viewName -> view))
-        db.saveDoc(newDesign).isDefined
+        db.saveDoc(newDesign).map(_.isDefined)
       case None =>
         // this is not a design document or it does not exist...
-        false
+        Promise(false)
     }
 
   }
@@ -378,7 +438,7 @@ case class View[Key: Manifest, Value: Manifest, Doc: Manifest](design: Design,
         case (name, value) => (name, value.toString)
       }
 
-    http(request <<? options ># viewResult)()
+    design.db.couch.http(request <<? options).map(viewResult)
 
   }
 
@@ -456,6 +516,6 @@ trait WithAttachments {
   var _attachments: Option[Map[String, Attachment]] = None
 }
 
-class CouchException(val status: Int, val error: String, val reason: String)
-  extends Exception("status: " + status + "\nerror: " + error + "\nbecause: " + reason)
-class ConflictException(error: String, reason: String) extends CouchException(409, error, reason)
+class CouchException(val status: Int, val detail: Option[ErrorResult])
+  extends Exception("status: " + status + "\nbecause: " + detail)
+class ConflictException(detail: Option[ErrorResult]) extends CouchException(409, detail)

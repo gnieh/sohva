@@ -22,7 +22,8 @@ import scala.reflect.BeanInfo
 import scala.annotation.target._
 
 import dispatch._
-import dispatch.liftjson.Js._
+
+import com.ning.http.client.Response
 
 import net.liftweb.json._
 
@@ -42,29 +43,10 @@ class Users(private var couch: CouchDB,
   /** Adds a new user to the user database, and returns the new instance */
   def add(name: String, password: String) = {
 
-    def bytes2string(bytes: Array[Byte]) =
-      bytes.foldLeft(new StringBuilder) {
-        (res, byte) =>
-          res.append(Integer.toHexString(byte & 0xff))
-      }.toString
-
-    val saltArray = new Array[Byte](16)
-    Random.nextBytes(saltArray)
-    val salt = bytes2string(saltArray)
-
-    // compute the password hash
-    val md = MessageDigest.getInstance("SHA-1")
-
-    // the password string is concatenated with the generated salt
-    // and the result is hashed using SHA-1
-    val password_sha =
-      bytes2string(md.digest((password + salt).getBytes("ASCII")))
-
-    val user = CouchUser(name, password_sha, salt, defaultRoles)()
-
+    val user = new CouchUser(name, Some(password), defaultRoles)()
     // create the doc on the server
     couch
-      .as(adminName, adminPassword) // add user as db admin to allow us setting roles
+      //.as_!(adminName, adminPassword) // add user as db admin to allow us setting roles
       .database("_users")
       .saveDoc(user)
 
@@ -73,12 +55,11 @@ class Users(private var couch: CouchDB,
   /** Deletes the given user from the database. */
   def delete(name: String) = {
     val db = couch
-      .as(adminName, adminPassword)
+      .as_!(adminName, adminPassword)
       .database("_users")
-
-    db.getDocById[CouchUser]("org.couchdb.user:" + name) match {
+    db.getDocById[CouchUser]("org.couchdb.user:" + name).flatMap {
       case Some(user) => db.deleteDoc(user)
-      case _ => false
+      case _ => Promise(false)
     }
 
   }
@@ -106,43 +87,40 @@ class CouchSession[User: Manifest](private var _couch: CouchDB) {
    *  This performs a cookie authentication.
    */
   def login(name: String, password: String) = {
-    http((_couch.request / "_session" <<
-      Map("name" -> name, "password" -> password)) <:<
+    Http(_couch.request / "_session" <<
+      Map("name" -> name, "password" -> password) <:<
       Map("Accept" -> "application/json, text/javascript, */*",
         "Content-Type" -> "application/x-www-form-urlencoded",
         "Cache-Control" -> "no-cache",
         "Pragma" -> "no-cache",
-        "Cookie" -> "AuthSession=") >:> setCookie _) {
-      case (401, result) => false
-    }
+        "Cookie" -> "AuthSession=")).map(setCookie)
   }
 
   /** Logs the session out */
-  def logout = {
-    http((_couch.request / "_session").DELETE ># OkResult)() match {
+  def logout =
+    _couch.http((_couch.request / "_session").DELETE).map(json => OkResult(json) match {
       case OkResult(true, _, _) =>
-        _couch = _couch.as("")
+        _couch = _couch.as_!("")
         true
       case _ =>
         false
-    }
-  }
+    })
 
   /** Returns the user associated to the current session, if any */
-  def currentUser = loggedContext match {
+  def currentUser = loggedContext.map {
     case UserCtx(name, _) if name != null =>
-      http(couch.request / "_users" / ("org.couchdb.user:" + name) ># user)()
-    case _ => None
+      _couch.http(_couch.request / "_users" / ("org.couchdb.user:" + name)).map(user)
+    case _ => Promise(None)
   }
 
   /** Indicates whether the current session is logged in to the couch server */
-  def isLoggedIn = loggedContext match {
+  def isLoggedIn = loggedContext.map {
     case UserCtx(name, _) if name != null => true
     case _ => false
   }
 
   /** Indicates whether the current session gives the given role to the user */
-  def hasRole(role: String) = loggedContext match {
+  def hasRole(role: String) = loggedContext.map {
     case UserCtx(_, roles) => roles.contains(role)
     case _ => false
   }
@@ -153,21 +131,21 @@ class CouchSession[User: Manifest](private var _couch: CouchDB) {
   // helper methods
 
   private def loggedContext =
-    http((couch.request / "_session") ># userCtx _)()
+    _couch.http((_couch.request / "_session")).map(userCtx)
 
   private def userCtx(json: JValue) =
     json.extract[AuthResult] match {
       case AuthResult(_, userCtx, _) => userCtx
     }
 
-  private def setCookie(map: Map[String, Set[String]]) = {
-    map.get("Set-Cookie") match {
-      case Some(cookies) =>
-        _couch = _couch.as(cookies.head)
-        true
-      case _ =>
+  private def setCookie(response: Response) = {
+    response.getHeader("Set-Cookie") match {
+      case null | "" =>
         // no cookie to set
         false
+      case cookie =>
+        _couch = _couch.as_!(cookie)
+        true
     }
   }
 
@@ -189,14 +167,10 @@ case class AuthInfo(authentication_db: String,
                     authentication_handlers: List[String],
                     authenticated: String)
 
-/** A couchdb user has a name, a password hash, a salt and a lit of roles.
- *  the second argument list shouldn't be changed and contains by default
- *  the values couchdb is expected for a user document.
- */
-case class CouchUser(val name: String,
-                     val password_sha: String,
-                     val salt: String,
-                     val roles: List[String])(
-                       val _id: String = "org.couchdb.user:" + name,
-                       val _rev: Option[String] = None,
-                       val `type`: String = "user")
+/** A couchdb user has a name, a password and a lit of roles. */
+class CouchUser(val name: String,
+                val password: Option[String],
+                val roles: List[String])(
+                    val _rev: Option[String] = None) {
+  val _id = "org.couchdb.user:" + name
+}

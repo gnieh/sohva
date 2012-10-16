@@ -15,26 +15,24 @@
 */
 package gnieh.sohva
 
-import dispatch.Logger
-
 import org.slf4j.LoggerFactory
 
 /** Binding to a logback logger.
- * 
- * 
- * @author Lucas Satabin
+ *
+ *
+ *  @author Lucas Satabin
  *
  */
-class LogbackLogger extends Logger {
-  
+class LogbackLogger {
+
   private lazy val logger = LoggerFactory.getLogger("sohva")
-  
+
   def warn(msg: String, items: Any*) {
-    logger.warn(msg.format(items:_*))
+    logger.warn(msg.format(items: _*))
   }
-  
+
   def info(msg: String, items: Any*) {
-    logger.info(msg.format(items:_*))
+    logger.info(msg.format(items: _*))
   }
-  
+
 }

@@ -33,10 +33,12 @@ object TestAttach extends App {
 
   test.create
 
-  println(test.attachTo("truie", new File("src/test/resources/test.txt")))
+  test.attachTo("truie", new File("src/test/resources/test.txt"), None).map { res1 =>
+    println(res1)
 
-  println(test.getDocById[Test]("truie"))
+    for (res2 <- test.getDocById[Test]("truie"))
+      println(res2)
 
-  //  println(test.deleteAttachment("truie", "test.txt"))
+  }
 
 }
