@@ -22,7 +22,7 @@ Of course, one can override these settings by passing parameters to the construc
 Once you have a CouchDB instance, you can access to a database by using the `database` method:
 
     val database = couch.database("test")
-    database.create
+    database.create()
 
 Pretty easy, huh?
 
@@ -39,11 +39,11 @@ So we defined a class that has three attributes `_id`, `value` and `_rev`. I use
 Then instantiate a test object and save it to the database:
 
     val test = Test("test1", "this is a test")()
-    database.saveDoc(test)
+    database.saveDoc(test)()
 
 One can then retrieve the saved document by using the `getDocById` method:
 
-    val fromDb = database.getDocById[Test]("test1")
+    val fromDb = database.getDocById[Test]("test1")()
 
 That's it!
 
@@ -51,6 +51,30 @@ Oh, wait! and what if one wants to use designs and views? Well, the Database cla
  - Key: which is the key type used to query this view. It may be any type that will be serialized to a JSON object,
  - Value: which is the type of the value returned by this view,
  - Doc: which is the type of the associated document that is returned in the case where the view is queried with the `include_docs` option.
+
+Shutting Down
+-------------
+
+So you played with your couchdb client, stored and retrieved a lot of documents from your couchdb instance. That's good! But don't forget to shut down every couchdb client instance you created once you do not need it anymore. Each instance starts background threads that must be stopped once they became useless. To do this, it is once more pretty easy, just run:
+
+    couch.shutdown
+
+And voilà!
+
+Getting Asynchronous
+--------------------
+
+Did you noticed so far that every call to methods that query the database is postfixed with an extra `()`?
+Well, if not, don't worry we will explain why in a few seconds.
+
+Actually, by default, all the methods that send request to the database server do this in an asynchronous way and returns immediately. So _what if this method returns a document fetched from the server?_ you'll ask. Well, these methods return a `Promise` object that encapsulates the value that will be eventually returned in response to the query. Sohva is based on the http library [Dispatch](http://dispatch.databinder.net/Dispatch.html), so to understand what the `Promise` object does, take a look at the documentation of this project.
+
+The extra `()` at the end of the method call makes this call block until the response is available and unpack it from the `Promise` object. Using it may looks easier when starting to work with Sohva, but actually, once you understood the power of `Promise`s, you will probably continue using Sohva without these parentheses...
+
+User Management
+---------------
+
+*TODO*
 
 Documentation
 -------------
