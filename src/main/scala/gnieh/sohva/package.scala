@@ -44,6 +44,11 @@ package object sohva {
     val _rev: Option[String]
   }
 
+  type OptIdDoc = {
+    val _id: Option[String]
+    val _rev: Option[String]
+  }
+
   private[sohva] val standardFormats = new DefaultFormats {
     override def dateFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SS")
   }

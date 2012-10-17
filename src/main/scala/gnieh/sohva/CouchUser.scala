@@ -33,20 +33,17 @@ import net.liftweb.json._
  *
  *  @author Lucas Satabin
  */
-class Users(private var couch: CouchDB,
+class Users(private val couch: CouchDB,
             adminName: String,
             adminPassword: String,
             defaultRoles: List[String] = Nil) {
-
-  import Users._
 
   /** Adds a new user to the user database, and returns the new instance */
   def add(name: String, password: String) = {
 
     val user = new CouchUser(name, Some(password), defaultRoles)()
     // create the doc on the server
-    couch
-      //.as_!(adminName, adminPassword) // add user as db admin to allow us setting roles
+    _couch
       .database("_users")
       .saveDoc(user)
 
@@ -54,8 +51,7 @@ class Users(private var couch: CouchDB,
 
   /** Deletes the given user from the database. */
   def delete(name: String) = {
-    val db = couch
-      .as_!(adminName, adminPassword)
+    val db = _couch
       .database("_users")
     db.getDocById[CouchUser]("org.couchdb.user:" + name).flatMap {
       case Some(user) => db.deleteDoc(user)
@@ -64,6 +60,16 @@ class Users(private var couch: CouchDB,
 
   }
 
+  /** Shutdowns the user management client */
+  def shutdown = _couch.shutdown
+
+  private[this] val _couch = couch.copy().as_!(adminName, adminPassword)
+
+}
+
+object CouchSession {
+  def create(couch: CouchDB) =
+    new CouchSession(couch.copy(cookie = None, admin = None))
 }
 
 /** An instance of a Couch session, that allows the user to login and
@@ -73,13 +79,7 @@ class Users(private var couch: CouchDB,
  *  @author Lucas Satabin
  *
  */
-class CouchSession[User: Manifest](private var _couch: CouchDB) {
-
-  /** Returns the couchdb instance for this session.
-   *  It is <b>HIGHLY RECOMMENDED</b> to retrieve the couchdb instance
-   *  through this method whenever one wants to send a request during this session
-   */
-  def couch = _couch
+class CouchSession[User: Manifest] private (private val couch: CouchDB) {
 
   /** Performs a login and returns true if login succeeded.
    *  from now on, if login succeeded the couch instance is identified and
@@ -87,20 +87,17 @@ class CouchSession[User: Manifest](private var _couch: CouchDB) {
    *  This performs a cookie authentication.
    */
   def login(name: String, password: String) = {
-    Http(_couch.request / "_session" <<
+    couch.http(couch.request / "_session" <<
       Map("name" -> name, "password" -> password) <:<
       Map("Accept" -> "application/json, text/javascript, */*",
-        "Content-Type" -> "application/x-www-form-urlencoded",
-        "Cache-Control" -> "no-cache",
-        "Pragma" -> "no-cache",
-        "Cookie" -> "AuthSession=")).map(setCookie)
+        "Cookie" -> "AuthSession=") > setCookie _)
   }
 
   /** Logs the session out */
   def logout =
-    _couch.http((_couch.request / "_session").DELETE).map(json => OkResult(json) match {
+    couch.http((couch.request / "_session").DELETE).map(json => OkResult(json) match {
       case OkResult(true, _, _) =>
-        _couch = _couch.as_!("")
+        couch.as_!("")
         true
       case _ =>
         false
@@ -109,7 +106,7 @@ class CouchSession[User: Manifest](private var _couch: CouchDB) {
   /** Returns the user associated to the current session, if any */
   def currentUser = loggedContext.map {
     case UserCtx(name, _) if name != null =>
-      _couch.http(_couch.request / "_users" / ("org.couchdb.user:" + name)).map(user)
+      couch.http(couch.request / "_users" / ("org.couchdb.user:" + name)).map(user)
     case _ => Promise(None)
   }
 
@@ -128,10 +125,13 @@ class CouchSession[User: Manifest](private var _couch: CouchDB) {
   /** Indicates whether the current session is a server admin session */
   def isServerAdmin = hasRole("_admin")
 
+  /** Discards this session, closing all used resources. */
+  def discard = couch.shutdown
+
   // helper methods
 
   private def loggedContext =
-    _couch.http((_couch.request / "_session")).map(userCtx)
+    couch.http((couch.request / "_session")).map(userCtx)
 
   private def userCtx(json: JValue) =
     json.extract[AuthResult] match {
@@ -144,8 +144,8 @@ class CouchSession[User: Manifest](private var _couch: CouchDB) {
         // no cookie to set
         false
       case cookie =>
-        _couch = _couch.as_!(cookie)
-        true
+        couch.as_!(cookie)
+        response.getStatusCode / 100 == 2
     }
   }
 

@@ -20,6 +20,7 @@ import util._
 import dispatch._
 
 import com.ning.http.client.{
+  Request,
   RequestBuilder,
   Response
 }
@@ -49,29 +50,40 @@ import eu.medsea.util.MimeUtil
 case class CouchDB(val host: String = "localhost",
                    val port: Int = 5984,
                    val version: String = "1.2",
-                   private val admin: Option[(String, String)] = None,
-                   private val cookie: Option[String] = None) {
+                   private var admin: Option[(String, String)] = None,
+                   private var cookie: Option[String] = None) {
 
   // the base request to this couch instance
-  private[sohva] val request = (cookie, admin) match {
+  private[sohva] def request = (cookie, admin) match {
     case (Some(c), _) => :/(host, port) <:< Map("Cookie" -> c)
     case (_, Some((name, pwd))) => :/(host, port).as_!(name, pwd)
     case _ => :/(host, port)
   }
 
+  /** Shuts down this instance of couchdb client. */
   def shutdown = _http.shutdown
 
-  /** Returns this couchdb instance as the user authenticated by the given session id */
-  def as_!(cookie: String) =
-    this.copy(cookie = Some(cookie), admin = None)
+  /** Returns this couchdb client instance as the user authenticated by the given session id */
+  def as_!(cookie: String) = {
+    this.cookie = Some(cookie)
+    this.admin = None
+    this
+  }
 
-  /** Returns this couchdb instance as the user authenticated by the given name and password */
-  def as_!(name: String, password: String) =
-    this.copy(admin = Some((name, password)), cookie = None)
+  /** Returns this couchdb client instance as the user authenticated by the given name and password */
+  def as_!(name: String, password: String) = {
+    this.cookie = None
+    this.admin = Some((name, password))
+    this
+  }
 
-  /** Returns the database on the given couch instance */
+  /** Returns the database on the given couch instance. */
   def database(name: String) =
     new Database(name, this)
+
+  /** Returns the names of all databases in this couch instance. */
+  def _all_dbs =
+    http(request / "_all_dbs").map(asNameList _)
 
   /** Indicates whether this couchdb instance contains the given database */
   def contains(dbName: String) =
@@ -79,20 +91,17 @@ case class CouchDB(val host: String = "localhost",
 
   // helper methods
 
-  lazy val _http = new Http {
-    //    override def threadPoolSize = 1
-    import com.ning.http.client._
-    import providers.netty._
-    //    override lazy val client = {
-    //      val config = new NettyAsyncHttpProviderConfig
-    //      config.addProperty(NettyAsyncHttpProviderConfig.USE_BLOCKING_IO, "true")
-    //      new AsyncHttpClient(new NettyAsyncHttpProvider(new AsyncHttpClientConfig.Builder().setAsyncHttpClientProviderConfig(config).build()));
-    //    }
-  }
+  lazy val _http = new Http
 
   /** Executes the given request and transform couchdb specific exceptions. */
   private[sohva] def http(request: RequestBuilder): Promise[JValue] =
     _http(request > handleCouchResponse _)
+
+  private[sohva] def optHttp(request: RequestBuilder): Promise[Option[JValue]] =
+    _http(request > handleOptionalCouchResponse _)
+
+  private[sohva] def http[T](pair: (Request, FunctionHandler[T])): Promise[T] =
+    _http(pair)
 
   private def handleCouchResponse(response: Response) = {
     val json = as.lift.Json(response)
@@ -107,6 +116,26 @@ case class CouchDB(val host: String = "localhost",
     }
     json
   }
+
+  private def handleOptionalCouchResponse(response: Response) = {
+    val json = as.lift.Json(response)
+    val code = response.getStatusCode
+    if (code == 404) {
+      None
+    } else if (code / 100 != 2) {
+      // something went wrong...
+      val error = json.extractOpt[ErrorResult]
+      if (code == 409)
+        throw new ConflictException(error)
+      else
+        throw new CouchException(code, error)
+    } else {
+      Some(json)
+    }
+  }
+
+  private def asNameList(json: JValue) =
+    json.extract[List[String]]
 
   private def containsName(name: String)(json: JValue) =
     json.extract[List[String]].contains(name)
@@ -123,7 +152,7 @@ case class Database(val name: String,
                     private[sohva] val couch: CouchDB) {
 
   /** Returns the information about this database */
-  def info = couch.http(request).map(infoResult)
+  def info = couch.optHttp(request).map(_.map(infoResult))
 
   /** Indicates whether this database exists */
   @inline
@@ -155,27 +184,28 @@ case class Database(val name: String,
 
   /** Returns the document identified by the given id if it exists */
   def getDocById[T: Manifest](id: String): Promise[Option[T]] =
-    couch.http(request / encode_%(id)).map(docResult[T])
+    couch.http(request / id).map(docResult[T])
 
   /** Creates or updates the given object as a document into this database
    *  The given object must have an `_id` and an optional `_rev` fields
    *  to conform to the couchdb document structure.
    */
   def saveDoc[T: Manifest](doc: T with Doc) =
-    couch.http((request / encode_%(doc._id) <:< Map("Accept" -> " application/json", "Content-Type" -> "application/json") <<
-      pretty(render(Extraction.decompose(doc)))).PUT).flatMap(json => docUpdateResult(json) match {
-      case DocUpdate(true, id, _) =>
-        getDocById[T](id)
-      case DocUpdate(false, _, _) =>
-        Promise(None)
-    })
+    couch.http((request / doc._id << pretty(render(Extraction.decompose(doc)))).PUT)
+      .map(docUpdateResult _)
+      .flatMap(res => res match {
+        case DocUpdate(true, id, _) =>
+          getDocById[T](id)
+        case DocUpdate(false, _, _) =>
+          Promise(None)
+      })
 
   /** Deletes the document from the database */
   def deleteDoc[T: Manifest](doc: T with Doc) =
-    couch.http((request / encode_%(doc._id)).DELETE <<?
-      Map("rev" -> doc._rev.getOrElse(""))).map(json => OkResult(json) match {
-      case OkResult(ok, _, _) => ok
-    })
+    couch.http((request / doc._id).DELETE <<? Map("rev" -> doc._rev.getOrElse("")))
+      .map(json => OkResult(json) match {
+        case OkResult(ok, _, _) => ok
+      })
 
   /** Attaches the given file to the given document id.
    *  If no mime type is given, sohva tries to guess the mime type of the file
@@ -185,8 +215,8 @@ case class Database(val name: String,
    */
   def attachTo(docId: String, file: File, contentType: Option[String]) = {
     // first get the last revision of the document (if it exists)
-    val rev = Http(
-      (request / encode_%(docId)).HEAD OK extractRev).either.map {
+    val rev = couch.http(
+      (request / docId).HEAD OK extractRev).either.map {
         case Left(StatusCode(404)) => None
         case Left(t) => throw t
         case Right(v) => v
@@ -246,12 +276,12 @@ case class Database(val name: String,
    *  to read the response from the server.
    */
   def getAttachment(docId: String, attachment: String) =
-    Http(request / encode_%(docId) / attachment OK readFile)
+    couch.http(request / docId / attachment OK readFile)
 
   /** Deletes the given attachment for the given docId */
   def deleteAttachment(docId: String, attachment: String) = {
     // first get the last revision of the document (if it exists)
-    val rev = Http((request / encode_%(docId)).HEAD OK extractRev).either.map {
+    val rev = couch.http((request / docId).HEAD OK extractRev).either.map {
       case Left(StatusCode(404)) => None
       case Left(t) => throw t
       case Right(v) => v
@@ -259,7 +289,7 @@ case class Database(val name: String,
     rev.flatMap { r =>
       r match {
         case Some(r) =>
-          couch.http((request / encode_%(docId) / attachment <<?
+          couch.http((request / docId / attachment <<?
             List("rev" -> r)).DELETE).map(json => OkResult(json) match {
             case OkResult(ok, _, _) => ok
           })
@@ -295,18 +325,14 @@ case class Database(val name: String,
 
   // helper methods
 
-  private[sohva] val request =
+  private[sohva] def request =
     couch.request / name
-
-  private def encode_%(in: String) =
-    in
-  //  java.net.URLEncoder.encode(in, "UTF-8")
 
   private def readFile(response: Response) =
     (response.getContentType, response.getResponseBodyAsStream)
 
   private def infoResult(json: JValue) =
-    json.extractOpt[InfoResult]
+    json.extract[InfoResult]
 
   private def docResult[T: Manifest](json: JValue) =
     json.extractOpt[T]
@@ -342,12 +368,12 @@ case class SecurityList(names: List[String], roles: List[String])
  */
 case class Design(db: Database, val name: String) {
 
-  private[sohva] lazy val request = db.request / "_design" / name
+  private[sohva] def request = db.request / "_design" / name
 
   /** Adds or update the view with the given name, map function and reduce function */
   def updateView(viewName: String, mapFun: String, reduceFun: Option[String]) = {
 
-    val doc = Http(request OK as.lift.Json).either.map {
+    val doc = db.couch.http(request OK as.lift.Json).either.map {
       case Left(StatusCode(404)) => None
       case Left(t) => throw t
       case Right(r) => designDoc(r)
@@ -388,7 +414,7 @@ case class Design(db: Database, val name: String) {
 case class View[Key: Manifest, Value: Manifest, Doc: Manifest](design: Design,
                                                                view: String) {
 
-  private lazy val request = design.request / "_view" / view
+  private def request = design.request / "_view" / view
 
   /** Queries the view on the server and returned the typed result.
    *  BE CAREFUL: If the types given to the constructor are not correct,
@@ -464,13 +490,13 @@ object OkResult extends (JValue => OkResult) {
   def apply(json: JValue) = json.extract[OkResult]
 }
 
-final case class InfoResult(compact_running: String,
+final case class InfoResult(compact_running: Boolean,
                             db_name: String,
                             disk_format_version: Int,
                             disk_size: Int,
                             doc_count: Int,
                             doc_del_count: Int,
-                            instance_start_time: Long,
+                            instance_start_time: String,
                             purge_seq: Int,
                             update_seq: Int)
 object InfoResult {
