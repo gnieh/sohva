@@ -79,7 +79,7 @@ object CouchSession {
  *  @author Lucas Satabin
  *
  */
-class CouchSession[User: Manifest] private (private val couch: CouchDB) {
+class CouchSession private (private val couch: CouchDB) {
 
   /** Performs a login and returns true if login succeeded.
    *  from now on, if login succeeded the couch instance is identified and
@@ -150,7 +150,7 @@ class CouchSession[User: Manifest] private (private val couch: CouchDB) {
   }
 
   private def user(json: JValue) =
-    json.extractOpt[User]
+    json.extractOpt[CouchUser]
 
 }
 
