@@ -16,29 +16,33 @@
 package gnieh.sohva
 package test
 
-import java.io.File
-
 /** @author Lucas Satabin
  *
  */
-object TestAttach extends App {
+object TestGet extends App {
 
-  case class Test(_id: String, value: String)(
-    val _rev: Option[String] = None,
-    val _attachments: Option[Map[String, Attachment]] = None)
+  val couch = CouchDB(host = "127.0.0.1").as_!("admin", "admin")
 
-  val couch = CouchDB()
+  val db = couch.database("test")
 
-  val test = couch.database("test")
+  println(couch._all_dbs())
 
-  test.create()
+  case class TestDoc(_id: String, toto: Int)(val _rev: Option[String] = None)
 
-  test.attachTo("truie", new File("src/test/resources/test.txt"), None).map { res1 =>
-    println(res1)
-
-    for (res2 <- test.getDocById[Test]("truie"))
-      println(res2)
-
+  db.info.flatMap {
+    case Some(info) =>
+      println("well, database test exists")
+      println(info)
+      println("saving a doc in it")
+      db.saveDoc(TestDoc("toto", 4)()).apply() match {
+        case Some(doc) => println("youpi")
+        case None => println("argh, y u no save doc???")
+      }
+      println("and now deleting...")
+      db.delete
+    case None =>
+      println("database test does not exist")
+      db.create
   }.foreach(_ => couch.shutdown)
 
 }

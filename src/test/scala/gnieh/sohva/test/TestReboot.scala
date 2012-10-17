@@ -13,32 +13,24 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package gnieh.sohva
-package test
+package gnieh.sohva.test
 
-import java.io.File
+import dispatch._
 
 /** @author Lucas Satabin
  *
  */
-object TestAttach extends App {
+object TestReboot extends App {
 
-  case class Test(_id: String, value: String)(
-    val _rev: Option[String] = None,
-    val _attachments: Option[Map[String, Attachment]] = None)
+  def request = (:/("localhost", 5984) / "test2").as_!("admin", "admin")
 
-  val couch = CouchDB()
-
-  val test = couch.database("test")
-
-  test.create()
-
-  test.attachTo("truie", new File("src/test/resources/test.txt"), None).map { res1 =>
-    println(res1)
-
-    for (res2 <- test.getDocById[Test]("truie"))
-      println(res2)
-
-  }.foreach(_ => couch.shutdown)
+  for {
+    resp <- Http((request / "truie" << "{\"_id\": \"truie\", \"plop\": \"toto\"}").PUT > as.lift.Json)
+    gr <- Http(request / "truie" > as.lift.Json)
+  } {
+    println(resp)
+    println(gr)
+    Http.shutdown
+  }
 
 }
