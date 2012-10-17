@@ -55,4 +55,4 @@ Oh, wait! and what if one wants to use designs and views? Well, the Database cla
 Documentation
 -------------
 
-The ScalaDoc can be found there: http://www.gnieh.org/sohva/api/
+The ScalaDoc can be found there: http://www.gnieh.org/sohva/old/api/
