@@ -53,6 +53,8 @@ case class CouchDB(val host: String = "localhost",
                    private var admin: Option[(String, String)] = None,
                    private var cookie: Option[String] = None) {
 
+  self =>
+
   // the base request to this couch instance
   private[sohva] def request = (cookie, admin) match {
     case (Some(c), _) => :/(host, port) <:< Map("Cookie" -> c)
@@ -61,20 +63,32 @@ case class CouchDB(val host: String = "localhost",
   }
 
   /** Shuts down this instance of couchdb client. */
-  def shutdown = _http.shutdown
+  def shutdown =
+    _http.shutdown
+
+  def startSession =
+    new CouchSession(copy(cookie = None, admin = None))
 
   /** Returns this couchdb client instance as the user authenticated by the given session id */
-  def as_!(cookie: String) = {
+  private[sohva] def as_!(cookie: String) = {
     this.cookie = Some(cookie)
     this.admin = None
     this
   }
 
   /** Returns this couchdb client instance as the user authenticated by the given name and password */
-  def as_!(name: String, password: String) = {
-    this.cookie = None
-    this.admin = Some((name, password))
-    this
+  private[sohva] def as_![T](name: String, password: String)(code: => T) = {
+    val oldCookie = cookie
+    val oldAdmin = admin
+    try {
+      this.cookie = None
+      this.admin = Some((name, password))
+      code
+    } finally {
+      // restor credentials
+      cookie = oldCookie
+      admin = oldAdmin
+    }
   }
 
   /** Returns the database on the given couch instance. */
@@ -88,6 +102,44 @@ case class CouchDB(val host: String = "localhost",
   /** Indicates whether this couchdb instance contains the given database */
   def contains(dbName: String) =
     http(request / "_all_dbs").map(containsName(dbName))
+
+  // user management section
+
+  /** Exposes the interface for managing couchd users. */
+  object users {
+
+    /** The user database name. By default `_users`. */
+    var dbName = "_users"
+
+    /** Adds a new user with no role to the user database, and returns the new instance */
+    def add(name: String, password: String) = {
+      val user = new CouchUser(name, Some(password), Nil)()
+      database(dbName).saveDoc(user)
+    }
+
+    /** Adds a new user with the given role list to the user database,
+     *  and returns the new instance.
+     *  To set the roles, administrator credentials must be provided.
+     */
+    def add(name: String,
+            password: String,
+            roles: List[String],
+            adminName: String,
+            adminPassword: String) =
+      as_!(adminName, adminPassword) {
+        val user = new CouchUser(name, Some(password), roles)()
+        database(dbName).saveDoc(user)
+      }
+
+    /** Deletes the given user from the database. */
+    def delete(name: String,
+               adminName: String,
+               adminPassword: String) =
+      as_!(adminName, adminPassword) {
+        database(dbName).deleteDoc("org.couchdb.user:" + name)
+      }
+
+  }
 
   // helper methods
 
@@ -200,12 +252,28 @@ case class Database(val name: String,
           Promise(None)
       })
 
-  /** Deletes the document from the database */
+  /** Deletes the document from the database.
+   *  The document will only be deleted if the caller provided the last revision
+   */
   def deleteDoc[T: Manifest](doc: T with Doc) =
     couch.http((request / doc._id).DELETE <<? Map("rev" -> doc._rev.getOrElse("")))
       .map(json => OkResult(json) match {
         case OkResult(ok, _, _) => ok
       })
+
+  /** Deletes the document identified by the given id from the database.
+   *  If the document exists it is deleted and the method returns `true`,
+   *  otherwise returns `false`.
+   */
+  def deleteDoc(id: String) =
+    couch.http((request / id) > extractRev _).flatMap {
+      case Some(rev) =>
+        couch.http((request / id).DELETE <<? Map("rev" -> rev))
+          .map(json => OkResult(json) match {
+            case OkResult(ok, _, _) => ok
+          })
+      case None => Promise(false)
+    }
 
   /** Attaches the given file to the given document id.
    *  If no mime type is given, sohva tries to guess the mime type of the file

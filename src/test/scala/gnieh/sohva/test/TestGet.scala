@@ -21,7 +21,7 @@ package test
  */
 object TestGet extends App {
 
-  val couch = CouchDB(host = "127.0.0.1").as_!("admin", "admin")
+  val couch = CouchDB(host = "127.0.0.1", admin = Some(("admin", "admin")))
 
   val db = couch.database("test")
 

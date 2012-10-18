@@ -15,71 +15,22 @@
 */
 package gnieh.sohva
 
-import java.security.MessageDigest
-
-import scala.util.Random
-import scala.reflect.BeanInfo
-import scala.annotation.target._
-
 import dispatch._
 
 import com.ning.http.client.Response
 
 import net.liftweb.json._
 
-/** provides the API to work with couchdb users:
- *  - add a new user into the database,
- *  - delete a user from the database
- *
- *  @author Lucas Satabin
- */
-class Users(private val couch: CouchDB,
-            adminName: String,
-            adminPassword: String,
-            defaultRoles: List[String] = Nil) {
-
-  /** Adds a new user to the user database, and returns the new instance */
-  def add(name: String, password: String) = {
-
-    val user = new CouchUser(name, Some(password), defaultRoles)()
-    // create the doc on the server
-    _couch
-      .database("_users")
-      .saveDoc(user)
-
-  }
-
-  /** Deletes the given user from the database. */
-  def delete(name: String) = {
-    val db = _couch
-      .database("_users")
-    db.getDocById[CouchUser]("org.couchdb.user:" + name).flatMap {
-      case Some(user) => db.deleteDoc(user)
-      case _ => Promise(false)
-    }
-
-  }
-
-  /** Shutdowns the user management client */
-  def shutdown = _couch.shutdown
-
-  private[this] val _couch = couch.copy().as_!(adminName, adminPassword)
-
-}
-
-object CouchSession {
-  def create(couch: CouchDB) =
-    new CouchSession(couch.copy(cookie = None, admin = None))
-}
-
 /** An instance of a Couch session, that allows the user to login and
  *  send request identified with the login credentials.
- *  This performs a cookie based authentication against the couchdb server
+ *  This performs a cookie based authentication against the couchdb server.
+ *  The couchdb client instance retrieved for this session will send request
+ *  authenticated by the user that logged in in this session.
  *
  *  @author Lucas Satabin
  *
  */
-class CouchSession private (private val couch: CouchDB) {
+class CouchSession private[sohva] (val couch: CouchDB) {
 
   /** Performs a login and returns true if login succeeded.
    *  from now on, if login succeeded the couch instance is identified and
