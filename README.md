@@ -23,7 +23,7 @@ Of course, one can override these settings by passing parameters to the construc
 Once you have a `CouchClient` instance, you can access a database by using the `database` method:
 
     val database = couch.database("test")
-    database.create()
+    database.create!
 
 Pretty easy, huh?
 
