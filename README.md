@@ -13,14 +13,14 @@ First of all you should import all the stuffs to work with couchdb:
 
     import gnieh.sohva._
 
-In Sohva, all starts with an instance of CouchDB which gives all the indication on the server location and port.
+In Sohva, all starts with an instance of `CouchClient` which gives all the indication on the server location and port.
 
-    val couch = CouchDB()
+    val couch = new CouchClient
 
-By default this gives a connection to a couchdb instance at localhost on port 5984 and no authentication.
-Of course, one can override these settings by passing parameters to the constructor. See the documentation of the CouchDB class.
+By default this gives a connection to a couchdb instance at localhost on port 5984.
+Of course, one can override these settings by passing parameters to the constructor. See the documentation of the `CouchClient` class.
 
-Once you have a CouchDB instance, you can access a database by using the `database` method:
+Once you have a `CouchClient` instance, you can access a database by using the `database` method:
 
     val database = couch.database("test")
     database.create()
@@ -40,11 +40,11 @@ So we defined a class that has three attributes `_id`, `value` and `_rev`. we us
 Then instantiate a test object and save it to the database:
 
     val test = Test("test1", "this is a test")()
-    database.saveDoc(test)()
+    database.saveDoc(test)!
 
 One can then retrieve the saved document by using the `getDocById` method:
 
-    val fromDb = database.getDocById[Test]("test1")()
+    val fromDb = database.getDocById[Test]("test1")!
 
 That's it!
 
@@ -65,17 +65,38 @@ And voilà!
 Getting Asynchronous
 --------------------
 
-Did you noticed so far that every call to methods that query the database is postfixed with an extra `()`?
+Did you noticed so far that every call to a method that queries the database is postfixed with an extra `!`?
 Well, if not, don't worry we will explain why in a few seconds.
 
 Actually, by default, all the methods that send request to the database server do this in an asynchronous way and return immediately. So _what if this method returns a document fetched from the server?_ you'll ask. Well, these methods return a `Promise` object that encapsulates the value that will be eventually returned in response to the query. Sohva is based on the http library [Dispatch](http://dispatch.databinder.net/Dispatch.html), so to understand what the `Promise` object does, take a look at the documentation of this project.
 
-The extra `()` at the end of the method calls make these calls block until the response is available to then unpack it from the `Promise` object and return it. Using blocking calls may look easier when starting to work with Sohva, but actually, once you understood the power of `Promise`s, you will probably continue using Sohva without these parentheses...
+The extra `!` at the end of the method calls makes these calls block until the response is available to then unpack it from the `Promise` object and return it. Using blocking calls may look easier when starting to work with Sohva, but actually, once you understood the power of `Promise`s, you will probably continue using Sohva without these bangs.
 
-User Management
----------------
+Working With Sessions, Authentications and Friends
+--------------------------------------------------
 
-*TODO*
+One other nice feature of couchdb, is that it provides user management, authentication and authorization out of the box.
+So why would you rebuild an entirely new user management system for your applicaiton if your database already provides all you need?
+That is why Sohva provides a simple way to manage users and sessions so you can benefit from it directly.
+
+The `CouchClient` provides user management methods in an object called `users`
+
+    val created = couch.users.add("username", "password")!
+
+This call will create a new user with the given `username` and `password`.
+
+Until now, all the queries we sent to the couchdb instance were anonymous. If you want to start sending authenticated requests you will need to start a session
+
+    val session = couch.startSession
+
+The `CouchSession` object returned exposes merely the same interface as `CouchClient` plus some methods to login, logout, test login status, current user, current roles, ... All the queries sent from a `CouchSession` belong to the same session, and are authenticated (if you logged in of course). To login, simply run
+
+    session.login("username", "password")!
+
+From now on (and as long as you do not logout or the session does not expire), all database accesses using the `session` object are authenticated as originating from user `username`.
+
+    val authTest = session.database("test")!
+    authTest.saveDoc(Test("test2", "this is another test document")())!
 
 Documentation
 -------------

@@ -21,7 +21,7 @@ package test
  */
 object TestCreateUser extends App {
 
-  val couch = CouchDB(host = "127.0.0.1")
+  val couch = new CouchClient()
 
   val name = "grumpf"
   val session = couch.startSession
@@ -29,18 +29,19 @@ object TestCreateUser extends App {
   println("plop")
 
   couch.users.add(name, name).map {
-    case Some(user) =>
+    case true =>
       println("truie")
-      println(session.login(name, name)())
-      println(session.isLoggedIn())
-      println(couch.users.delete(name, "admin", "admin")())
-      println(session.isLoggedIn())
-      println(session.login(name, name + "_wrong")())
-      println(session.isLoggedIn())
-    case None =>
+      println(session.login(name, name)!)
+      println(session.isLoggedIn!)
+      println(session.logout!)
+      println(session.isLoggedIn!)
+      println(session.login(name, name + "_wrong")!)
+      println(session.isLoggedIn!)
+      println(session.login("admin", "admin")!)
+      println(session.users.delete(name)!)
+    case false =>
       println("argh")
   }.foreach { _ =>
-    session.discard
     couch.shutdown
   }
 

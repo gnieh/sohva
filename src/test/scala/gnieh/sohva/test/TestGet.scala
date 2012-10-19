@@ -21,7 +21,7 @@ package test
  */
 object TestGet extends App {
 
-  val couch = CouchDB(host = "127.0.0.1", admin = Some(("admin", "admin")))
+  val couch = new CouchClient().startSession
 
   val db = couch.database("test")
 
@@ -29,20 +29,25 @@ object TestGet extends App {
 
   case class TestDoc(_id: String, toto: Int)(val _rev: Option[String] = None)
 
-  db.info.flatMap {
+  db.info.map {
     case Some(info) =>
       println("well, database test exists")
       println(info)
       println("saving a doc in it")
-      db.saveDoc(TestDoc("toto", 4)()).apply() match {
+      db.saveDoc(TestDoc("toto", 4)())! match {
         case Some(doc) => println("youpi")
         case None => println("argh, y u no save doc???")
       }
       println("and now deleting...")
-      db.delete
+      println("logging in as admin: " + (couch.login("admin", "admin")!))
+      println("database deleted: " + (db.delete!))
     case None =>
       println("database test does not exist")
-      db.create
-  }.foreach(_ => couch.shutdown)
+      println("logging in as admin: " + (couch.login("admin", "admin")!))
+      println("database created: " + (db.create!))
+  }.foreach { _ =>
+    println("shutting down the instance")
+    couch.shutdown
+  }
 
 }

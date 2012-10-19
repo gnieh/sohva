@@ -55,4 +55,8 @@ package object sohva {
 
   private[sohva] implicit val formats = standardFormats + new UserSerializer
 
+  implicit def promise2bang[T](promise: Promise[T]) = new {
+    def ! = promise()
+  }
+
 }

@@ -30,7 +30,13 @@ import net.liftweb.json._
  *  @author Lucas Satabin
  *
  */
-class CouchSession private[sohva] (val couch: CouchDB) {
+class CouchSession private[sohva] (val couch: CouchClient) extends CouchDB {
+
+  val host = couch.host
+
+  val port = couch.port
+
+  val version = couch.version
 
   /** Performs a login and returns true if login succeeded.
    *  from now on, if login succeeded the couch instance is identified and
@@ -38,7 +44,7 @@ class CouchSession private[sohva] (val couch: CouchDB) {
    *  This performs a cookie authentication.
    */
   def login(name: String, password: String) = {
-    couch.http(couch.request / "_session" <<
+    http(couch.request / "_session" <<
       Map("name" -> name, "password" -> password) <:<
       Map("Accept" -> "application/json, text/javascript, */*",
         "Cookie" -> "AuthSession=") > setCookie _)
@@ -46,24 +52,19 @@ class CouchSession private[sohva] (val couch: CouchDB) {
 
   /** Logs the session out */
   def logout =
-    couch.http((couch.request / "_session").DELETE).map(json => OkResult(json) match {
-      case OkResult(true, _, _) =>
-        couch.as_!("")
-        true
-      case _ =>
-        false
-    })
+    http((couch.request / "_session").DELETE).map(json => OkResult(json).ok)
 
   /** Returns the user associated to the current session, if any */
   def currentUser = loggedContext.map {
     case UserCtx(name, _) if name != null =>
-      couch.http(couch.request / "_users" / ("org.couchdb.user:" + name)).map(user)
+      http(couch.request / "_users" / ("org.couchdb.user:" + name)).map(user)
     case _ => Promise(None)
   }
 
   /** Indicates whether the current session is logged in to the couch server */
   def isLoggedIn = loggedContext.map {
-    case UserCtx(name, _) if name != null => true
+    case UserCtx(name, _) if name != null =>
+      true
     case _ => false
   }
 
@@ -76,13 +77,18 @@ class CouchSession private[sohva] (val couch: CouchDB) {
   /** Indicates whether the current session is a server admin session */
   def isServerAdmin = hasRole("_admin")
 
-  /** Discards this session, closing all used resources. */
-  def discard = couch.shutdown
-
   // helper methods
 
+  private[sohva] val _http =
+    couch._http
+
+  private var cookie = ""
+
+  private[sohva] def request =
+    couch.request <:< Map("Cookie" -> cookie)
+
   private def loggedContext =
-    couch.http((couch.request / "_session")).map(userCtx)
+    http((request / "_session")).map(userCtx)
 
   private def userCtx(json: JValue) =
     json.extract[AuthResult] match {
@@ -95,7 +101,7 @@ class CouchSession private[sohva] (val couch: CouchDB) {
         // no cookie to set
         false
       case cookie =>
-        couch.as_!(cookie)
+        this.cookie = cookie
         response.getStatusCode / 100 == 2
     }
   }

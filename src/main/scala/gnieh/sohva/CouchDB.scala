@@ -47,49 +47,22 @@ import eu.medsea.util.MimeUtil
  *  @author Lucas Satabin
  *
  */
-case class CouchDB(val host: String = "localhost",
-                   val port: Int = 5984,
-                   val version: String = "1.2",
-                   private var admin: Option[(String, String)] = None,
-                   private var cookie: Option[String] = None) {
+abstract class CouchDB {
 
   self =>
 
-  // the base request to this couch instance
-  private[sohva] def request = (cookie, admin) match {
-    case (Some(c), _) => :/(host, port) <:< Map("Cookie" -> c)
-    case (_, Some((name, pwd))) => :/(host, port).as_!(name, pwd)
-    case _ => :/(host, port)
-  }
+  /** The couchdb instance host name. */
+  val host: String
+
+  /** The couchdb instance port. */
+  val port: Int
+
+  /** The couchdb instance version. */
+  val version: String
 
   /** Shuts down this instance of couchdb client. */
   def shutdown =
     _http.shutdown
-
-  def startSession =
-    new CouchSession(copy(cookie = None, admin = None))
-
-  /** Returns this couchdb client instance as the user authenticated by the given session id */
-  private[sohva] def as_!(cookie: String) = {
-    this.cookie = Some(cookie)
-    this.admin = None
-    this
-  }
-
-  /** Returns this couchdb client instance as the user authenticated by the given name and password */
-  private[sohva] def as_![T](name: String, password: String)(code: => T) = {
-    val oldCookie = cookie
-    val oldAdmin = admin
-    try {
-      this.cookie = None
-      this.admin = Some((name, password))
-      code
-    } finally {
-      // restor credentials
-      cookie = oldCookie
-      admin = oldAdmin
-    }
-  }
 
   /** Returns the database on the given couch instance. */
   def database(name: String) =
@@ -105,47 +78,35 @@ case class CouchDB(val host: String = "localhost",
 
   // user management section
 
-  /** Exposes the interface for managing couchd users. */
+  /** Exposes the interface for managing couchdb users. */
   object users {
 
     /** The user database name. By default `_users`. */
     var dbName = "_users"
 
-    /** Adds a new user with no role to the user database, and returns the new instance */
-    def add(name: String, password: String) = {
-      val user = new CouchUser(name, Some(password), Nil)()
-      database(dbName).saveDoc(user)
-    }
-
     /** Adds a new user with the given role list to the user database,
      *  and returns the new instance.
-     *  To set the roles, administrator credentials must be provided.
      */
     def add(name: String,
             password: String,
-            roles: List[String],
-            adminName: String,
-            adminPassword: String) =
-      as_!(adminName, adminPassword) {
-        val user = new CouchUser(name, Some(password), roles)()
-        database(dbName).saveDoc(user)
-      }
+            roles: List[String] = Nil) = {
+      val user = new CouchUser(name, Some(password), roles)()
+      http((request / dbName / user._id << pretty(render(Extraction.decompose(user)))).PUT)
+        .map(OkResult(_).ok)
+    }
 
     /** Deletes the given user from the database. */
-    def delete(name: String,
-               adminName: String,
-               adminPassword: String) =
-      as_!(adminName, adminPassword) {
-        database(dbName).deleteDoc("org.couchdb.user:" + name)
-      }
+    def delete(name: String) =
+      database(dbName).deleteDoc("org.couchdb.user:" + name)
 
   }
 
   // helper methods
 
-  lazy val _http = new Http
+  private[sohva] def request: RequestBuilder
 
-  /** Executes the given request and transform couchdb specific exceptions. */
+  private[sohva] def _http: Http
+
   private[sohva] def http(request: RequestBuilder): Promise[JValue] =
     _http(request > handleCouchResponse _)
 
@@ -236,7 +197,7 @@ case class Database(val name: String,
 
   /** Returns the document identified by the given id if it exists */
   def getDocById[T: Manifest](id: String): Promise[Option[T]] =
-    couch.http(request / id).map(docResult[T])
+    couch.optHttp(request / id).map(_.flatMap(docResult[T]))
 
   /** Creates or updates the given object as a document into this database
    *  The given object must have an `_id` and an optional `_rev` fields
@@ -283,12 +244,7 @@ case class Database(val name: String,
    */
   def attachTo(docId: String, file: File, contentType: Option[String]) = {
     // first get the last revision of the document (if it exists)
-    val rev = couch.http(
-      (request / docId).HEAD OK extractRev).either.map {
-        case Left(StatusCode(404)) => None
-        case Left(t) => throw t
-        case Right(v) => v
-      }
+    val rev = couch.http((request / docId).HEAD > extractRev _)
     val mime = contentType match {
       case Some(mime) => mime
       case None => MimeUtil.getMimeType(file)
@@ -349,11 +305,7 @@ case class Database(val name: String,
   /** Deletes the given attachment for the given docId */
   def deleteAttachment(docId: String, attachment: String) = {
     // first get the last revision of the document (if it exists)
-    val rev = couch.http((request / docId).HEAD OK extractRev).either.map {
-      case Left(StatusCode(404)) => None
-      case Left(t) => throw t
-      case Right(v) => v
-    }
+    val rev = couch.http((request / docId).HEAD > extractRev _)
     rev.flatMap { r =>
       r match {
         case Some(r) =>

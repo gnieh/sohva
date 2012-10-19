@@ -27,9 +27,11 @@ object TestAttach extends App {
     val _rev: Option[String] = None,
     val _attachments: Option[Map[String, Attachment]] = None)
 
-  val couch = CouchDB()
+  val couch = new CouchClient().startSession
 
   val test = couch.database("test")
+
+  couch.login("admin", "admin")()
 
   test.create()
 
