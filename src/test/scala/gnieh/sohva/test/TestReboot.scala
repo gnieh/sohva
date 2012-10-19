@@ -13,28 +13,24 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package gnieh.sohva
+package gnieh.sohva.test
 
-import dispatch.Logger
+import dispatch._
 
-import org.slf4j.LoggerFactory
-
-/** Binding to a logback logger.
- * 
- * 
- * @author Lucas Satabin
+/** @author Lucas Satabin
  *
  */
-class LogbackLogger extends Logger {
-  
-  private lazy val logger = LoggerFactory.getLogger("sohva")
-  
-  def warn(msg: String, items: Any*) {
-    logger.warn(msg.format(items:_*))
+object TestReboot extends App {
+
+  def request = (:/("localhost", 5984) / "test2").as_!("admin", "admin")
+
+  for {
+    resp <- Http((request / "truie" << "{\"_id\": \"truie\", \"plop\": \"toto\"}").PUT > as.lift.Json)
+    gr <- Http(request / "truie" > as.lift.Json)
+  } {
+    println(resp)
+    println(gr)
+    Http.shutdown
   }
-  
-  def info(msg: String, items: Any*) {
-    logger.info(msg.format(items:_*))
-  }
-  
+
 }

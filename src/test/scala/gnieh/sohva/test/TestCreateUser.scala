@@ -16,31 +16,33 @@
 package gnieh.sohva
 package test
 
-import java.io.File
-
 /** @author Lucas Satabin
  *
  */
-object TestAttach extends App {
+object TestCreateUser extends App {
 
-  case class Test(_id: String, value: String)(
-    val _rev: Option[String] = None,
-    val _attachments: Option[Map[String, Attachment]] = None)
+  val couch = new CouchClient()
 
-  val couch = new CouchClient().startSession
+  val name = "grumpf"
+  val session = couch.startSession
 
-  val test = couch.database("test")
+  println("plop")
 
-  couch.login("admin", "admin")()
-
-  test.create()
-
-  test.attachTo("truie", new File("src/test/resources/test.txt"), None).map { res1 =>
-    println(res1)
-
-    for (res2 <- test.getDocById[Test]("truie"))
-      println(res2)
-
-  }.foreach(_ => couch.shutdown)
+  couch.users.add(name, name).map {
+    case true =>
+      println("truie")
+      println(session.login(name, name)!)
+      println(session.isLoggedIn!)
+      println(session.logout!)
+      println(session.isLoggedIn!)
+      println(session.login(name, name + "_wrong")!)
+      println(session.isLoggedIn!)
+      println(session.login("admin", "admin")!)
+      println(session.users.delete(name)!)
+    case false =>
+      println("argh")
+  }.foreach { _ =>
+    couch.shutdown
+  }
 
 }

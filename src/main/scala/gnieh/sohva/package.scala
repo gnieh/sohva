@@ -17,12 +17,11 @@ package gnieh
 
 import dispatch._
 
+import com.ning.http.client.{ Request, RequestBuilder }
+
 import net.liftweb.json._
 
 import java.text.SimpleDateFormat
-
-import org.apache.http.client.params.{ ClientPNames, CookiePolicy }
-import org.apache.http.params.CoreProtocolPNames
 
 /** Contains all the classes needed to interact with a couchdb server.
  *  Classes in this package allows the user to:
@@ -44,55 +43,20 @@ package object sohva {
     val _id: String
     val _rev: Option[String]
   }
-  
+
+  type OptIdDoc = {
+    val _id: Option[String]
+    val _rev: Option[String]
+  }
+
   private[sohva] val standardFormats = new DefaultFormats {
     override def dateFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SS")
   }
 
-  implicit val formats = standardFormats
+  private[sohva] implicit val formats = standardFormats + new UserSerializer
 
-  private lazy val sohvaHttp =
-    new Http {
-      override def make_client = {
-        val client = super.make_client
-        // does not automatically manage cookies
-        client.getParams.setParameter(ClientPNames.COOKIE_POLICY, CookiePolicy.IGNORE_COOKIES)
-        client
-      }
-      
-      override def make_logger = 
-        new LogbackLogger
+  implicit def promise2bang[T](promise: Promise[T]) = new {
+    def ! = promise()
   }
-
-  /** Executes the given request and catch the exceptions given as optional parameter. */
-  def http[T](handler: Handler[T])(exc: PartialFunction[(Int, Option[ErrorResult]), T] = null): T =
-    try {
-      sohvaHttp(handler)
-    } catch {
-      case StatusCode(code, contents) =>
-
-        val error = try {
-          parse(contents).extractOpt[ErrorResult]
-        } catch {
-          case e => None
-        }
-
-        if (exc != null && exc.isDefinedAt(code, error)) {
-          exc(code, error)
-        } else {
-          error match {
-            case Some(ErrorResult(error, reason)) =>
-              if (code == 409)
-                throw new ConflictException(error, reason)
-              else
-                throw new CouchException(code, error, reason)
-            case None =>
-              if (code == 409)
-                throw new ConflictException(contents, null)
-              else
-                throw new CouchException(code, contents, null)
-          }
-        }
-    }
 
 }
