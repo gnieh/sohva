@@ -49,11 +49,9 @@ package object sohva {
     val _rev: Option[String]
   }
 
-  private[sohva] val standardFormats = new DefaultFormats {
+  implicit private[sohva] val standardFormats = new DefaultFormats {
     override def dateFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SS")
   }
-
-  private[sohva] implicit val formats = standardFormats + new UserSerializer
 
   implicit def promise2bang[T](promise: Promise[T]) = new {
     def ! = promise()

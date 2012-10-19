@@ -23,9 +23,6 @@ import scala.util.Random
 
 object UserSerializer {
 
-  /** The version of the couchdb server, used to determine the format of user documents. */
-  var couchVersion = "1.2"
-
   private def bytes2string(bytes: Array[Byte]) =
     bytes.foldLeft(new StringBuilder) {
       (res, byte) =>
@@ -48,7 +45,7 @@ object UserSerializer {
 
 }
 
-private[sohva] class UserSerializer extends Serializer[CouchUser] {
+private[sohva] class UserSerializer(couchVersion: String) extends Serializer[CouchUser] {
 
   import UserSerializer._
 

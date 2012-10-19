@@ -49,7 +49,8 @@ import eu.medsea.util.MimeUtil
  */
 abstract class CouchDB {
 
-  self =>
+  private[sohva] implicit val formats =
+    standardFormats + new UserSerializer(version)
 
   /** The couchdb instance host name. */
   val host: String
@@ -91,8 +92,8 @@ abstract class CouchDB {
             password: String,
             roles: List[String] = Nil) = {
       val user = new CouchUser(name, Some(password), roles)()
-      http((request / dbName / user._id << pretty(render(Extraction.decompose(user)))).PUT)
-        .map(OkResult(_).ok)
+      http((request / dbName / user._id <<
+        pretty(render(Extraction.decompose(user)(formats)))).PUT).map(OkResult(_).ok)
     }
 
     /** Deletes the given user from the database. */
@@ -164,6 +165,8 @@ abstract class CouchDB {
 case class Database(val name: String,
                     private[sohva] val couch: CouchDB) {
 
+  import couch.formats
+
   /** Returns the information about this database */
   def info = couch.optHttp(request).map(_.map(infoResult))
 
@@ -177,20 +180,14 @@ case class Database(val name: String,
   def create = exists_?.flatMap(ex => if (ex) {
     Promise(false)
   } else {
-    couch.http(request.PUT).map(json => OkResult(json) match {
-      case OkResult(res, _, _) =>
-        res
-    })
+    couch.http(request.PUT).map(OkResult(_).ok)
   })
 
   /** Deletes this database in the couchdb instance if it exists.
    *  Returns <code>true</code> iff the database was actually deleted.
    */
   def delete = exists_?.flatMap(ex => if (ex) {
-    couch.http(request.DELETE).map(json => OkResult(json) match {
-      case OkResult(res, _, _) =>
-        res
-    })
+    couch.http(request.DELETE).map(OkResult(_).ok)
   } else {
     Promise(false)
   })
@@ -218,9 +215,7 @@ case class Database(val name: String,
    */
   def deleteDoc[T: Manifest](doc: T with Doc) =
     couch.http((request / doc._id).DELETE <<? Map("rev" -> doc._rev.getOrElse("")))
-      .map(json => OkResult(json) match {
-        case OkResult(ok, _, _) => ok
-      })
+      .map(OkResult(_).ok)
 
   /** Deletes the document identified by the given id from the database.
    *  If the document exists it is deleted and the method returns `true`,
@@ -230,9 +225,7 @@ case class Database(val name: String,
     couch.http((request / id) > extractRev _).flatMap {
       case Some(rev) =>
         couch.http((request / id).DELETE <<? Map("rev" -> rev))
-          .map(json => OkResult(json) match {
-            case OkResult(ok, _, _) => ok
-          })
+          .map(OkResult(_).ok)
       case None => Promise(false)
     }
 
@@ -263,11 +256,7 @@ case class Database(val name: String,
             Nil
         }
         couch.http(request / docId / file.getName
-          <<? params <<< file <:< Map("Content-Type" -> mime)).map { json =>
-          OkResult(json) match {
-            case OkResult(ok, _, _) => ok
-          }
-        }
+          <<? params <<< file <:< Map("Content-Type" -> mime)).map(OkResult(_).ok)
       }
     }
   }
@@ -310,9 +299,7 @@ case class Database(val name: String,
       r match {
         case Some(r) =>
           couch.http((request / docId / attachment <<?
-            List("rev" -> r)).DELETE).map(json => OkResult(json) match {
-            case OkResult(ok, _, _) => ok
-          })
+            List("rev" -> r)).DELETE).map(OkResult(_).ok)
         case None =>
           // doc does not exist? well... good... just do nothing
           Promise(false)
@@ -388,6 +375,8 @@ case class SecurityList(names: List[String], roles: List[String])
  */
 case class Design(db: Database, val name: String) {
 
+  import db.couch.formats
+
   private[sohva] def request = db.request / "_design" / name
 
   /** Adds or update the view with the given name, map function and reduce function */
@@ -433,6 +422,8 @@ case class Design(db: Database, val name: String) {
  */
 case class View[Key: Manifest, Value: Manifest, Doc: Manifest](design: Design,
                                                                view: String) {
+
+  import design.db.couch.formats
 
   private def request = design.request / "_view" / view
 
