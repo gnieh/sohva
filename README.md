@@ -11,19 +11,25 @@ Basic Usage
 
 First of all you should import all the stuffs to work with couchdb:
 
-    import gnieh.sohva._
+```scala
+import gnieh.sohva._
+```
 
 In Sohva, all starts with an instance of `CouchClient` which gives all the indication on the server location and port.
 
-    val couch = new CouchClient
+```scala
+val couch = new CouchClient
+```
 
 By default this gives a connection to a couchdb instance at localhost on port 5984.
 Of course, one can override these settings by passing parameters to the constructor. See the documentation of the `CouchClient` class.
 
 Once you have a `CouchClient` instance, you can access a database by using the `database` method:
 
-    val database = couch.database("test")
-    database.create!
+```scala
+val database = couch.database("test")
+database.create!
+```
 
 Pretty easy, huh?
 
@@ -33,18 +39,24 @@ So a couchdb document is a json object that **must** have at least one field nam
 
 Let's say one wants to save a test document into the above created database, the class representing this document may look like this:
 
-    case class Test(_id: String, value: String)(val _rev: Option[String] = None)
+```scala
+case class Test(_id: String, value: String)(val _rev: Option[String] = None)
+```
 
 So we defined a class that has three attributes `_id`, `value` and `_rev`. we used here two parameter lists to separate the parameters the user has to specify when creating a new document of this type from the ones having default values. It is not mandatory to do so, but that's a convention we used in this project.
 
 Then instantiate a test object and save it to the database:
 
-    val test = Test("test1", "this is a test")()
-    database.saveDoc(test)!
+```scala
+val test = Test("test1", "this is a test")()
+database.saveDoc(test)!
+```
 
 One can then retrieve the saved document by using the `getDocById` method:
 
-    val fromDb = database.getDocById[Test]("test1")!
+```scala
+val fromDb = database.getDocById[Test]("test1")!
+```
 
 That's it!
 
@@ -58,7 +70,9 @@ Shutting Down
 
 So you played with your couchdb client, stored and retrieved a lot of documents into and from your couchdb instance. That's good! But don't forget to shut down every couchdb client instance you created once you do not need it anymore. Each instance starts background threads that must be stopped once they become useless. To do this, it is, once more, pretty easy, you just have to run:
 
-    couch.shutdown
+```scala
+couch.shutdown
+```
 
 And voilà!
 
@@ -72,8 +86,8 @@ Actually, by default, all the methods that send request to the database server d
 
 The extra `!` at the end of the method calls makes these calls block until the response is available to then unpack it from the `Promise` object and return it. Using blocking calls may look easier when starting to work with Sohva, but actually, once you understood the power of `Promise`s, you will probably continue using Sohva without these bangs.
 
-Working With Sessions, Authentications and Friends
---------------------------------------------------
+Working With Sessions, Authentication and Friends
+-------------------------------------------------
 
 One other nice feature of couchdb, is that it provides user management, authentication and authorization out of the box.
 So why would you rebuild an entirely new user management system for your applicaiton if your database already provides all you need?
@@ -81,22 +95,30 @@ That is why Sohva provides a simple way to manage users and sessions so you can 
 
 The `CouchClient` provides user management methods in an object called `users`
 
-    val created = couch.users.add("username", "password")!
+```scala
+val created = couch.users.add("username", "password")!
+```
 
 This call will create a new user with the given `username` and `password`.
 
 Until now, all the queries we sent to the couchdb instance were anonymous. If you want to start sending authenticated requests you will need to start a session
 
-    val session = couch.startSession
+```scala
+val session = couch.startSession
+```
 
 The `CouchSession` object returned exposes merely the same interface as `CouchClient` plus some methods to login, logout, test login status, current user, current roles, ... All the queries sent from a `CouchSession` belong to the same session, and are authenticated (if you logged in of course). To login, simply run
 
-    session.login("username", "password")!
+```scala
+session.login("username", "password")!
+```
 
 From now on (and as long as you do not logout or the session does not expire), all database accesses using the `session` object are authenticated as originating from user `username`.
 
-    val authTest = session.database("test")!
-    authTest.saveDoc(Test("test2", "this is another test document")())!
+```scala
+val authTest = session.database("test")!
+authTest.saveDoc(Test("test2", "this is another test document")())!
+```
 
 Documentation
 -------------
