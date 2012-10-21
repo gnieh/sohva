@@ -381,14 +381,23 @@ case class Design(db: Database,
 
   private[sohva] def request = db.request / "_design" / name.trim
 
+  /** Returns the design document from the couchdb instance.
+   *  Returns `None` if the design document does not exist.
+   */
+  def getDesignDocument =
+    db.couch.optHttp(request).map(_.map(designDoc))
+
+  /** Deletes this design document from the couchdb instance */
+  def delete =
+    db.deleteDoc("_design/" + name.trim)
+
   /** Creates or updates the view in this design
    *  with the given name, map function and reduce function.
    *  If the design does not exist yet, it is created.
    */
   def saveView(viewName: String, mapFun: String, reduceFun: Option[String] = None) = {
     val view = ViewDoc(mapFun, reduceFun)
-    val doc = db.couch.optHttp(request).map(_.map(designDoc))
-    doc.map {
+    getDesignDocument.map {
       case Some(design) =>
         // the updated design
         design.copy(views = design.views + (viewName -> view))()
@@ -396,6 +405,15 @@ case class Design(db: Database,
         // the design does not exist...
         DesignDoc("_design/" + name, language, Map(viewName -> view))()
     }.flatMap(db.saveDoc(_).map(_.isDefined))
+  }
+
+  /** Deletes the view with the given name from the design */
+  def deleteView(viewName: String) = {
+    getDesignDocument.flatMap {
+      case Some(design) =>
+        db.saveDoc(design.copy(views = design.views - viewName)()).map(_.isDefined)
+      case None => Promise(false)
+    }
   }
 
   /** Returns the (typed) view in this design document.
