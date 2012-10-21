@@ -549,9 +549,9 @@ private[sohva] case class RawViewResult(total_rows: Int,
                                         offset: Int,
                                         rows: List[RawRow])
 
-final case class ViewResult[Key: Manifest, Value: Manifest, Doc: Manifest](total_rows: Int,
-                                                                           offset: Int,
-                                                                           rows: List[Row[Key, Value, Doc]]) {
+final case class ViewResult[Key, Value, Doc](total_rows: Int,
+                                             offset: Int,
+                                             rows: List[Row[Key, Value, Doc]]) {
 
   def values =
     rows.map(row => (row.key, row.value)).toMap
@@ -569,10 +569,10 @@ private[sohva] case class RawRow(id: String,
                                  value: JValue,
                                  doc: Option[JValue] = None)
 
-case class Row[Key: Manifest, Value: Manifest, Doc: Manifest](id: String,
-                                                              key: Key,
-                                                              value: Value,
-                                                              doc: Option[Doc] = None)
+case class Row[Key, Value, Doc](id: String,
+                                key: Key,
+                                value: Value,
+                                doc: Option[Doc] = None)
 
 final case class ErrorResult(error: String, reason: String)
 object ErrorResult {
