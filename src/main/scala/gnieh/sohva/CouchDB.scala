@@ -194,7 +194,7 @@ case class Database(val name: String,
 
   /** Returns the document identified by the given id if it exists */
   def getDocById[T: Manifest](id: String): Promise[Option[T]] =
-    couch.optHttp(request / id).map(_.flatMap(docResult[T]))
+    couch.optHttp(request / id).map(_.map(docResult[T]))
 
   /** Creates or updates the given object as a document into this database
    *  The given object must have an `_id` and an optional `_rev` fields
@@ -342,7 +342,7 @@ case class Database(val name: String,
     json.extract[InfoResult]
 
   private def docResult[T: Manifest](json: JValue) =
-    json.extractOpt[T]
+    json.extract[T]
 
   private def docUpdateResult(json: JValue) =
     json.extract[DocUpdate]
