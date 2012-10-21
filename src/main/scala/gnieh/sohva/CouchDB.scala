@@ -373,31 +373,29 @@ case class SecurityList(names: List[String], roles: List[String])
  *
  *  @author Lucas Satabin
  */
-case class Design(db: Database, val name: String) {
+case class Design(db: Database,
+                  val name: String,
+                  val language: String = "javascript") {
 
   import db.couch.formats
 
-  private[sohva] def request = db.request / "_design" / name
+  private[sohva] def request = db.request / "_design" / name.trim
 
-  /** Adds or update the view with the given name, map function and reduce function */
-  def updateView(viewName: String, mapFun: String, reduceFun: Option[String]) = {
-
-    val doc = db.couch.http(request OK as.lift.Json).either.map {
-      case Left(StatusCode(404)) => None
-      case Left(t) => throw t
-      case Right(r) => designDoc(r)
-    }
-    doc.flatMap {
+  /** Creates or updates the view in this design
+   *  with the given name, map function and reduce function.
+   *  If the design does not exist yet, it is created.
+   */
+  def saveView(viewName: String, mapFun: String, reduceFun: Option[String] = None) = {
+    val view = ViewDoc(mapFun, reduceFun)
+    val doc = db.couch.optHttp(request).map(_.map(designDoc))
+    doc.map {
       case Some(design) =>
-        val view = ViewDoc(mapFun, reduceFun)
         // the updated design
-        val newDesign = design.copy(views = design.views + (viewName -> view))
-        db.saveDoc(newDesign).map(_.isDefined)
+        design.copy(views = design.views + (viewName -> view))()
       case None =>
-        // this is not a design document or it does not exist...
-        Promise(false)
-    }
-
+        // the design does not exist...
+        DesignDoc("_design/" + name, language, Map(viewName -> view))()
+    }.flatMap(db.saveDoc(_).map(_.isDefined))
   }
 
   /** Returns the (typed) view in this design document.
@@ -412,7 +410,7 @@ case class Design(db: Database, val name: String) {
   // helper methods
 
   private def designDoc(json: JValue) =
-    json.extractOpt[DesignDoc]
+    json.extract[DesignDoc]
 
 }
 
@@ -475,23 +473,31 @@ case class View[Key: Manifest, Value: Manifest, Doc: Manifest](design: Design,
         case (name, value) => (name, value.toString)
       }
 
-    design.db.couch.http(request <<? options).map(viewResult)
+    design.db.couch.http(request <<? options).map(viewResult).map { raw =>
+      ViewResult(raw.total_rows, raw.offset,
+        raw.rows.map { raw =>
+          Row(raw.id,
+            raw.key.extract[Key],
+            raw.value.extract[Value],
+            raw.doc.map(_.extract[Doc]))
+        })
+    }
 
   }
 
   // helper methods
 
   private def viewResult(json: JValue) =
-    json.extract[ViewResult[Key, Value, Doc]]
+    json.extract[RawViewResult]
 
 }
 
 // the different object that may be returned by the couchdb server
 
 private[sohva] case class DesignDoc(_id: String,
-                                    _rev: Option[String],
                                     language: String,
-                                    views: Map[String, ViewDoc])
+                                    views: Map[String, ViewDoc])(
+                                      val _rev: Option[String] = None)
 
 private[sohva] case class ViewDoc(map: String,
                                   reduce: Option[String])
@@ -521,22 +527,34 @@ object DocUpdate {
   def apply(json: JValue) = json.extract[DocUpdate]
 }
 
-final case class ViewResult[Key, Value, Doc](total_rows: Option[Int],
-                                             offset: Option[Int],
-                                             rows: List[Row[Key, Value, Doc]])
-object ViewResult {
-  def apply[Key: Manifest, Value: Manifest, Doc: Manifest](json: JValue) =
-    json.extract[ViewResult[Key, Value, Doc]]
+private[sohva] case class RawViewResult(total_rows: Int,
+                                        offset: Int,
+                                        rows: List[RawRow])
+
+final case class ViewResult[Key: Manifest, Value: Manifest, Doc: Manifest](total_rows: Int,
+                                                                           offset: Int,
+                                                                           rows: List[Row[Key, Value, Doc]]) {
+
+  def values =
+    rows.map(row => (row.key, row.value)).toMap
+
+  def docs =
+    rows.map(row => row.doc.map(_ => (row.key, row.doc))).flatten.toMap
+
+  def foreach(f: Row[Key, Value, Doc] => Unit) =
+    rows.foreach(f)
+
 }
 
-final case class Row[Key, Value, Doc](id: String,
-                                      key: Key,
-                                      value: Value,
-                                      doc: Option[Doc])
-object Row {
-  def apply[Key: Manifest, Value: Manifest, Doc: Manifest](json: JValue) =
-    json.extract[Row[Key, Value, Doc]]
-}
+private[sohva] case class RawRow(id: String,
+                                 key: JValue,
+                                 value: JValue,
+                                 doc: Option[JValue] = None)
+
+case class Row[Key: Manifest, Value: Manifest, Doc: Manifest](id: String,
+                                                              key: Key,
+                                                              value: Value,
+                                                              doc: Option[Doc] = None)
 
 final case class ErrorResult(error: String, reason: String)
 object ErrorResult {
