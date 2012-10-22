@@ -77,10 +77,16 @@
 		<testSourceDirectory>src/test/scala</testSourceDirectory>
 		<plugins>
 			<plugin>
-				<groupId>org.scala-tools</groupId>
-				<artifactId>maven-scala-plugin</artifactId>
-				<version>2.15.0</version>
+        <groupId>net.alchim31.maven</groupId>
+        <artifactId>scala-maven-plugin</artifactId>
+        <version>3.1.0</version>
 				<executions>
+          <execution>
+            <id>attach-javadocs</id>
+            <goals>
+              <goal>doc-jar</goal>
+            </goals>
+          </execution>
 					<execution>
 						<id>compile</id>
 						<goals>
@@ -159,6 +165,13 @@
 		<connection>scm:git:git://github.com/gnieh/sohva.git</connection>
 		<developerConnection>scm:git:git@github.com:gnieh/sohva.git</developerConnection>
 	</scm>
+  <developers>
+    <developer>
+      <id>satabin</id>
+      <name>Lucas Satabin</name>
+      <email>lucassat@n7mm.org</email>
+    </developer>
+  </developers>
 	<ciManagement>
 		<system>travis</system>
 		<url>https://travis-ci.org/#!/gnieh/sohva</url>
