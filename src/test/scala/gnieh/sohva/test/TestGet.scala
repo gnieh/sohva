@@ -25,7 +25,7 @@ object TestGet extends App {
 
   val db = couch.database("test")
 
-  println(couch._all_dbs())
+  println(couch._all_dbs!)
 
   case class TestDoc(_id: String, toto: Int)(val _rev: Option[String] = None)
 
@@ -36,7 +36,7 @@ object TestGet extends App {
       println("saving a doc in it")
       db.saveDoc(TestDoc("toto", 4)())! match {
         case Some(doc) => println("youpi")
-        case None => println("argh, y u no save doc???")
+        case None      => println("argh, y u no save doc???")
       }
       println("and now deleting...")
       println("logging in as admin: " + (couch.login("admin", "admin")!))

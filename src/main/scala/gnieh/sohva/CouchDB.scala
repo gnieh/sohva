@@ -71,7 +71,12 @@ abstract class CouchDB {
 
   /** Returns the names of all databases in this couch instance. */
   def _all_dbs =
-    http(request / "_all_dbs").map(asNameList _)
+    http(request / "_all_dbs").map(asStringList _)
+
+  /** Returns the requested number of UUIDS (by default 1). */
+  def _uuids(count: Int = 1) =
+    http(request / "_uuids" <<? Map("count" -> count.toString))
+      .map(json => asStringList(json \\ "uuids"))
 
   /** Indicates whether this couchdb instance contains the given database */
   def contains(dbName: String) =
@@ -148,7 +153,7 @@ abstract class CouchDB {
     }
   }
 
-  private def asNameList(json: JValue) =
+  private def asStringList(json: JValue) =
     json.extract[List[String]]
 
   private def containsName(name: String)(json: JValue) =
