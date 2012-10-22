@@ -196,6 +196,10 @@ case class Database(val name: String,
   def getDocById[T: Manifest](id: String, revision: Option[String] = None): Promise[Option[T]] =
     couch.optHttp(request / id <<? revision.map("rev" -> _).toList).map(_.map(docResult[T]))
 
+  /** Returns the current revision of the document if it exists */
+  def getDocRevision(id: String): Promise[Option[String]] =
+    couch.http((request / id).HEAD > extractRev)
+
   /** Creates or updates the given object as a document into this database
    *  The given object must have an `_id` and an optional `_rev` fields
    *  to conform to the couchdb document structure.
@@ -222,7 +226,7 @@ case class Database(val name: String,
    *  otherwise returns `false`.
    */
   def deleteDoc(id: String) =
-    couch.http((request / id) > extractRev _).flatMap {
+    getDocRevision(id).flatMap {
       case Some(rev) =>
         couch.http((request / id).DELETE <<? Map("rev" -> rev))
           .map(OkResult(_).ok)
@@ -237,7 +241,7 @@ case class Database(val name: String,
    */
   def attachTo(docId: String, file: File, contentType: Option[String]) = {
     // first get the last revision of the document (if it exists)
-    val rev = couch.http((request / docId).HEAD > extractRev _)
+    val rev = getDocRevision(docId)
     val mime = contentType match {
       case Some(mime) => mime
       case None       => MimeUtil.getMimeType(file)
@@ -294,7 +298,7 @@ case class Database(val name: String,
   /** Deletes the given attachment for the given docId */
   def deleteAttachment(docId: String, attachment: String) = {
     // first get the last revision of the document (if it exists)
-    val rev = couch.http((request / docId).HEAD > extractRev _)
+    val rev = getDocRevision(docId)
     rev.flatMap { r =>
       r match {
         case Some(r) =>
