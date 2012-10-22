@@ -23,7 +23,7 @@ import java.io.File
  */
 object TestAttach extends App {
 
-  case class Test(_id: String, value: String)(
+  case class Test(_id: String)(
     val _rev: Option[String] = None,
     val _attachments: Option[Map[String, Attachment]] = None)
 
@@ -31,16 +31,20 @@ object TestAttach extends App {
 
   val test = couch.database("test")
 
-  couch.login("admin", "admin")()
+  couch.login("admin", "admin")!
 
-  test.create()
+  test.create!
 
-  test.attachTo("truie", new File("src/test/resources/test.txt"), None).map { res1 =>
+  couch.logout!
+
+  for (res1 <- test.attachTo("truie", new File("src/test/resources/test.txt"), None)) {
     println(res1)
 
-    for (res2 <- test.getDocById[Test]("truie"))
+    for (res2 <- test.getDocById[Test]("truie")) {
       println(res2)
+      couch.shutdown
+    }
 
-  }.foreach(_ => couch.shutdown)
+  }
 
 }
