@@ -193,8 +193,8 @@ case class Database(val name: String,
   })
 
   /** Returns the document identified by the given id if it exists */
-  def getDocById[T: Manifest](id: String): Promise[Option[T]] =
-    couch.optHttp(request / id).map(_.map(docResult[T]))
+  def getDocById[T: Manifest](id: String, revision: Option[String] = None): Promise[Option[T]] =
+    couch.optHttp(request / id <<? revision.map("rev" -> _).toList).map(_.map(docResult[T]))
 
   /** Creates or updates the given object as a document into this database
    *  The given object must have an `_id` and an optional `_rev` fields
@@ -240,7 +240,7 @@ case class Database(val name: String,
     val rev = couch.http((request / docId).HEAD > extractRev _)
     val mime = contentType match {
       case Some(mime) => mime
-      case None => MimeUtil.getMimeType(file)
+      case None       => MimeUtil.getMimeType(file)
     }
 
     if (mime == MimeUtil.UNKNOWN_MIME_TYPE) {
