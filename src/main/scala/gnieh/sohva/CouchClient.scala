@@ -32,6 +32,7 @@ import net.liftweb.json._
  */
 class CouchClient(val host: String = "localhost",
                   val port: Int = 5984,
+                  val ssl: Boolean = false,
                   val version: String = "1.2") extends CouchDB {
 
   /** Starts a new session to with this client */
@@ -44,6 +45,9 @@ class CouchClient(val host: String = "localhost",
 
   // the base request to this couch instance
   private[sohva] def request =
-    :/(host, port)
+    if (ssl)
+      :/(host, port).secure
+    else
+      :/(host, port)
 
 }
