@@ -39,6 +39,10 @@ class CouchClient(val host: String = "localhost",
   def startSession =
     new CouchSession(this)
 
+  /** Shuts down this instance of couchdb client. */
+  def shutdown =
+    _http.shutdown
+
   // ========== internals ==========
 
   private[sohva] val _http = new Http

@@ -27,15 +27,16 @@ object TestAttach extends App {
     val _rev: Option[String] = None,
     val _attachments: Option[Map[String, Attachment]] = None)
 
-  val couch = new CouchClient().startSession
+  val couch = new CouchClient
+  val session = couch.startSession
 
-  val test = couch.database("test")
+  val test = session.database("test")
 
-  couch.login("admin", "admin")!
+  session.login("admin", "admin")!
 
   test.create!
 
-  couch.logout!
+  session.logout!
 
   for (res1 <- test.attachTo("truie", new File("src/test/resources/test.txt"), None)) {
     println(res1)

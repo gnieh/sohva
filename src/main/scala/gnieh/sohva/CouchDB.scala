@@ -61,10 +61,6 @@ abstract class CouchDB {
   /** The couchdb instance version. */
   val version: String
 
-  /** Shuts down this instance of couchdb client. */
-  def shutdown =
-    _http.shutdown
-
   /** Returns the database on the given couch instance. */
   def database(name: String) =
     new Database(name, this)
@@ -324,14 +320,9 @@ case class Database(val name: String,
    *  Security documents are special documents with no `_id` nor `_rev` fields.
    */
   def saveSecurityDoc(doc: SecurityDoc) = {
-    couch.http(request / "_security" <:< Map("Content-Type" -> "application/json") <<
-      compact(render(Extraction.decompose(doc)))).flatMap { json =>
-      docUpdateResult(json) match {
-        case DocUpdate(true, id, _) =>
-          getDocById[SecurityDoc](id)
-        case DocUpdate(false, _, _) =>
-          Promise(None)
-      }
+    couch.http((request / "_security" <<
+      compact(render(Extraction.decompose(doc)))).PUT).map { json =>
+      (json \\ "ok").extract[Boolean]
     }
   }
 
@@ -371,11 +362,12 @@ case class Database(val name: String,
  *
  *  @author Lucas Satabin
  */
-case class SecurityDoc(admins: SecurityList, readers: SecurityList)
+case class SecurityDoc(admins: SecurityList = EmptySecurityList, readers: SecurityList = EmptySecurityList)
 object SecurityDoc extends (JValue => Option[SecurityDoc]) {
   def apply(json: JValue) = json.extractOpt[SecurityDoc]
 }
-case class SecurityList(names: List[String], roles: List[String])
+case class SecurityList(names: List[String] = Nil, roles: List[String] = Nil)
+object EmptySecurityList extends SecurityList()
 
 /** A design gives access to the different views.
  *  Use this class to get or create new views.

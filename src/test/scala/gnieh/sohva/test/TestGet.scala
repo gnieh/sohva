@@ -21,9 +21,10 @@ package test
  */
 object TestGet extends App {
 
-  val couch = new CouchClient().startSession
+  val couch = new CouchClient
+  val session = couch.startSession
 
-  val db = couch.database("test")
+  val db = session.database("test")
 
   println(couch._all_dbs!)
 
@@ -39,11 +40,11 @@ object TestGet extends App {
         case None      => println("argh, y u no save doc???")
       }
       println("and now deleting...")
-      println("logging in as admin: " + (couch.login("admin", "admin")!))
+      println("logging in as admin: " + (session.login("admin", "admin")!))
       println("database deleted: " + (db.delete!))
     case None =>
       println("database test does not exist")
-      println("logging in as admin: " + (couch.login("admin", "admin")!))
+      println("logging in as admin: " + (session.login("admin", "admin")!))
       println("database created: " + (db.create!))
   }.foreach { _ =>
     println("shutting down the instance")
