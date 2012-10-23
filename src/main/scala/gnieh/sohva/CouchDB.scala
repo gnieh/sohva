@@ -49,17 +49,17 @@ import eu.medsea.util.MimeUtil
  */
 abstract class CouchDB {
 
-  private[sohva] implicit val formats =
-    standardFormats + new UserSerializer(version)
-
   /** The couchdb instance host name. */
-  val host: String
+  def host: String
 
   /** The couchdb instance port. */
-  val port: Int
+  def port: Int
 
   /** The couchdb instance version. */
-  val version: String
+  def version: String
+
+  private[sohva] implicit lazy val formats =
+    standardFormats + new UserSerializer(version)
 
   /** Returns the database on the given couch instance. */
   def database(name: String) =
