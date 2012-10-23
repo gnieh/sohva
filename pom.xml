@@ -77,16 +77,16 @@
 		<testSourceDirectory>src/test/scala</testSourceDirectory>
 		<plugins>
 			<plugin>
-        <groupId>net.alchim31.maven</groupId>
-        <artifactId>scala-maven-plugin</artifactId>
-        <version>3.1.0</version>
+				<groupId>net.alchim31.maven</groupId>
+				<artifactId>scala-maven-plugin</artifactId>
+				<version>3.1.0</version>
 				<executions>
-          <execution>
-            <id>attach-javadocs</id>
-            <goals>
-              <goal>doc-jar</goal>
-            </goals>
-          </execution>
+					<execution>
+						<id>attach-javadocs</id>
+						<goals>
+							<goal>doc-jar</goal>
+						</goals>
+					</execution>
 					<execution>
 						<id>compile</id>
 						<goals>
@@ -152,12 +152,26 @@
 					<pushChanges>false</pushChanges>
 				</configuration>
 			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-gpg-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>sign-artifacts</id>
+						<phase>verify</phase>
+						<goals>
+							<goal>sign</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
 		</plugins>
 	</build>
 
 	<groupId>org.gnieh</groupId>
 	<version>0.1-SNAPSHOT</version>
 	<name>${project.artifactId}</name>
+	<packaging>jar</packaging>
 	<url>https://www.github.com/gnieh/sohva</url>
 	<description>A simple Scala client for CouchDB</description>
 	<scm>
@@ -165,13 +179,13 @@
 		<connection>scm:git:git://github.com/gnieh/sohva.git</connection>
 		<developerConnection>scm:git:git@github.com:gnieh/sohva.git</developerConnection>
 	</scm>
-  <developers>
-    <developer>
-      <id>satabin</id>
-      <name>Lucas Satabin</name>
-      <email>lucassat@n7mm.org</email>
-    </developer>
-  </developers>
+	<developers>
+		<developer>
+			<id>satabin</id>
+			<name>Lucas Satabin</name>
+			<email>lucassat@n7mm.org</email>
+		</developer>
+	</developers>
 	<ciManagement>
 		<system>travis</system>
 		<url>https://travis-ci.org/#!/gnieh/sohva</url>
