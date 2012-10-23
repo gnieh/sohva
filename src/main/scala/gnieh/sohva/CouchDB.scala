@@ -294,7 +294,7 @@ case class Database(val name: String,
    *  to read the response from the server.
    */
   def getAttachment(docId: String, attachment: String) =
-    couch.http(request / docId / attachment OK readFile)
+    couch.http(request / docId / attachment > readFile _)
 
   /** Deletes the given attachment for the given docId */
   def deleteAttachment(docId: String, attachment: String) = {
@@ -335,8 +335,13 @@ case class Database(val name: String,
   private[sohva] def request =
     couch.request / name
 
-  private def readFile(response: Response) =
-    (response.getContentType, response.getResponseBodyAsStream)
+  private def readFile(response: Response) = {
+    if (response.getStatusCode == 404) {
+      None
+    } else {
+      Some(response.getContentType, response.getResponseBodyAsStream)
+    }
+  }
 
   private def infoResult(json: JValue) =
     json.extract[InfoResult]
