@@ -55,7 +55,7 @@ class CouchSession private[sohva] (val couch: CouchClient) extends CouchDB {
     http((couch.request / "_session").DELETE).map(json => OkResult(json).ok)
 
   /** Returns the user associated to the current session, if any */
-  def currentUser = loggedContext.map {
+  def currentUser = loggedContext.flatMap {
     case UserCtx(name, _) if name != null =>
       http(couch.request / "_users" / ("org.couchdb.user:" + name)).map(user)
     case _ => Promise(None)
