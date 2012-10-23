@@ -173,12 +173,12 @@ case class Database(val name: String,
 
   /** Indicates whether this database exists */
   @inline
-  def exists_? = couch.contains(name)
+  def exists = couch.contains(name)
 
   /** Creates this database in the couchdb instance if it does not already exist.
    *  Returns <code>true</code> iff the database was actually created.
    */
-  def create = exists_?.flatMap(ex => if (ex) {
+  def create = exists.flatMap(ex => if (ex) {
     Promise(false)
   } else {
     couch.http(request.PUT).map(OkResult(_).ok)
@@ -187,7 +187,7 @@ case class Database(val name: String,
   /** Deletes this database in the couchdb instance if it exists.
    *  Returns <code>true</code> iff the database was actually deleted.
    */
-  def delete = exists_?.flatMap(ex => if (ex) {
+  def delete = exists.flatMap(ex => if (ex) {
     couch.http(request.DELETE).map(OkResult(_).ok)
   } else {
     Promise(false)
