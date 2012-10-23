@@ -21,20 +21,36 @@ package test
  */
 object TestCreateUser extends App {
 
-  val couch = new CouchClient()
+  val couch = new CouchClient
 
   val name = "grumpf"
   val session = couch.startSession
 
   println("plop")
 
-  couch.users.add(name, name).map {
+  println("login as admin: " + (session.login("admin", "admin")!))
+
+  println("user: " + (session.currentUser!).map(_.name))
+  println("role1: " + (session.hasRole("role1")!))
+  println("role2: " + (session.hasRole("role2")!))
+  println("_admin: " + (session.isServerAdmin!))
+
+  session.users.add(name, name, List("role1")).map {
     case true =>
       println("truie")
       println(session.login(name, name)!)
       println(session.isLoggedIn!)
+      println("context: " + (session.userContext!))
+      println("user: " + (session.currentUser!).map(_.name))
+      println("role1: " + (session.hasRole("role1")!))
+      println("role2: " + (session.hasRole("role2")!))
+      println("_admin: " + (session.isServerAdmin!))
       println(session.logout!)
       println(session.isLoggedIn!)
+      println("user: " + (session.currentUser!).map(_.name))
+      println("role1: " + (session.hasRole("role1")!))
+      println("role2: " + (session.hasRole("role2")!))
+      println("_admin: " + (session.isServerAdmin!))
       println(session.login(name, name + "_wrong")!)
       println(session.isLoggedIn!)
       println(session.login("admin", "admin")!)
