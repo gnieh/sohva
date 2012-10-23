@@ -52,24 +52,24 @@ class CouchSession private[sohva] (val couch: CouchClient) extends CouchDB {
 
   /** Logs the session out */
   def logout =
-    http((request / "_session").DELETE).map(json => OkResult(json).ok)
+    http((request / "_session").DELETE > setCookie _)
 
   /** Returns the user associated to the current session, if any */
-  def currentUser = loggedContext.flatMap {
+  def currentUser = userContext.flatMap {
     case UserCtx(name, _) if name != null =>
       http(request / "_users" / ("org.couchdb.user:" + name)).map(user)
     case _ => Promise(None)
   }
 
   /** Indicates whether the current session is logged in to the couch server */
-  def isLoggedIn = loggedContext.map {
+  def isLoggedIn = userContext.map {
     case UserCtx(name, _) if name != null =>
       true
     case _ => false
   }
 
   /** Indicates whether the current session gives the given role to the user */
-  def hasRole(role: String) = loggedContext.map {
+  def hasRole(role: String) = userContext.map {
     case UserCtx(_, roles) => roles.contains(role)
     case _ => false
   }
@@ -77,22 +77,32 @@ class CouchSession private[sohva] (val couch: CouchClient) extends CouchDB {
   /** Indicates whether the current session is a server admin session */
   def isServerAdmin = hasRole("_admin")
 
+  /** Returns the current user context */
+  def userContext =
+    http((request / "_session")).map(userCtx)
+
   // helper methods
 
   private[sohva] val _http =
     couch._http
 
-  private var cookie = ""
+  private var _cookie = ""
+
+  private def cookie = _cookie.synchronized {
+    _cookie
+  }
+
+  private def cookie_=(c: String) = _cookie.synchronized {
+    _cookie = c
+  }
 
   private[sohva] def request =
     couch.request <:< Map("Cookie" -> cookie)
 
-  private def loggedContext =
-    http((request / "_session")).map(userCtx)
-
   private def userCtx(json: JValue) =
     json.extract[AuthResult] match {
-      case AuthResult(_, userCtx, _) => userCtx
+      case AuthResult(_, userCtx, _) =>
+        userCtx
     }
 
   private def setCookie(response: Response) = {
@@ -100,8 +110,8 @@ class CouchSession private[sohva] (val couch: CouchClient) extends CouchDB {
       case null | "" =>
         // no cookie to set
         false
-      case cookie =>
-        this.cookie = cookie
+      case c =>
+        cookie = c
         response.getStatusCode / 100 == 2
     }
   }
