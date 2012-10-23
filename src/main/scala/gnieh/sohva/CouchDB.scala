@@ -367,7 +367,7 @@ case class Database(val name: String,
  *
  *  @author Lucas Satabin
  */
-case class SecurityDoc(admins: SecurityList = EmptySecurityList, readers: SecurityList = EmptySecurityList)
+case class SecurityDoc(admins: SecurityList = EmptySecurityList, members: SecurityList = EmptySecurityList)
 object SecurityDoc extends (JValue => Option[SecurityDoc]) {
   def apply(json: JValue) = json.extractOpt[SecurityDoc]
 }
