@@ -21,7 +21,7 @@ import java.security.MessageDigest
 
 import scala.util.Random
 
-object UserSerializer {
+private[sohva] object UserSerializer {
 
   private def bytes2string(bytes: Array[Byte]) =
     bytes.foldLeft(new StringBuilder) {
