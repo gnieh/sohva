@@ -245,7 +245,7 @@ case class Database(val name: String,
     val rev = getDocRevision(docId)
     val mime = contentType match {
       case Some(mime) => mime
-      case None       => MimeUtil.getMimeType(file)
+      case None => MimeUtil.getMimeType(file)
     }
 
     if (mime == MimeUtil.UNKNOWN_MIME_TYPE) {
@@ -585,10 +585,6 @@ final case class Attachment(content_type: String,
                             digest: String,
                             length: Int,
                             stub: Boolean)
-
-trait WithAttachments {
-  var _attachments: Option[Map[String, Attachment]] = None
-}
 
 class CouchException(val status: Int, val detail: Option[ErrorResult])
   extends Exception("status: " + status + "\nbecause: " + detail)
