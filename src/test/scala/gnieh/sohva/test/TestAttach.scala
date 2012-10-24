@@ -36,14 +36,29 @@ object TestAttach extends App {
 
   test.create!
 
-  session.logout!
-
   for (res1 <- test.attachTo("truie", new File("src/test/resources/test.txt"), None)) {
     println(res1)
 
     for (res2 <- test.getDocById[Test]("truie")) {
-      println(res2)
-      couch.shutdown
+      println(res2.flatMap(_._attachments))
+      for (att <- test.getAttachment("truie", "test.txt")) {
+        println(att.map(_._1))
+        println(att.map(f => new java.util.Scanner(f._2).useDelimiter("\\A").next))
+
+        session.logout!
+
+        for (
+          res3 <- test.deleteAttachment("truie", "test.txt");
+          res4 <- test.getDocById[Test]("truie")
+        ) {
+          println(res3)
+          println(res4.flatMap(_._attachments))
+          for (att <- test.getAttachment("truie", "test.txt")) {
+            println(att)
+            couch.shutdown
+          }
+        }
+      }
     }
 
   }

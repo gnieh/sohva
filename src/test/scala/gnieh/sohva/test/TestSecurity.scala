@@ -26,9 +26,11 @@ object TestSecurity extends App {
 
   val db = session.database("test_sec")
 
-  couch.users.add("test", "test")!
+  //  couch.users.add("test", "test")!
 
   session.login("admin", "admin")!
+
+  db.delete!
 
   println("database created: " + (db.create!))
 
@@ -40,9 +42,13 @@ object TestSecurity extends App {
 
   println("doc as anonymous (no security doc): " + (db.getDocById[TestDoc]("test")!))
 
-  db.saveSecurityDoc(SecurityDoc(readers = SecurityList(names = List("test"))))!
+  db.saveSecurityDoc(SecurityDoc(members = SecurityList(names = List("test"))))!
 
-  println("doc as anonymous (with security doc): " + (db.getDocById[TestDoc]("test")!))
+  try {
+    //    println("doc as anonymous (with security doc): " + (db.getDocById[TestDoc]("test")!))
+  } catch {
+    case _ =>
+  }
 
   session.login("test", "test")!
 
