@@ -1,5 +1,4 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<artifactId>sohva_2.9.2</artifactId>
 	<inceptionYear>2012</inceptionYear>
@@ -138,7 +137,7 @@
 	</build>
 
 	<groupId>org.gnieh</groupId>
-	<version>0.1-SNAPSHOT</version>
+	<version>0.1</version>
 	<name>${project.artifactId}</name>
 	<packaging>jar</packaging>
 	<url>https://www.github.com/gnieh/sohva</url>
@@ -147,7 +146,8 @@
 		<url>https://github.com/gnieh/sohva</url>
 		<connection>scm:git:git://github.com/gnieh/sohva.git</connection>
 		<developerConnection>scm:git:git@github.com:gnieh/sohva.git</developerConnection>
-	</scm>
+	  <tag>0.1</tag>
+  </scm>
 	<developers>
 		<developer>
 			<id>satabin</id>
