@@ -1,7 +1,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	<artifactId>sohva</artifactId>
+	<artifactId>sohva_2.9.2</artifactId>
 	<inceptionYear>2012</inceptionYear>
 	<licenses>
 		<license>
@@ -73,7 +73,6 @@
 	</dependencies>
 
 	<build>
-		<finalName>${project.artifactId}_${scala.version}-${project.version}</finalName>
 		<sourceDirectory>src/main/scala</sourceDirectory>
 		<testSourceDirectory>src/test/scala</testSourceDirectory>
 		<plugins>
@@ -134,19 +133,6 @@
 					<scmCommentPrefix>[release]</scmCommentPrefix>
 					<pushChanges>false</pushChanges>
 				</configuration>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-gpg-plugin</artifactId>
-				<executions>
-					<execution>
-						<id>sign-artifacts</id>
-						<phase>verify</phase>
-						<goals>
-							<goal>sign</goal>
-						</goals>
-					</execution>
-				</executions>
 			</plugin>
 		</plugins>
 	</build>
