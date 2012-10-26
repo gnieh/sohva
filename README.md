@@ -6,6 +6,25 @@ Introduction
 
 Gnieh Sohva is a simple scala library allowing users to simply work with a couchdb instance.
 
+Download
+--------
+
+To use sohva in your project, if you are using maven, just add the following dependency to your pom.xml file:
+
+```xml
+<dependency>
+  <groupId>org.gnieh</groupId>
+  <artifactId>sohva_2.9.2</artifactId>
+  <version>0.1</version>
+</dependency>
+```
+
+If you are using sbt, simply add the following line to your project descriptor:
+
+```scala
+libraryDependencies += "org.gnieh" % "sohva_2.9.2" % "0.1"
+```
+
 Basic Usage
 -----------
 
