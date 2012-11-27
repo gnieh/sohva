@@ -245,7 +245,7 @@ case class Database(val name: String,
     val rev = getDocRevision(docId)
     val mime = contentType match {
       case Some(mime) => mime
-      case None => MimeUtil.getMimeType(file)
+      case None       => MimeUtil.getMimeType(file)
     }
 
     if (mime == MimeUtil.UNKNOWN_MIME_TYPE) {
@@ -380,8 +380,8 @@ object EmptySecurityList extends SecurityList()
  *  @author Lucas Satabin
  */
 case class Design(db: Database,
-                  val name: String,
-                  val language: String = "javascript") {
+                  name: String,
+                  language: String = "javascript") {
 
   import db.couch.formats
 
@@ -401,7 +401,9 @@ case class Design(db: Database,
    *  with the given name, map function and reduce function.
    *  If the design does not exist yet, it is created.
    */
-  def saveView(viewName: String, mapFun: String, reduceFun: Option[String] = None) = {
+  def saveView(viewName: String,
+               mapFun: String,
+               reduceFun: Option[String] = None) = {
     val view = ViewDoc(mapFun, reduceFun)
     getDesignDocument.map {
       case Some(design) =>
@@ -409,7 +411,7 @@ case class Design(db: Database,
         design.copy(views = design.views + (viewName -> view))()
       case None =>
         // the design does not exist...
-        DesignDoc("_design/" + name, language, Map(viewName -> view))()
+        DesignDoc("_design/" + name, language, Map(viewName -> view), None)()
     }.flatMap(db.saveDoc(_).map(_.isDefined))
   }
 
@@ -430,6 +432,29 @@ case class Design(db: Database,
    */
   def view[Key: Manifest, Value: Manifest, Doc: Manifest](viewName: String) =
     View[Key, Value, Doc](this, viewName)
+
+  /** Creates or updates the document validation function.
+   *  If the design does not exist yet, it is created.
+   */
+  def saveValidateFunction(validateFun: String) = {
+    getDesignDocument.map {
+      case Some(design) =>
+        // the updated design
+        design.copy(validate_doc_update = Some(validateFun))()
+      case None =>
+        // the design does not exist...
+        DesignDoc("_design/" + name, language, Map(), Some(validateFun))()
+    }.flatMap(db.saveDoc(_).map(_.isDefined))
+  }
+
+  /** Deletes the document validation function from the design */
+  def deleteValidateFunction = {
+    getDesignDocument.flatMap {
+      case Some(design) =>
+        db.saveDoc(design.copy(validate_doc_update = None)()).map(_.isDefined)
+      case None => Promise(false)
+    }
+  }
 
   // helper methods
 
@@ -520,7 +545,8 @@ case class View[Key: Manifest, Value: Manifest, Doc: Manifest](design: Design,
 
 private[sohva] case class DesignDoc(_id: String,
                                     language: String,
-                                    views: Map[String, ViewDoc])(
+                                    views: Map[String, ViewDoc],
+                                    validate_doc_update: Option[String])(
                                       val _rev: Option[String] = None)
 
 private[sohva] case class ViewDoc(map: String,
