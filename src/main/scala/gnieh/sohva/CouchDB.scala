@@ -327,8 +327,8 @@ case class Database(val name: String,
   }
 
   /** Returns a design object that allows user to work with views */
-  def design(designName: String) =
-    Design(this, designName)
+  def design(designName: String, language: String = "javascript") =
+    Design(this, designName, language)
 
   // helper methods
 
@@ -381,7 +381,7 @@ object EmptySecurityList extends SecurityList()
  */
 case class Design(db: Database,
                   name: String,
-                  language: String = "javascript") {
+                  language: String) {
 
   import db.couch.formats
 
