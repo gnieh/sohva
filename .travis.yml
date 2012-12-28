@@ -1,5 +1,1 @@
 language: scala
-
-before_script: cd sohva-parent
-
-script: mvn test

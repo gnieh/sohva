@@ -6,12 +6,13 @@ syntax: glob
 *.bak
 #*.off
 *.old
+*.swp
 
 # eclipse conf file
 .cache
 .settings
-#.classpath
-#.project
+.classpath
+.project
 .manager
 .scala_dependencies
 
