@@ -8,7 +8,7 @@ object SohvaBuild extends Build {
     name := "sohva",
     version in ThisBuild := "0.2-SNAPSHOT",
     scalaVersion in ThisBuild := "2.9.2",
-    crossScalaVersions in ThisBuild := Seq("2.9.1", "2.9.2")
+    crossScalaVersions in ThisBuild := Seq("2.9.2")
   ) settings(publishSettings: _*) aggregate(client, server)
 
   lazy val publishSettings = Seq(
@@ -22,6 +22,13 @@ object SohvaBuild extends Build {
     },
     pomIncludeRepository in ThisBuild := { x => false },
     pomExtra in ThisBuild := (
+      <licenses>
+        <license>
+          <name>The Apache Software License, Version 2.0</name>
+          <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+          <distribution>repo</distribution>
+        </license>
+      </licenses>
       <scm>
         <url>https://github.com/gnieh/sohva</url>
         <connection>scm:git:git://github.com/gnieh/sohva.git</connection>
