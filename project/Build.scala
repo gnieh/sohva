@@ -1,15 +1,18 @@
 import sbt._
 import Keys._
+import sbtrelease.ReleasePlugin._
 
 object SohvaBuild extends Build {
-  lazy val sohva = Project(id = "sohva",
+  lazy val sohva = (Project(id = "sohva",
     base = file(".")) settings (
     organization in ThisBuild := "org.gnieh",
     name := "sohva",
     version in ThisBuild := "0.2-SNAPSHOT",
     scalaVersion in ThisBuild := "2.9.2",
-    crossScalaVersions in ThisBuild := Seq("2.9.2")
-  ) settings(publishSettings: _*) aggregate(client, server)
+    crossScalaVersions in ThisBuild := Seq("2.9.2"))
+    settings(publishSettings: _*)
+    settings(releaseSettings: _*)
+  ) aggregate(client, server)
 
   lazy val publishSettings = Seq(
     publishMavenStyle in ThisBuild := true,
