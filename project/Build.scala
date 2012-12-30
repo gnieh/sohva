@@ -1,6 +1,5 @@
 import sbt._
 import Keys._
-import sbtrelease.ReleasePlugin._
 
 object SohvaBuild extends Build {
   lazy val sohva = (Project(id = "sohva",
