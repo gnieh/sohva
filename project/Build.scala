@@ -11,7 +11,6 @@ object SohvaBuild extends Build {
     scalaVersion in ThisBuild := "2.9.2",
     crossScalaVersions in ThisBuild := Seq("2.9.2"))
     settings(publishSettings: _*)
-    settings(releaseSettings: _*)
   ) aggregate(client, server)
 
   lazy val publishSettings = Seq(
