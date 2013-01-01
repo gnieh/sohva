@@ -179,7 +179,7 @@ case class Database(val name: String,
    *  Returns <code>true</code> iff the database was actually created.
    */
   def create = exists.flatMap(ex => if (ex) {
-    Promise(false)
+    Http.promise(false)
   } else {
     couch.http(request.PUT).map(OkResult(_).ok)
   })
@@ -190,7 +190,7 @@ case class Database(val name: String,
   def delete = exists.flatMap(ex => if (ex) {
     couch.http(request.DELETE).map(OkResult(_).ok)
   } else {
-    Promise(false)
+    Http.promise(false)
   })
 
   /** Returns the document identified by the given id if it exists */
@@ -212,7 +212,7 @@ case class Database(val name: String,
         case DocUpdate(true, id, _) =>
           getDocById[T](id)
         case DocUpdate(false, _, _) =>
-          Promise(None)
+          Http.promise(None)
       })
 
   /** Deletes the document from the database.
@@ -231,7 +231,7 @@ case class Database(val name: String,
       case Some(rev) =>
         couch.http((request / id).DELETE <<? Map("rev" -> rev))
           .map(OkResult(_).ok)
-      case None => Promise(false)
+      case None => Http.promise(false)
     }
 
   /** Attaches the given file to the given document id.
@@ -249,7 +249,7 @@ case class Database(val name: String,
     }
 
     if (mime == MimeUtil.UNKNOWN_MIME_TYPE) {
-      Promise(false) // unknown mime type, cannot attach the file
+      Http.promise(false) // unknown mime type, cannot attach the file
     } else {
       rev.flatMap { r =>
         val params = r match {
@@ -307,7 +307,7 @@ case class Database(val name: String,
             List("rev" -> r)).DELETE).map(OkResult(_).ok)
         case None =>
           // doc does not exist? well... good... just do nothing
-          Promise(false)
+          Http.promise(false)
       }
     }
   }
@@ -408,7 +408,7 @@ case class Design(db: Database,
     getDesignDocument.map {
       case Some(design) =>
         // the updated design
-        design.copy(views = design.views + (viewName -> view))()
+        design.copy(views = design.views + (viewName -> view))(design._rev)
       case None =>
         // the design does not exist...
         DesignDoc("_design/" + name, language, Map(viewName -> view), None)()
@@ -419,8 +419,8 @@ case class Design(db: Database,
   def deleteView(viewName: String) = {
     getDesignDocument.flatMap {
       case Some(design) =>
-        db.saveDoc(design.copy(views = design.views - viewName)()).map(_.isDefined)
-      case None => Promise(false)
+        db.saveDoc(design.copy(views = design.views - viewName)(design._rev)).map(_.isDefined)
+      case None => Http.promise(false)
     }
   }
 
@@ -440,7 +440,7 @@ case class Design(db: Database,
     getDesignDocument.map {
       case Some(design) =>
         // the updated design
-        design.copy(validate_doc_update = Some(validateFun))()
+        design.copy(validate_doc_update = Some(validateFun))(design._rev)
       case None =>
         // the design does not exist...
         DesignDoc("_design/" + name, language, Map(), Some(validateFun))()
@@ -451,8 +451,8 @@ case class Design(db: Database,
   def deleteValidateFunction = {
     getDesignDocument.flatMap {
       case Some(design) =>
-        db.saveDoc(design.copy(validate_doc_update = None)()).map(_.isDefined)
-      case None => Promise(false)
+        db.saveDoc(design.copy(validate_doc_update = None)(design._rev)).map(_.isDefined)
+      case None => Http.promise(false)
     }
   }
 

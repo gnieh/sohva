@@ -8,9 +8,17 @@ object SohvaBuild extends Build {
     name := "sohva",
     version in ThisBuild := "0.2-SNAPSHOT",
     scalaVersion in ThisBuild := "2.9.2",
-    crossScalaVersions in ThisBuild := Seq("2.9.2"))
+    crossScalaVersions in ThisBuild := Seq("2.9.2", "2.10.0-RC5"),
+    compileOptions)
     settings(publishSettings: _*)
   ) aggregate(client, server)
+
+  lazy val compileOptions = scalacOptions in ThisBuild <++= scalaVersion map { v =>
+    if(v.startsWith("2.10"))
+      Seq("-deprecation", "-language:_")
+    else
+      Seq("-deprecation")
+  }
 
   lazy val publishSettings = Seq(
     publishMavenStyle in ThisBuild := true,
@@ -64,13 +72,13 @@ object SohvaBuild extends Build {
   )
 
   lazy val clientDependencies = Seq(
-    "net.databinder.dispatch" %% "dispatch-core" % "0.9.2" exclude("commons-logging", "commons-logging"),
+    "net.databinder.dispatch" %% "dispatch-core" % "0.9.4" exclude("commons-logging", "commons-logging"),
     "net.liftweb" % "lift-json_2.9.1" % "2.4",
     "net.sf.mime-util" % "mime-util" % "1.2" excludeAll(
       ExclusionRule(organization = "log4j", name = "log4j"),
       ExclusionRule(organization = "commons-logging", name = "commons-logging")
     ),
-    "net.databinder.dispatch" %% "dispatch-lift-json" % "0.9.2",
+    "net.databinder.dispatch" % "dispatch-lift-json_2.9.2" % "0.9.4",
     "org.slf4j" % "slf4j-api" % "1.7.2",
     "org.slf4j" % "jcl-over-slf4j" % "1.7.2"
   )

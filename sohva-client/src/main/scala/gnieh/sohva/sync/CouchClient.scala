@@ -28,7 +28,7 @@ import gnieh.sohva.{
  *  @author Lucas Satabin
  *
  */
-class CouchClient private[sync](wrapped: ACouchClient) extends CouchDB(wrapped) {
+class CouchClient private[sync] (wrapped: ACouchClient) extends CouchDB(wrapped) {
 
   def this(host: String = "localhost",
            port: Int = 5984,

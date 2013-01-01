@@ -58,7 +58,7 @@ class CouchSession private[sohva] (val couch: CouchClient) extends CouchDB {
   def currentUser = userContext.flatMap {
     case UserCtx(name, _) if name != null =>
       http(request / "_users" / ("org.couchdb.user:" + name)).map(user)
-    case _ => Promise(None)
+    case _ => Http.promise(None)
   }
 
   /** Indicates whether the current session is logged in to the couch server */
@@ -71,7 +71,7 @@ class CouchSession private[sohva] (val couch: CouchClient) extends CouchDB {
   /** Indicates whether the current session gives the given role to the user */
   def hasRole(role: String) = userContext.map {
     case UserCtx(_, roles) => roles.contains(role)
-    case _ => false
+    case _                 => false
   }
 
   /** Indicates whether the current session is a server admin session */

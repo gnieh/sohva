@@ -13,34 +13,35 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package gnieh.sohva
-package test
+package gnieh.sohva.test
+
+import gnieh.sohva.sync._
 
 /** @author satabin
  *
  */
 object TestRevisions extends App {
 
-  val couch = new CouchClient
+  val couch = new CouchClient()
   val session = couch.startSession
 
   session.login("admin", "admin")
 
   val test = session.database("test")
 
-  test.create!
+  test.create
 
   case class TestDoc(_id: String, value: Int)(val _rev: Option[String] = None)
 
-  val saved = test.saveDoc(TestDoc("test", 14)())!
+  val saved = test.saveDoc(TestDoc("test", 14)())
 
-  val last = test.saveDoc(saved.get.copy(value = 57)())!
+  val last = test.saveDoc(saved.get.copy(value = 57)(saved.get._rev))
 
-  println(test.getDocById[TestDoc]("test")!)
-  println(test.getDocById[TestDoc]("test", saved.get._rev)!)
-  println(test.getDocById[TestDoc]("test", last.get._rev)!)
+  println(test.getDocById[TestDoc]("test"))
+  println(test.getDocById[TestDoc]("test", saved.get._rev))
+  println(test.getDocById[TestDoc]("test", last.get._rev))
 
-  test.deleteDoc("test")!
+  test.deleteDoc("test")
 
   couch.shutdown
 
