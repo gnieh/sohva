@@ -19,32 +19,32 @@ package test
 import sync._
 import serializer.liftjson
 
-/** @author satabin
- *
- */
-object TestRevisions extends App {
+import org.scalatest._
+
+/** Code to be executed before and after each test */
+abstract class SohvaTestSuite extends FlatSpec with BeforeAndAfterAll {
 
   val couch = new CouchClient
   val session = couch.startSession
 
-  session.login("admin", "admin")
+  val db = session.database("sohva-tests")
 
-  val test = session.database("test")
+  override def beforeAll() {
+    // login
+    session.login("admin", "admin")
+    // create database
+    db.create
+  }
 
-  test.create
-
-  case class TestDoc(_id: String, value: Int)(val _rev: Option[String] = None)
-
-  val saved = test.saveDoc(TestDoc("test", 14)())
-
-  val last = test.saveDoc(saved.get.copy(value = 57)(saved.get._rev))
-
-  println(test.getDocById[TestDoc]("test"))
-  println(test.getDocById[TestDoc]("test", saved.get._rev))
-  println(test.getDocById[TestDoc]("test", last.get._rev))
-
-  test.deleteDoc("test")
-
-  couch.shutdown
+  override def afterAll() {
+    // cleanup database
+    db.delete
+    // logout
+    session.logout
+    // shutdown client
+    couch.shutdown
+  }
 
 }
+
+case class TestDoc(_id: String, toto: Int)(val _rev: Option[String] = None)
