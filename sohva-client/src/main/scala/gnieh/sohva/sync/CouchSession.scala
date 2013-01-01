@@ -28,7 +28,7 @@ import gnieh.sohva.{
  *  @author Lucas Satabin
  *
  */
-class CouchSession private[sync] (wrapped: ACouchSession) extends CouchDB(wrapped.couch) {
+class CouchSession private[sync] (wrapped: ACouchSession) extends CouchDB(wrapped) {
 
   /** Performs a login and returns true if login succeeded.
    *  from now on, if login succeeded the couch instance is identified and
