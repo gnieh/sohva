@@ -13,16 +13,18 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package gnieh.sohva.test
+package gnieh.sohva
+package test
 
-import gnieh.sohva.sync._
+import sync._
+import serializer.liftjson
 
 /** @author satabin
  *
  */
 object TestRevisions extends App {
 
-  val couch = new CouchClient()
+  val couch = new CouchClient
   val session = couch.startSession
 
   session.login("admin", "admin")

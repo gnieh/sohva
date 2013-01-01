@@ -16,6 +16,9 @@
 package gnieh.sohva
 package test
 
+import sync._
+import serializer.liftjson
+
 /** @author Lucas Satabin
  *
  */
@@ -28,37 +31,37 @@ object TestCreateUser extends App {
 
   println("plop")
 
-  println("login as admin: " + (session.login("admin", "admin")!))
+  println("login as admin: " + (session.login("admin", "admin")))
 
-  println("user: " + (session.currentUser!).map(_.name))
-  println("role1: " + (session.hasRole("role1")!))
-  println("role2: " + (session.hasRole("role2")!))
-  println("_admin: " + (session.isServerAdmin!))
+  println("user: " + session.currentUser.map(_.name))
+  println("role1: " + session.hasRole("role1"))
+  println("role2: " + session.hasRole("role2"))
+  println("_admin: " + session.isServerAdmin)
 
-  session.users.add(name, name, List("role1")).map {
+  session.users.add(name, name, List("role1")) match {
     case true =>
       println("truie")
-      println(session.login(name, name)!)
-      println(session.isLoggedIn!)
-      println("context: " + (session.userContext!))
-      println("user: " + (session.currentUser!).map(_.name))
-      println("role1: " + (session.hasRole("role1")!))
-      println("role2: " + (session.hasRole("role2")!))
-      println("_admin: " + (session.isServerAdmin!))
-      println(session.logout!)
-      println(session.isLoggedIn!)
-      println("user: " + (session.currentUser!).map(_.name))
-      println("role1: " + (session.hasRole("role1")!))
-      println("role2: " + (session.hasRole("role2")!))
-      println("_admin: " + (session.isServerAdmin!))
-      println(session.login(name, name + "_wrong")!)
-      println(session.isLoggedIn!)
-      println(session.login("admin", "admin")!)
-      println(session.users.delete(name)!)
+      println(session.login(name, name))
+      println(session.isLoggedIn)
+      println("context: " + (session.userContext))
+      println("user: " + session.currentUser.map(_.name))
+      println("role1: " + session.hasRole("role1"))
+      println("role2: " + session.hasRole("role2"))
+      println("_admin: " + session.isServerAdmin)
+      println(session.logout)
+      println(session.isLoggedIn)
+      println("user: " + session.currentUser.map(_.name))
+      println("role1: " + session.hasRole("role1"))
+      println("role2: " + session.hasRole("role2"))
+      println("_admin: " + session.isServerAdmin)
+      println(session.login(name, name + "_wrong"))
+      println(session.isLoggedIn)
+      println(session.login("admin", "admin"))
+      println(session.users.delete(name))
     case false =>
       println("argh")
-  }.foreach { _ =>
-    couch.shutdown
   }
+
+  couch.shutdown
 
 }

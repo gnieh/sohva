@@ -16,6 +16,8 @@
 package gnieh.sohva
 package test
 
+import serializer.liftjson
+
 /** @author Lucas Satabin
  *
  */

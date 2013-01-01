@@ -20,6 +20,7 @@ import gnieh.sohva.{
   Database => ADatabase,
   Design => ADesign,
   View => AView,
+  JsonSerializer,
   Doc,
   SecurityDoc
 }
@@ -39,16 +40,19 @@ import java.io.{
  *  @author Lucas Satabin
  *
  */
-abstract class CouchDB private[sync](wrapped: ACouchDB) {
+abstract class CouchDB private[sync] (wrapped: ACouchDB) {
 
   /** The couchdb instance host name. */
-  def host = wrapped.host
+  val host = wrapped.host
 
   /** The couchdb instance port. */
-  def port = wrapped.port
+  val port = wrapped.port
 
   /** The couchdb instance version. */
-  def version = wrapped.version
+  val version = wrapped.version
+
+  /** The Json (de)serializer */
+  val serializer = wrapped.serializer
 
   /** Returns the database on the given couch instance. */
   def database(name: String) =

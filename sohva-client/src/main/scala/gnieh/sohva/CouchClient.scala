@@ -33,7 +33,8 @@ import net.liftweb.json._
 class CouchClient(val host: String = "localhost",
                   val port: Int = 5984,
                   val ssl: Boolean = false,
-                  val version: String = "1.2") extends CouchDB {
+                  val version: String = "1.2")(
+                      implicit val serializer: JsonSerializer) extends CouchDB {
 
   /** Starts a new session to with this client */
   def startSession =

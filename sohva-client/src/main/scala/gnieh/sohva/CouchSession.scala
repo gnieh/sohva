@@ -19,8 +19,6 @@ import dispatch._
 
 import com.ning.http.client.Response
 
-import net.liftweb.json._
-
 /** An instance of a Couch session, that allows the user to login and
  *  send request identified with the login credentials.
  *  This performs a cookie based authentication against the couchdb server.
@@ -37,6 +35,8 @@ class CouchSession private[sohva] (val couch: CouchClient) extends CouchDB {
   val port = couch.port
 
   val version = couch.version
+
+  val serializer = couch.serializer
 
   /** Performs a login and returns true if login succeeded.
    *  from now on, if login succeeded the couch instance is identified and
@@ -99,11 +99,8 @@ class CouchSession private[sohva] (val couch: CouchClient) extends CouchDB {
   private[sohva] def request =
     couch.request <:< Map("Cookie" -> cookie)
 
-  private def userCtx(json: JValue) =
-    json.extract[AuthResult] match {
-      case AuthResult(_, userCtx, _) =>
-        userCtx
-    }
+  private def userCtx(json: String) =
+    serializer.fromJson[AuthResult](json).userCtx
 
   private def setCookie(response: Response) = {
     response.getHeader("Set-Cookie") match {
@@ -116,8 +113,8 @@ class CouchSession private[sohva] (val couch: CouchClient) extends CouchDB {
     }
   }
 
-  private def user(json: JValue) =
-    json.extractOpt[CouchUser]
+  private def user(json: String) =
+    serializer.fromJsonOpt[CouchUser](json)
 
 }
 
@@ -135,9 +132,20 @@ case class AuthInfo(authentication_db: String,
                     authenticated: String)
 
 /** A couchdb user has a name, a password and a lit of roles. */
-class CouchUser(val name: String,
-                val password: Option[String],
-                val roles: List[String])(
-                    val _rev: Option[String] = None) {
+case class CouchUser(val name: String,
+                     val roles: List[String])
+
+private case class LegacyCouchUser(val name: String,
+                                   val salt: String,
+                                   val password_sha: String,
+                                   val roles: List[String])(
+                                       val _rev: Option[String] = None) {
+  val _id = "org.couchdb.user:" + name
+}
+
+private case class NewCouchUser(val name: String,
+                                val password: String,
+                                val roles: List[String])(
+                                    val _rev: Option[String] = None) {
   val _id = "org.couchdb.user:" + name
 }

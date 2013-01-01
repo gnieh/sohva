@@ -17,12 +17,6 @@ package gnieh
 
 import dispatch._
 
-import com.ning.http.client.{ Request, RequestBuilder }
-
-import net.liftweb.json._
-
-import java.text.SimpleDateFormat
-
 /** Contains all the classes needed to interact with a couchdb server.
  *  Classes in this package allows the user to:
  *  - create/delete new databases into a couchdb instance,
@@ -49,12 +43,12 @@ package object sohva {
     val _rev: Option[String]
   }
 
-  implicit private[sohva] val standardFormats = new DefaultFormats {
-    override def dateFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SS")
-  }
-
   implicit def promise2bang[T](promise: Promise[T]) = new {
     def ! = promise()
+  }
+
+  object serializer {
+    implicit def liftjson = LiftJsonSerializer
   }
 
 }

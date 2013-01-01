@@ -16,6 +16,8 @@
 package gnieh.sohva
 package test
 
+import serializer.liftjson
+
 /** A user of blue has the standard fields of couchdb users
  *  but also contains extra information, specific to blue.
  *

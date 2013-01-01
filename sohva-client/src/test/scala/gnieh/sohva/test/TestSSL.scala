@@ -1,6 +1,8 @@
 package gnieh.sohva
 package test
 
+import serializer.liftjson
+
 object TestSSL extends App {
 
   val couch = new CouchClient(port = 6984, ssl = true)

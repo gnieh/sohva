@@ -8,7 +8,7 @@ object SohvaBuild extends Build {
     name := "sohva",
     version in ThisBuild := "0.2-SNAPSHOT",
     scalaVersion in ThisBuild := "2.9.2",
-    crossScalaVersions in ThisBuild := Seq("2.9.2", "2.10.0-RC5"),
+    crossScalaVersions in ThisBuild := Seq("2.9.2"),
     compileOptions)
     settings(publishSettings: _*)
   ) aggregate(client, server)
@@ -78,9 +78,10 @@ object SohvaBuild extends Build {
       ExclusionRule(organization = "log4j", name = "log4j"),
       ExclusionRule(organization = "commons-logging", name = "commons-logging")
     ),
-    "net.databinder.dispatch" % "dispatch-lift-json_2.9.2" % "0.9.4",
+    "net.databinder.dispatch" %% "dispatch-lift-json" % "0.9.4",
     "org.slf4j" % "slf4j-api" % "1.7.2",
-    "org.slf4j" % "jcl-over-slf4j" % "1.7.2"
+    "org.slf4j" % "jcl-over-slf4j" % "1.7.2",
+    "org.scalatest" % "scalatest_2.9.0" % "2.0.M5" % "test"
   )
 
   lazy val server = Project(id = "sohva-server",

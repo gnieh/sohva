@@ -33,9 +33,8 @@ import java.io.{
   FileOutputStream,
   BufferedInputStream
 }
-import java.text.SimpleDateFormat
-
-import net.liftweb.json._
+import java.security.MessageDigest
+import scala.util.Random
 
 import eu.medsea.util.MimeUtil
 
@@ -50,16 +49,16 @@ import eu.medsea.util.MimeUtil
 abstract class CouchDB {
 
   /** The couchdb instance host name. */
-  def host: String
+  val host: String
 
   /** The couchdb instance port. */
-  def port: Int
+  val port: Int
 
   /** The couchdb instance version. */
-  def version: String
+  val version: String
 
-  private[sohva] implicit lazy val formats =
-    standardFormats + new UserSerializer(version)
+  /** The Json (de)serializer */
+  val serializer: JsonSerializer
 
   /** Returns the database on the given couch instance. */
   def database(name: String) =
@@ -72,7 +71,7 @@ abstract class CouchDB {
   /** Returns the requested number of UUIDS (by default 1). */
   def _uuids(count: Int = 1) =
     http(request / "_uuids" <<? Map("count" -> count.toString))
-      .map(json => asStringList(json \\ "uuids"))
+      .map(asUuidsList _)
 
   /** Indicates whether this couchdb instance contains the given database */
   def contains(dbName: String) =
@@ -92,9 +91,40 @@ abstract class CouchDB {
     def add(name: String,
             password: String,
             roles: List[String] = Nil) = {
-      val user = new CouchUser(name, Some(password), roles)()
-      http((request / dbName / user._id <<
-        pretty(render(Extraction.decompose(user)(formats)))).PUT).map(OkResult(_).ok)
+
+      def bytes2string(bytes: Array[Byte]) =
+        bytes.foldLeft(new StringBuilder) {
+          (res, byte) =>
+            res.append(Integer.toHexString(byte & 0xff))
+        }.toString
+
+      def passwordSha(password: String) = {
+
+        // compute the password hash
+        val md = MessageDigest.getInstance("SHA-1")
+
+        // the password string is concatenated with the generated salt
+        // and the result is hashed using SHA-1
+        val saltArray = new Array[Byte](16)
+        Random.nextBytes(saltArray)
+        val salt = bytes2string(saltArray)
+
+        (salt, bytes2string(md.digest((password + salt).getBytes("UTF-8"))))
+      }
+
+      if (version >= "1.2") {
+        val user = NewCouchUser(name, password, roles)()
+
+        http((request / dbName / user._id <<
+          serializer.toJson(user)).PUT).map(ok _)
+      } else {
+        val (salt, password_sha) = passwordSha(password)
+        val user = LegacyCouchUser(name, salt, password_sha, roles)()
+
+        http((request / dbName / user._id <<
+          serializer.toJson(user)).PUT).map(ok _)
+      }
+
     }
 
     /** Deletes the given user from the database. */
@@ -109,51 +139,64 @@ abstract class CouchDB {
 
   private[sohva] def _http: Http
 
-  private[sohva] def http(request: RequestBuilder): Promise[JValue] =
-    _http(request > handleCouchResponse _)
+  private[sohva] def http(request: RequestBuilder): Promise[String] =
+    _http(request > handleCouchResponse _).map {
+      case Left(exc) => throw exc
+      case Right(v)  => v
+    }
 
-  private[sohva] def optHttp(request: RequestBuilder): Promise[Option[JValue]] =
-    _http(request > handleOptionalCouchResponse _)
+  private[sohva] def optHttp(request: RequestBuilder): Promise[Option[String]] =
+    _http(request > handleOptionalCouchResponse _).map {
+      case Left(exc) => throw exc
+      case Right(v)  => v
+    }
 
   private[sohva] def http[T](pair: (Request, FunctionHandler[T])): Promise[T] =
     _http(pair)
 
   private def handleCouchResponse(response: Response) = {
-    val json = as.lift.Json(response)
+    val json = as.String(response)
     val code = response.getStatusCode
     if (code / 100 != 2) {
       // something went wrong...
-      val error = json.extractOpt[ErrorResult]
+      val error = serializer.fromJsonOpt[ErrorResult](json)
       if (code == 409)
-        throw new ConflictException(error)
+        Left(new ConflictException(error))
       else
-        throw new CouchException(code, error)
+        Left(new CouchException(code, error))
+    } else {
+      Right(json)
     }
-    json
   }
 
   private def handleOptionalCouchResponse(response: Response) = {
-    val json = as.lift.Json(response)
+    val json = as.String(response)
     val code = response.getStatusCode
     if (code == 404) {
-      None
+      Right(None)
     } else if (code / 100 != 2) {
       // something went wrong...
-      val error = json.extractOpt[ErrorResult]
+      val error = serializer.fromJsonOpt[ErrorResult](json)
       if (code == 409)
-        throw new ConflictException(error)
+        Left(new ConflictException(error))
       else
-        throw new CouchException(code, error)
+        Left(new CouchException(code, error))
     } else {
-      Some(json)
+      Right(Some(json))
     }
   }
 
-  private def asStringList(json: JValue) =
-    json.extract[List[String]]
+  private[sohva] def ok(json: String) =
+    serializer.fromJson[OkResult](json).ok
 
-  private def containsName(name: String)(json: JValue) =
-    json.extract[List[String]].contains(name)
+  private def asStringList(json: String) =
+    serializer.fromJson[List[String]](json)
+
+  private def asUuidsList(json: String) =
+    serializer.fromJson[Uuids](json).uuids
+
+  private def containsName(name: String)(json: String) =
+    serializer.fromJson[List[String]](json).contains(name)
 
 }
 
@@ -166,7 +209,7 @@ abstract class CouchDB {
 case class Database(val name: String,
                     private[sohva] val couch: CouchDB) {
 
-  import couch.formats
+  import couch.serializer
 
   /** Returns the information about this database */
   def info = couch.optHttp(request).map(_.map(infoResult))
@@ -181,14 +224,14 @@ case class Database(val name: String,
   def create = exists.flatMap(ex => if (ex) {
     Http.promise(false)
   } else {
-    couch.http(request.PUT).map(OkResult(_).ok)
+    couch.http(request.PUT).map(couch.ok)
   })
 
   /** Deletes this database in the couchdb instance if it exists.
    *  Returns <code>true</code> iff the database was actually deleted.
    */
   def delete = exists.flatMap(ex => if (ex) {
-    couch.http(request.DELETE).map(OkResult(_).ok)
+    couch.http(request.DELETE).map(couch.ok)
   } else {
     Http.promise(false)
   })
@@ -206,7 +249,7 @@ case class Database(val name: String,
    *  to conform to the couchdb document structure.
    */
   def saveDoc[T: Manifest](doc: T with Doc) =
-    couch.http((request / doc._id << pretty(render(Extraction.decompose(doc)))).PUT)
+    couch.http((request / doc._id << serializer.toJson(doc)).PUT)
       .map(docUpdateResult _)
       .flatMap(res => res match {
         case DocUpdate(true, id, _) =>
@@ -220,7 +263,7 @@ case class Database(val name: String,
    */
   def deleteDoc[T: Manifest](doc: T with Doc) =
     couch.http((request / doc._id).DELETE <<? Map("rev" -> doc._rev.getOrElse("")))
-      .map(OkResult(_).ok)
+      .map(couch.ok)
 
   /** Deletes the document identified by the given id from the database.
    *  If the document exists it is deleted and the method returns `true`,
@@ -230,7 +273,7 @@ case class Database(val name: String,
     getDocRevision(id).flatMap {
       case Some(rev) =>
         couch.http((request / id).DELETE <<? Map("rev" -> rev))
-          .map(OkResult(_).ok)
+          .map(couch.ok)
       case None => Http.promise(false)
     }
 
@@ -261,7 +304,7 @@ case class Database(val name: String,
             Nil
         }
         couch.http(request / docId / file.getName
-          <<? params <<< file <:< Map("Content-Type" -> mime)).map(OkResult(_).ok)
+          <<? params <<< file <:< Map("Content-Type" -> mime)).map(couch.ok)
       }
     }
   }
@@ -304,7 +347,7 @@ case class Database(val name: String,
       r match {
         case Some(r) =>
           couch.http((request / docId / attachment <<?
-            List("rev" -> r)).DELETE).map(OkResult(_).ok)
+            List("rev" -> r)).DELETE).map(couch.ok)
         case None =>
           // doc does not exist? well... good... just do nothing
           Http.promise(false)
@@ -314,16 +357,13 @@ case class Database(val name: String,
 
   /** Returns the security document of this database if any defined */
   def securityDoc =
-    couch.http(request / "_security").map(SecurityDoc)
+    couch.http(request / "_security").map(extractSecurityDoc _)
 
   /** Creates or updates the security document.
    *  Security documents are special documents with no `_id` nor `_rev` fields.
    */
   def saveSecurityDoc(doc: SecurityDoc) = {
-    couch.http((request / "_security" <<
-      compact(render(Extraction.decompose(doc)))).PUT).map { json =>
-      (json \\ "ok").extract[Boolean]
-    }
+    couch.http((request / "_security" << serializer.toJson(doc)).PUT).map(couch.ok)
   }
 
   /** Returns a design object that allows user to work with views */
@@ -343,14 +383,17 @@ case class Database(val name: String,
     }
   }
 
-  private def infoResult(json: JValue) =
-    json.extract[InfoResult]
+  private def okResult(json: String) =
+    serializer.fromJson[OkResult](json)
 
-  private def docResult[T: Manifest](json: JValue) =
-    json.extract[T]
+  private def infoResult(json: String) =
+    serializer.fromJson[InfoResult](json)
 
-  private def docUpdateResult(json: JValue) =
-    json.extract[DocUpdate]
+  private def docResult[T: Manifest](json: String) =
+    serializer.fromJson[T](json)
+
+  private def docUpdateResult(json: String) =
+    serializer.fromJson[DocUpdate](json)
 
   private def extractRev(response: Response) = {
     response.getHeader("Etag") match {
@@ -360,6 +403,9 @@ case class Database(val name: String,
     }
   }
 
+  private def extractSecurityDoc(json: String) =
+    serializer.fromJson[SecurityDoc](json)
+
 }
 
 /** A security document is a special document for couchdb. It has no `_id` or
@@ -368,9 +414,7 @@ case class Database(val name: String,
  *  @author Lucas Satabin
  */
 case class SecurityDoc(admins: SecurityList = EmptySecurityList, members: SecurityList = EmptySecurityList)
-object SecurityDoc extends (JValue => Option[SecurityDoc]) {
-  def apply(json: JValue) = json.extractOpt[SecurityDoc]
-}
+
 case class SecurityList(names: List[String] = Nil, roles: List[String] = Nil)
 object EmptySecurityList extends SecurityList()
 
@@ -383,7 +427,7 @@ case class Design(db: Database,
                   name: String,
                   language: String) {
 
-  import db.couch.formats
+  import db.couch.serializer
 
   private[sohva] def request = db.request / "_design" / name.trim
 
@@ -458,8 +502,8 @@ case class Design(db: Database,
 
   // helper methods
 
-  private def designDoc(json: JValue) =
-    json.extract[DesignDoc]
+  private def designDoc(json: String) =
+    serializer.fromJson[DesignDoc](json)
 
 }
 
@@ -470,7 +514,7 @@ case class Design(db: Database,
 case class View[Key: Manifest, Value: Manifest, Doc: Manifest](design: Design,
                                                                view: String) {
 
-  import design.db.couch.formats
+  import design.db.couch.serializer
 
   private def request = design.request / "_view" / view
 
@@ -495,16 +539,13 @@ case class View[Key: Manifest, Value: Manifest, Doc: Manifest](design: Design,
             inclusive_end: Boolean = true,
             update_seq: Boolean = false) = {
 
-    def toJsonString(a: Any) =
-      compact(render(Extraction.decompose(a)))
-
     // build options
     val options = List(
-      key.map(k => "key" -> toJsonString(k)),
-      if (keys.nonEmpty) Some("keys" -> toJsonString(keys)) else None,
-      startkey.map(k => "startkey" -> toJsonString(k)),
+      key.map(k => "key" -> serializer.toJson(k)),
+      if (keys.nonEmpty) Some("keys" -> serializer.toJson(keys)) else None,
+      startkey.map(k => "startkey" -> serializer.toJson(k)),
       startkey_docid.map("startkey_docid" -> _),
-      endkey.map(k => "endkey" -> toJsonString(k)),
+      endkey.map(k => "endkey" -> serializer.toJson(k)),
       endkey_docid.map("endkey_docid" -> _),
       if (limit > 0) Some("limit" -> limit) else None,
       stale.map("stale" -> _),
@@ -526,9 +567,9 @@ case class View[Key: Manifest, Value: Manifest, Doc: Manifest](design: Design,
       ViewResult(raw.total_rows, raw.offset,
         raw.rows.map { raw =>
           Row(raw.id,
-            raw.key.extract[Key],
-            raw.value.extract[Value],
-            raw.doc.map(_.extract[Doc]))
+            serializer.fromJson[Key](raw.key),
+            serializer.fromJson[Value](raw.value),
+            raw.doc.map(serializer.fromJson[Doc]))
         })
     }
 
@@ -536,8 +577,8 @@ case class View[Key: Manifest, Value: Manifest, Doc: Manifest](design: Design,
 
   // helper methods
 
-  private def viewResult(json: JValue) =
-    json.extract[RawViewResult]
+  private def viewResult(json: String) =
+    serializer.fromJson[RawViewResult](json)
 
 }
 
@@ -553,9 +594,6 @@ private[sohva] case class ViewDoc(map: String,
                                   reduce: Option[String])
 
 final case class OkResult(ok: Boolean, id: Option[String], rev: Option[String])
-object OkResult extends (JValue => OkResult) {
-  def apply(json: JValue) = json.extract[OkResult]
-}
 
 final case class InfoResult(compact_running: Boolean,
                             db_name: String,
@@ -566,16 +604,10 @@ final case class InfoResult(compact_running: Boolean,
                             instance_start_time: String,
                             purge_seq: Int,
                             update_seq: Int)
-object InfoResult {
-  def apply(json: JValue) = json.extract[InfoResult]
-}
 
 final case class DocUpdate(ok: Boolean,
                            id: String,
                            rev: String)
-object DocUpdate {
-  def apply(json: JValue) = json.extract[DocUpdate]
-}
 
 private[sohva] case class RawViewResult(total_rows: Int,
                                         offset: Int,
@@ -597,9 +629,9 @@ final case class ViewResult[Key, Value, Doc](total_rows: Int,
 }
 
 private[sohva] case class RawRow(id: String,
-                                 key: JValue,
-                                 value: JValue,
-                                 doc: Option[JValue] = None)
+                                 key: String,
+                                 value: String,
+                                 doc: Option[String] = None)
 
 case class Row[Key, Value, Doc](id: String,
                                 key: Key,
@@ -607,15 +639,14 @@ case class Row[Key, Value, Doc](id: String,
                                 doc: Option[Doc] = None)
 
 final case class ErrorResult(error: String, reason: String)
-object ErrorResult {
-  def apply(json: JValue) = json.extract[ErrorResult]
-}
 
 final case class Attachment(content_type: String,
                             revpos: Int,
                             digest: String,
                             length: Int,
                             stub: Boolean)
+
+private[sohva] final case class Uuids(uuids: List[String])
 
 class CouchException(val status: Int, val detail: Option[ErrorResult])
   extends Exception("status: " + status + "\nbecause: " + detail)
