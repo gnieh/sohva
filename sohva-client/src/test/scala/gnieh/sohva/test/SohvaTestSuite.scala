@@ -17,7 +17,7 @@ package gnieh.sohva
 package test
 
 import sync._
-import serializer.liftjson
+import liftjson.serializer
 
 import org.scalatest._
 

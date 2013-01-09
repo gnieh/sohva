@@ -16,7 +16,7 @@
 package gnieh.sohva
 package test
 
-import serializer.liftjson
+import liftjson.serializer
 
 import java.io.File
 

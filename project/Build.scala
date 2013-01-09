@@ -2,16 +2,24 @@ import sbt._
 import Keys._
 
 object SohvaBuild extends Build {
+
+  val sohvaVersion = "0.2-SNAPSHOT"
+
   lazy val sohva = (Project(id = "sohva",
     base = file(".")) settings (
     organization in ThisBuild := "org.gnieh",
     name := "sohva",
-    version in ThisBuild := "0.2-SNAPSHOT",
+    version in ThisBuild := sohvaVersion,
     scalaVersion in ThisBuild := "2.9.2",
     crossScalaVersions in ThisBuild := Seq("2.9.2"),
+    libraryDependencies in ThisBuild ++= globalDependencies,
     compileOptions)
     settings(publishSettings: _*)
-  ) aggregate(client, server)
+  ) aggregate(client, clientJerkson, server)
+
+  lazy val globalDependencies = Seq(
+    "org.scalatest" % "scalatest_2.9.0" % "2.0.M5" % "test"
+  )
 
   lazy val compileOptions = scalacOptions in ThisBuild <++= scalaVersion map { v =>
     if(v.startsWith("2.10"))
@@ -48,7 +56,7 @@ object SohvaBuild extends Build {
         <developer>
           <id>satabin</id>
           <name>Lucas Satabin</name>
-          <email>lucassat@n7mm.org</email>
+          <email>lucas.satabin@gnieh.org</email>
         </developer>
       </developers>
       <ciManagement>
@@ -80,8 +88,20 @@ object SohvaBuild extends Build {
     ),
     "net.databinder.dispatch" %% "dispatch-lift-json" % "0.9.4",
     "org.slf4j" % "slf4j-api" % "1.7.2",
-    "org.slf4j" % "jcl-over-slf4j" % "1.7.2",
-    "org.scalatest" % "scalatest_2.9.0" % "2.0.M5" % "test"
+    "org.slf4j" % "jcl-over-slf4j" % "1.7.2"
+  )
+
+  lazy val clientJerkson = Project(id = "sohva-client-jerkson",
+    base = file("sohva-client-jerkson")) dependsOn(client) settings (
+    libraryDependencies ++= clientJerksonDependencies
+  )
+
+  lazy val clientJerksonDependencies = Seq(
+    "org.gnieh" %% "sohva-client" % sohvaVersion
+      exclude("net.liftweb", "lift-json_2.9.1")
+      exclude("net.databinder.dispatch", "dispatch-lift-json_2.9.2"),
+    "com.codahale" % "jerkson_2.9.1" % "0.5.0"
+
   )
 
   lazy val server = Project(id = "sohva-server",

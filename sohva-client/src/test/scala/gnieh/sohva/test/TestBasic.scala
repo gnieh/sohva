@@ -30,8 +30,12 @@ class TestBasic extends SohvaTestSuite with ShouldMatchers {
 
   it should "be added correctly and can then be retrieved" in {
     val doc = TestDoc("new-doc", 4)()
-    db.saveDoc(doc) should be(Some(doc))
-    db.getDocById[TestDoc]("new-doc") should be(Some(doc))
+    val saved = db.saveDoc(doc)
+
+    saved.value should have(
+      '_id("new-doc"),
+      'toto(4))
+    db.getDocById[TestDoc]("new-doc") should be(saved)
   }
 
   "an existing document" should "have a revision" in {
