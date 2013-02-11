@@ -25,7 +25,7 @@ If you are using sbt, simply add the following line to your project descriptor:
 libraryDependencies += "org.gnieh" % "sohva_2.9.2" % "0.1"
 ```
 
-A Snapshot version is published in the Maven Central Snapshot repository. Add it to your resolver or repositories and you can use the version 0.2-SNAPSHOT of the module sohva-client (for Scala 2.9.2 only at this time)
+A Snapshot version is published in the Maven Central Snapshot repository. Add it to your resolver or repositories and you can use the version 0.2-SNAPSHOT of the module sohva-client (it is compiled against Scala 2.9.2 and 2.10)
 
 Basic Usage
 -----------
