@@ -13,6 +13,7 @@ object SohvaBuild extends Build {
     scalaVersion in ThisBuild := "2.10.0",
     crossScalaVersions in ThisBuild := Seq("2.9.2", "2.10.0"),
     libraryDependencies in ThisBuild ++= globalDependencies,
+    parallelExecution in ThisBuild := false,
     compileOptions)
     settings(publishSettings: _*)
   ) aggregate(client, server)
