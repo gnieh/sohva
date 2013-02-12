@@ -10,7 +10,7 @@ object SohvaBuild extends Build {
     organization in ThisBuild := "org.gnieh",
     name := "sohva",
     version in ThisBuild := sohvaVersion,
-    scalaVersion in ThisBuild := "2.9.2",
+    scalaVersion in ThisBuild := "2.10.0",
     crossScalaVersions in ThisBuild := Seq("2.9.2", "2.10.0"),
     libraryDependencies in ThisBuild ++= globalDependencies,
     compileOptions)
