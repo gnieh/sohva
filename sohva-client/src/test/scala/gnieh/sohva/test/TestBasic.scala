@@ -22,7 +22,7 @@ import org.scalatest.OptionValues._
 
 import sync._
 
-class TestBasic extends SohvaTestSuite with ShouldMatchers {
+object TestBasic extends SohvaTestSpec with ShouldMatchers {
 
   "an unknown document" should "not be retrieved" in {
     db.getDocById[TestDoc]("unknown-doc") should be(None)

@@ -32,6 +32,8 @@ import java.io.{
   BufferedInputStream
 }
 import java.security.MessageDigest
+import java.util.Date
+
 import scala.util.Random
 
 import eu.medsea.util.MimeUtil
@@ -45,6 +47,8 @@ import eu.medsea.util.MimeUtil
  *
  */
 abstract class CouchDB {
+
+  self =>
 
   /** The couchdb instance host name. */
   val host: String
@@ -83,6 +87,8 @@ abstract class CouchDB {
     /** The user database name. By default `_users`. */
     var dbName = "_users"
 
+    private def userDb = self.database(dbName)
+
     /** Adds a new user with the given role list to the user database,
      *  and returns the new instance.
      */
@@ -111,13 +117,13 @@ abstract class CouchDB {
       }
 
       if (version >= "1.2") {
-        val user = NewCouchUser(name, password, roles)()
+        val user = NewCouchUser(name, password, roles)
 
         http((request / dbName / user._id <<
           serializer.toJson(user)).PUT).map(ok _)
       } else {
         val (salt, password_sha) = passwordSha(password)
-        val user = LegacyCouchUser(name, salt, password_sha, roles)()
+        val user = LegacyCouchUser(name, salt, password_sha, roles)
 
         http((request / dbName / user._id <<
           serializer.toJson(user)).PUT).map(ok _)
@@ -128,6 +134,55 @@ abstract class CouchDB {
     /** Deletes the given user from the database. */
     def delete(name: String) =
       database(dbName).deleteDoc("org.couchdb.user:" + name)
+
+    /** Generates a password reset token for the given user with the given validity and returns it */
+    def generateResetToken(name: String, until: Date): Promise[Option[String]] = {
+      _uuids().flatMap {
+        case List(token) =>
+          userDb.getDocById[PasswordResetUser]("org.couchdb.user:" + name).flatMap { user =>
+            // get the user document
+            user match {
+              case Some(user) =>
+                // enrich the user document with password reset information
+                val u =
+                  user.copy(reset_token = Some(token), reset_validity = Some(until))
+                // save back the enriched user document
+                userDb.saveDoc(u).map(_.map(_ => token))
+              case None =>
+                Http.promise(None)
+            }
+          }
+        case _ => throw new Exception("querying _uuids should always return an element")
+      }
+    }
+
+    /** Resets the user password to the given one if:
+     *   - a password reset token exists in the database
+     *   - the token is still valid
+     *   - the saved token matches the one given as parameter
+     */
+    def resetPassword(name: String, token: String, password: String): Promise[Boolean] = {
+      userDb.getDocById[PasswordResetUser]("org.couchdb.user:" + name).flatMap { user =>
+        user match {
+          case Some(user) =>
+            // check the token with the one in the database (if still valid)
+            (user.reset_token, user.reset_validity) match {
+              case (Some(savedToken), Some(validity)) =>
+                if(new Date().before(validity) && savedToken == token) {
+                  // save the user with the new password
+                  val newUser = new NewCouchUser(user.name, password, roles = user.roles, _rev = user._rev)
+                  http((request / dbName / user._id << serializer.toJson(newUser)).PUT).map(ok _)
+                } else {
+                  Http.promise(false)
+                }
+              case _ =>
+                Http.promise(false)
+            }
+          case None =>
+            Http.promise(false)
+        }
+      }
+    }
 
   }
 
@@ -450,10 +505,10 @@ case class Design(db: Database,
     getDesignDocument.map {
       case Some(design) =>
         // the updated design
-        design.copy(views = design.views + (viewName -> view))(design._rev)
+        design.copy(views = design.views + (viewName -> view))
       case None =>
         // the design does not exist...
-        DesignDoc("_design/" + name, language, Map(viewName -> view), None)()
+        DesignDoc("_design/" + name, language, Map(viewName -> view), None)
     }.flatMap(db.saveDoc(_).map(_.isDefined))
   }
 
@@ -461,7 +516,7 @@ case class Design(db: Database,
   def deleteView(viewName: String) = {
     getDesignDocument.flatMap {
       case Some(design) =>
-        db.saveDoc(design.copy(views = design.views - viewName)(design._rev)).map(_.isDefined)
+        db.saveDoc(design.copy(views = design.views - viewName)).map(_.isDefined)
       case None => Http.promise(false)
     }
   }
@@ -482,10 +537,10 @@ case class Design(db: Database,
     getDesignDocument.map {
       case Some(design) =>
         // the updated design
-        design.copy(validate_doc_update = Some(validateFun))(design._rev)
+        design.copy(validate_doc_update = Some(validateFun))
       case None =>
         // the design does not exist...
-        DesignDoc("_design/" + name, language, Map(), Some(validateFun))()
+        DesignDoc("_design/" + name, language, Map(), Some(validateFun))
     }.flatMap(db.saveDoc(_).map(_.isDefined))
   }
 
@@ -493,7 +548,7 @@ case class Design(db: Database,
   def deleteValidateFunction = {
     getDesignDocument.flatMap {
       case Some(design) =>
-        db.saveDoc(design.copy(validate_doc_update = None)(design._rev)).map(_.isDefined)
+        db.saveDoc(design.copy(validate_doc_update = None)).map(_.isDefined)
       case None => Http.promise(false)
     }
   }
@@ -585,8 +640,8 @@ case class View[Key: Manifest, Value: Manifest, Doc: Manifest](design: Design,
 private[sohva] case class DesignDoc(_id: String,
                                     language: String,
                                     views: Map[String, ViewDoc],
-                                    validate_doc_update: Option[String])(
-                                      val _rev: Option[String] = None)
+                                    validate_doc_update: Option[String],
+                                    val _rev: Option[String] = None)
 
 private[sohva] case class ViewDoc(map: String,
                                   reduce: Option[String])

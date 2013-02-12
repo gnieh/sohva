@@ -29,6 +29,7 @@ import java.io.{
   File,
   InputStream
 }
+import java.util.Date
 
 /** A CouchDB instance.
  *  Allows users to access the different databases and information.
@@ -93,6 +94,18 @@ abstract class CouchDB private[sync] (wrapped: ACouchDB) {
     /** Deletes the given user from the database. */
     def delete(name: String) =
       wrapped.users.delete(name)()
+
+    /** Generates a password reset token for the given user with the given validity and returns it */
+    def generateResetToken(name: String, until: Date) =
+      wrapped.users.generateResetToken(name, until)()
+
+    /** Resets the user password to the given one if:
+     *   - a password reset token exists in the database
+     *   - the token is still valid
+     *   - the saved token matches the one given as parameter
+     */
+    def resetPassword(name: String, token: String, password: String) =
+      wrapped.users.resetPassword(name, token, password)()
 
   }
 

@@ -138,14 +138,27 @@ case class CouchUser(val name: String,
 private case class LegacyCouchUser(val name: String,
                                    val salt: String,
                                    val password_sha: String,
-                                   val roles: List[String])(
-                                       val _rev: Option[String] = None) {
+                                   val roles: List[String],
+                                   val `type`: String = "user",
+                                   val _rev: Option[String] = None) {
   val _id = "org.couchdb.user:" + name
 }
 
 private case class NewCouchUser(val name: String,
                                 val password: String,
-                                val roles: List[String])(
-                                    val _rev: Option[String] = None) {
+                                val roles: List[String],
+                                val `type`: String = "user",
+                                val _rev: Option[String] = None) {
+  val _id = "org.couchdb.user:" + name
+}
+
+private case class PasswordResetUser(val name: String,
+                                     val salt: String,
+                                     val password_sha: String,
+                                     val roles: List[String],
+                                     val `type`: String = "user",
+                                     val _rev: Option[String] = None,
+                                     val reset_token: Option[String] = None,
+                                     val reset_validity: Option[java.util.Date] = None) {
   val _id = "org.couchdb.user:" + name
 }
