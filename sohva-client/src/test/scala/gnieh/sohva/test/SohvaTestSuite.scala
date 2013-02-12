@@ -21,34 +21,37 @@ import liftjson.serializer
 
 import org.scalatest._
 
-/** Code to be executed before and after each test */
-abstract class SohvaTestSpec extends FlatSpec with BeforeAndAfterAll {
-
+object SohvaTests {
   val couch = new CouchClient
   val session = couch.startSession
+  val db =  session.database("sohva-tests")
+}
 
-  val db = session.database("sohva-tests")
+/** Code to be executed before and after each test */
+abstract class SohvaTestSpec extends FlatSpec {
 
-  override def beforeAll() {
-    // login
-    session.login("admin", "admin")
-    // create database
-    db.create
-  }
-
-  override def afterAll() {
-    // cleanup database
-    db.delete
-    // logout
-    session.logout
-  }
+  val couch = SohvaTests.couch
+  val session = SohvaTests.session
+  val db = SohvaTests.db
 
 }
 
 class SohvaTestSuite extends Specs(TestBasic, TestPasswordReset) with BeforeAndAfterAll {
+
+  override def beforeAll() {
+    // login
+    SohvaTests.session.login("admin", "admin")
+    // create database
+    SohvaTests.db.create
+  }
+
   override def afterAll() {
+    // cleanup database
+    SohvaTests.db.delete
+    // logout
+    SohvaTests.session.logout
     // shutdown client
-    dispatch.Http.shutdown
+    SohvaTests.couch.shutdown
   }
 }
 

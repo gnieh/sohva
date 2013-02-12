@@ -65,4 +65,14 @@ object TestPasswordReset extends SohvaTestSpec with ShouldMatchers with BeforeAn
     couch.startSession.login("test_user", "new_password") should be(false)
   }
 
+  it should "not be able to reset password if a wrong token is given" in {
+    // one hour validity
+    val token = session.users.generateResetToken("test_user", new Date(Platform.currentTime + 3600000l))
+    token should be('defined)
+
+    session.users.resetPassword("test_user", token.get + "wrong", "new_password") should be(false)
+
+    couch.startSession.login("test_user", "new_password") should be(false)
+  }
+
 }
