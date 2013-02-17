@@ -119,6 +119,8 @@ abstract class CouchDB private[sync] (wrapped: ACouchDB) {
  */
 case class Database(wrapped: ADatabase) {
 
+  val name = wrapped.name
+
   /** Returns the information about this database */
   def info =
     wrapped.info()
@@ -222,6 +224,10 @@ case class Database(wrapped: ADatabase) {
  *  @author Lucas Satabin
  */
 case class Design(wrapped: ADesign) {
+
+  val name = wrapped.name
+
+  val language = wrapped.language
 
   /** Returns the design document from the couchdb instance.
    *  Returns `None` if the design document does not exist.
