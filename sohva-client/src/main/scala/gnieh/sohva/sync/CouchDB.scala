@@ -315,6 +315,6 @@ case class View[Key: Manifest, Value: Manifest, Doc: Manifest](wrapped: AView[Ke
       reduce = reduce,
       include_docs = include_docs,
       inclusive_end = inclusive_end,
-      update_seq = update_seq)
+      update_seq = update_seq)()
 
 }
