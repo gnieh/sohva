@@ -46,7 +46,7 @@ object LiftJsonSerializer extends JsonSerializer {
   import net.liftweb.json._
   import java.text.SimpleDateFormat
 
-  implicit private val formats = new DefaultFormats {
+  implicit val formats = new DefaultFormats {
     override def dateFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SS")
   }
 
@@ -64,12 +64,12 @@ object LiftJsonSerializer extends JsonSerializer {
     case _ => compact(render(Extraction.decompose(obj)))
   }
 
-  def fromJson[T: Manifest](json: String) =
+  def fromJson[T: Manifest](json: String): T =
     try {
-      Serialization.read(json)
+      Serialization.read[T](json)
     } catch {
       case e: Exception =>
-        throw SohvaJsonException("Unable to extract from the json string", e)
+        throw SohvaJsonException("Unable to extract from the json string \"" + json + "\"", e)
     }
 
   def fromJsonOpt[T: Manifest](json: String) =

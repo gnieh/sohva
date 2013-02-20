@@ -38,6 +38,8 @@ import scala.util.Random
 
 import eu.medsea.util.MimeUtil
 
+import net.liftweb.json._
+
 /** A CouchDB instance.
  *  Allows users to access the different databases and information.
  *  This is the key class to start with when one wants to work with couchdb.
@@ -616,7 +618,7 @@ case class View[Key: Manifest, Value: Manifest, Doc: Manifest](design: Design,
         case (name, value) => (name, value.toString)
       }
 
-    design.db.couch.http(request <<? options).map(viewResult).map { raw =>
+    design.db.couch.http(request <<? options).map(viewResult[Key,Value,Doc])/*.map { raw =>
       ViewResult(raw.total_rows, raw.offset,
         raw.rows.map { raw =>
           Row(raw.id,
@@ -624,14 +626,29 @@ case class View[Key: Manifest, Value: Manifest, Doc: Manifest](design: Design,
             serializer.fromJson[Value](raw.value),
             raw.doc.map(serializer.fromJson[Doc]))
         })
-    }
+    }*/
 
   }
 
   // helper methods
 
-  private def viewResult(json: String) =
-    serializer.fromJson[RawViewResult](json)
+  private def viewResult[Key: Manifest, Value: Manifest, Doc: Manifest](json: String) = {
+    import LiftJsonSerializer.formats
+    val ast = parse(json)
+    val res = for {
+      total_rows <- (ast \ "total_rows").extractOpt[Int]
+      offset <- (ast \ "offset").extractOpt[Int]
+      JArray(rows) = (ast \ "rows")
+    } yield ViewResult(total_rows, offset, rows.flatMap { row =>
+        for {
+          id <- (row \ "id").extractOpt[String]
+          key <- (row \ "key").extractOpt[Key]
+          value <- (row \ "value").extractOpt[Value]
+          doc = (row \ "doc").extractOpt[Doc]
+        } yield Row(id, key, value, doc)
+    })
+    res.getOrElse(Nil)
+  }
 
 }
 
@@ -662,10 +679,6 @@ final case class DocUpdate(ok: Boolean,
                            id: String,
                            rev: String)
 
-private[sohva] case class RawViewResult(total_rows: Int,
-                                        offset: Int,
-                                        rows: List[RawRow])
-
 final case class ViewResult[Key, Value, Doc](total_rows: Int,
                                              offset: Int,
                                              rows: List[Row[Key, Value, Doc]]) {
@@ -680,11 +693,6 @@ final case class ViewResult[Key, Value, Doc](total_rows: Int,
     rows.foreach(f)
 
 }
-
-private[sohva] case class RawRow(id: String,
-                                 key: String,
-                                 value: String,
-                                 doc: Option[String] = None)
 
 case class Row[Key, Value, Doc](id: String,
                                 key: Key,
