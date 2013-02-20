@@ -66,7 +66,7 @@ object LiftJsonSerializer extends JsonSerializer {
 
   def fromJson[T: Manifest](json: String) =
     try {
-      Extraction.extract(JsonParser.parse(json))
+      Serialization.read(json)
     } catch {
       case e: Exception =>
         throw SohvaJsonException("Unable to extract from the json string", e)
