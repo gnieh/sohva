@@ -50,8 +50,19 @@ object LiftJsonSerializer extends JsonSerializer {
     override def dateFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SS")
   }
 
-  def toJson[T: Manifest](obj: T) =
-    pretty(render(Extraction.decompose(obj)))
+  import Implicits._
+
+  def toJson[T: Manifest](obj: T) = obj match {
+    case i: Int => compact(render(JInt(i)))
+    case i: BigInt => compact(render(JInt(i)))
+    case l: Long => compact(render(JInt(l)))
+    case d: Double => compact(render(JDouble(d)))
+    case f: Float => compact(render(JDouble(f)))
+    case d: BigDecimal => compact(render(JDouble(d.doubleValue)))
+    case b: Boolean => compact(render(JBool(b)))
+    case s: String => compact(render(JString(s)))
+    case _ => compact(render(Extraction.decompose(obj)))
+  }
 
   def fromJson[T: Manifest](json: String) =
     try {
