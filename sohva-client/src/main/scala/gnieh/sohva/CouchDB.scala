@@ -98,26 +98,6 @@ abstract class CouchDB {
             password: String,
             roles: List[String] = Nil) = {
 
-      def bytes2string(bytes: Array[Byte]) =
-        bytes.foldLeft(new StringBuilder) {
-          (res, byte) =>
-            res.append(Integer.toHexString(byte & 0xff))
-        }.toString
-
-      def passwordSha(password: String) = {
-
-        // compute the password hash
-        val md = MessageDigest.getInstance("SHA-1")
-
-        // the password string is concatenated with the generated salt
-        // and the result is hashed using SHA-1
-        val saltArray = new Array[Byte](16)
-        Random.nextBytes(saltArray)
-        val salt = bytes2string(saltArray)
-
-        (salt, bytes2string(md.digest((password + salt).getBytes("UTF-8"))))
-      }
-
       if (version >= "1.2") {
         val user = NewCouchUser(name, password, roles)
 
@@ -146,8 +126,12 @@ abstract class CouchDB {
             user match {
               case Some(user) =>
                 // enrich the user document with password reset information
+                val (token_salt, token_sha) = passwordSha(token)
                 val u =
-                  user.copy(reset_token = Some(token), reset_validity = Some(until))
+                  user.copy(
+                    reset_token_sha = Some(token_sha),
+                    reset_token_salt = Some(token_salt),
+                    reset_validity = Some(until))
                 // save back the enriched user document
                 userDb.saveDoc(u).map(_.map(_ => token))
               case None =>
@@ -168,9 +152,10 @@ abstract class CouchDB {
         user match {
           case Some(user) =>
             // check the token with the one in the database (if still valid)
-            (user.reset_token, user.reset_validity) match {
-              case (Some(savedToken), Some(validity)) =>
-                if(new Date().before(validity) && savedToken == token) {
+            (user.reset_token_sha, user.reset_token_salt, user.reset_validity) match {
+              case (Some(savedToken), Some(savedSalt), Some(validity)) =>
+                val saltedToken = hash(token + savedSalt)
+                if(new Date().before(validity) && savedToken == saltedToken) {
                   // save the user with the new password
                   val newUser = new NewCouchUser(user.name, password, roles = user.roles, _rev = user._rev)
                   http((request / dbName / user._id << serializer.toJson(newUser)).PUT).map(ok _)
@@ -193,6 +178,30 @@ abstract class CouchDB {
   private[sohva] def request: RequestBuilder
 
   private[sohva] def _http: Http
+
+  private[this] def bytes2string(bytes: Array[Byte]) =
+    bytes.foldLeft(new StringBuilder) {
+      (res, byte) =>
+        res.append(Integer.toHexString(byte & 0xff))
+    }.toString
+
+  private[this] def hash(s: String) = {
+    val md = MessageDigest.getInstance("SHA-1")
+    bytes2string(md.digest(s.getBytes("UTF-8")))
+  }
+
+  private[this] def passwordSha(password: String) = {
+
+    // compute the password hash
+    // the password string is concatenated with the generated salt
+    // and the result is hashed using SHA-1
+    val saltArray = new Array[Byte](16)
+    Random.nextBytes(saltArray)
+    val salt = bytes2string(saltArray)
+
+    (salt, hash(password + salt))
+  }
+
 
   private[sohva] def http(request: RequestBuilder): Promise[String] =
     _http(request > handleCouchResponse _).map {
@@ -647,7 +656,7 @@ case class View[Key: Manifest, Value: Manifest, Doc: Manifest](design: Design,
           doc = (row \ "doc").extractOpt[Doc]
         } yield Row(id, key, value, doc)
     })
-    res.getOrElse(Nil)
+    res.getOrElse(ViewResult(0, 0, Nil))
   }
 
 }

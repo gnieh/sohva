@@ -158,7 +158,8 @@ private case class PasswordResetUser(val name: String,
                                      val roles: List[String],
                                      val `type`: String = "user",
                                      val _rev: Option[String] = None,
-                                     val reset_token: Option[String] = None,
+                                     val reset_token_sha: Option[String] = None,
+                                     val reset_token_salt: Option[String] = None,
                                      val reset_validity: Option[java.util.Date] = None) {
   val _id = "org.couchdb.user:" + name
 }
