@@ -41,21 +41,21 @@ object TestAttach extends App {
   for (res1 <- test.attachTo("truie", new File("src/test/resources/test.txt"), None)) {
     println(res1)
 
-    for (res2 <- test.getDocById[Test]("truie")) {
+    for (res2 <- test.getDocById[Test]("truie").right) {
       println(res2.flatMap(_._attachments))
-      for (att <- test.getAttachment("truie", "test.txt")) {
+      for (att <- test.getAttachment("truie", "test.txt").right) {
         println(att.map(_._1))
         println(att.map(f => new java.util.Scanner(f._2).useDelimiter("\\A").next))
 
         session.logout!
 
         for (
-          res3 <- test.deleteAttachment("truie", "test.txt");
-          res4 <- test.getDocById[Test]("truie")
+          res3 <- test.deleteAttachment("truie", "test.txt").right;
+          res4 <- test.getDocById[Test]("truie").right
         ) {
           println(res3)
           println(res4.flatMap(_._attachments))
-          for (att <- test.getAttachment("truie", "test.txt")) {
+          for (att <- test.getAttachment("truie", "test.txt").right) {
             println(att)
             couch.shutdown
           }

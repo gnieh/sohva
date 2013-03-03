@@ -65,21 +65,22 @@ abstract class CouchDB {
   val serializer: JsonSerializer
 
   /** Returns the database on the given couch instance. */
-  def database(name: String) =
+  def database(name: String): Database =
     new Database(name, this)
 
   /** Returns the names of all databases in this couch instance. */
-  def _all_dbs =
-    http(request / "_all_dbs").map(asStringList _)
+  def _all_dbs: Result[List[String]] =
+    http(request / "_all_dbs").right.map(asStringList _)
 
   /** Returns the requested number of UUIDS (by default 1). */
-  def _uuids(count: Int = 1) =
+  def _uuids(count: Int = 1): Result[List[String]] =
     http(request / "_uuids" <<? Map("count" -> count.toString))
+      .right
       .map(asUuidsList _)
 
   /** Indicates whether this couchdb instance contains the given database */
-  def contains(dbName: String) =
-    http(request / "_all_dbs").map(containsName(dbName))
+  def contains(dbName: String): Result[Boolean] =
+    http(request / "_all_dbs").right.map(containsName(dbName))
 
   // user management section
 
@@ -87,7 +88,7 @@ abstract class CouchDB {
   object users {
 
     /** The user database name. By default `_users`. */
-    var dbName = "_users"
+    var dbName: String = "_users"
 
     private def userDb = self.database(dbName)
 
@@ -96,32 +97,32 @@ abstract class CouchDB {
      */
     def add(name: String,
             password: String,
-            roles: List[String] = Nil) = {
+            roles: List[String] = Nil): Result[Boolean] = {
 
       if (version >= "1.2") {
         val user = NewCouchUser(name, password, roles)
 
         http((request / dbName / user._id <<
-          serializer.toJson(user)).PUT).map(ok _)
+          serializer.toJson(user)).PUT).right.map(ok _)
       } else {
         val (salt, password_sha) = passwordSha(password)
         val user = LegacyCouchUser(name, salt, password_sha, roles)
 
         http((request / dbName / user._id <<
-          serializer.toJson(user)).PUT).map(ok _)
+          serializer.toJson(user)).PUT).right.map(ok _)
       }
 
     }
 
     /** Deletes the given user from the database. */
-    def delete(name: String) =
+    def delete(name: String): Result[Boolean] =
       database(dbName).deleteDoc("org.couchdb.user:" + name)
 
     /** Generates a password reset token for the given user with the given validity and returns it */
-    def generateResetToken(name: String, until: Date): Promise[Option[String]] = {
-      _uuids().flatMap {
+    def generateResetToken(name: String, until: Date): Result[Option[String]] = {
+      _uuids().right.flatMap {
         case List(token) =>
-          userDb.getDocById[PasswordResetUser]("org.couchdb.user:" + name).flatMap { user =>
+          userDb.getDocById[PasswordResetUser]("org.couchdb.user:" + name).right.flatMap { user =>
             // get the user document
             user match {
               case Some(user) =>
@@ -133,9 +134,9 @@ abstract class CouchDB {
                     reset_token_salt = Some(token_salt),
                     reset_validity = Some(until))
                 // save back the enriched user document
-                userDb.saveDoc(u).map(_.map(_ => token))
+                userDb.saveDoc(u).right.map(_.map(_ => token))
               case None =>
-                Http.promise(None)
+                Http.promise(Right(None))
             }
           }
         case _ => throw new Exception("querying _uuids should always return an element")
@@ -147,8 +148,8 @@ abstract class CouchDB {
      *   - the token is still valid
      *   - the saved token matches the one given as parameter
      */
-    def resetPassword(name: String, token: String, password: String): Promise[Boolean] = {
-      userDb.getDocById[PasswordResetUser]("org.couchdb.user:" + name).flatMap { user =>
+    def resetPassword(name: String, token: String, password: String): Result[Boolean] = {
+      userDb.getDocById[PasswordResetUser]("org.couchdb.user:" + name).right.flatMap { user =>
         user match {
           case Some(user) =>
             // check the token with the one in the database (if still valid)
@@ -158,15 +159,15 @@ abstract class CouchDB {
                 if(new Date().before(validity) && savedToken == saltedToken) {
                   // save the user with the new password
                   val newUser = new NewCouchUser(user.name, password, roles = user.roles, _rev = user._rev)
-                  http((request / dbName / user._id << serializer.toJson(newUser)).PUT).map(ok _)
+                  http((request / dbName / user._id << serializer.toJson(newUser)).PUT).right.map(ok _)
                 } else {
-                  Http.promise(false)
+                  Http.promise(Right(false))
                 }
               case _ =>
-                Http.promise(false)
+                Http.promise(Right(false))
             }
           case None =>
-            Http.promise(false)
+            Http.promise(Right(false))
         }
       }
     }
@@ -203,52 +204,33 @@ abstract class CouchDB {
   }
 
 
-  private[sohva] def http(request: RequestBuilder): Promise[String] =
-    _http(request > handleCouchResponse _).map {
-      case Left(exc) => throw exc
-      case Right(v)  => v
-    }
+  private[sohva] def http(request: RequestBuilder): Result[String] =
+    _http(request > handleCouchResponse _)
 
-  private[sohva] def optHttp(request: RequestBuilder): Promise[Option[String]] =
-    _http(request > handleOptionalCouchResponse _).map {
-      case Left(exc) => throw exc
-      case Right(v)  => v
-    }
+  private[sohva] def optHttp(request: RequestBuilder): Result[Option[String]] =
+    _http(request > handleOptionalCouchResponse _)
 
-  private[sohva] def http[T](pair: (Request, FunctionHandler[T])): Promise[T] =
-    _http(pair)
+//  private[sohva] def http[T](pair: (Request, FunctionHandler[T])): Result[T] =
+//    _http(pair)
 
-  private def handleCouchResponse(response: Response) = {
+  private def handleCouchResponse(response: Response): Either[(Int, Option[ErrorResult]), String] = {
     val json = as.String(response)
     val code = response.getStatusCode
     if (code / 100 != 2) {
       // something went wrong...
       val error = serializer.fromJsonOpt[ErrorResult](json)
-      if (code == 409)
-        Left(new ConflictException(error))
-      else
-        Left(new CouchException(code, error))
+      Left((code, error))
     } else {
       Right(json)
     }
   }
 
-  private def handleOptionalCouchResponse(response: Response) = {
-    val json = as.String(response)
-    val code = response.getStatusCode
-    if (code == 404) {
-      Right(None)
-    } else if (code / 100 != 2) {
-      // something went wrong...
-      val error = serializer.fromJsonOpt[ErrorResult](json)
-      if (code == 409)
-        Left(new ConflictException(error))
-      else
-        Left(new CouchException(code, error))
-    } else {
-      Right(Some(json))
+  private def handleOptionalCouchResponse(response: Response): Either[(Int, Option[ErrorResult]), Option[String]] =
+    handleCouchResponse(response) match {
+      case Right(v) => Right(Some(v))
+      case Left((404, _)) => Right(None)
+      case Left(err) => Left(err)
     }
-  }
 
   private[sohva] def ok(json: String) =
     serializer.fromJson[OkResult](json).ok
@@ -276,69 +258,74 @@ case class Database(val name: String,
   import couch.serializer
 
   /** Returns the information about this database */
-  def info = couch.optHttp(request).map(_.map(infoResult))
+  def info: Result[Option[InfoResult]] =
+    couch.optHttp(request).right.map(_.map(infoResult))
 
   /** Indicates whether this database exists */
   @inline
-  def exists = couch.contains(name)
+  def exists: Result[Boolean] =
+    couch.contains(name)
 
   /** Creates this database in the couchdb instance if it does not already exist.
    *  Returns <code>true</code> iff the database was actually created.
    */
-  def create = exists.flatMap(ex => if (ex) {
-    Http.promise(false)
-  } else {
-    couch.http(request.PUT).map(couch.ok)
-  })
+  def create: Result[Boolean] =
+    exists.right.flatMap(ex => if (ex) {
+      Http.promise(Right(false))
+    } else {
+      couch.http(request.PUT).right.map(couch.ok)
+    })
 
   /** Deletes this database in the couchdb instance if it exists.
    *  Returns <code>true</code> iff the database was actually deleted.
    */
-  def delete = exists.flatMap(ex => if (ex) {
-    couch.http(request.DELETE).map(couch.ok)
+  def delete: Result[Boolean] = exists.right.flatMap(ex => if (ex) {
+    couch.http(request.DELETE).right.map(couch.ok)
   } else {
-    Http.promise(false)
+    Http.promise(Right(false))
   })
 
   /** Returns the document identified by the given id if it exists */
-  def getDocById[T: Manifest](id: String, revision: Option[String] = None): Promise[Option[T]] =
-    couch.optHttp(request / id <<? revision.map("rev" -> _).toList).map(_.map(docResult[T]))
+  def getDocById[T: Manifest](id: String, revision: Option[String] = None): Result[Option[T]] =
+    couch.optHttp(request / id <<? revision.map("rev" -> _).toList).right.map(_.map(docResult[T]))
 
   /** Returns the current revision of the document if it exists */
-  def getDocRevision(id: String): Promise[Option[String]] =
-    couch.http((request / id).HEAD > extractRev)
+  def getDocRevision(id: String): Result[Option[String]] =
+    couch._http((request / id).HEAD > extractRev _).map(v => Right(v))
 
   /** Creates or updates the given object as a document into this database
    *  The given object must have an `_id` and an optional `_rev` fields
    *  to conform to the couchdb document structure.
    */
-  def saveDoc[T: Manifest](doc: T with Doc) =
+  def saveDoc[T: Manifest](doc: T with Doc): Result[Option[T]] =
     couch.http((request / doc._id << serializer.toJson(doc)).PUT)
+      .right
       .map(docUpdateResult _)
+      .right
       .flatMap(res => res match {
         case DocUpdate(true, id, _) =>
           getDocById[T](id)
         case DocUpdate(false, _, _) =>
-          Http.promise(None)
+          Http.promise(Right(None))
       })
 
   /** Deletes the document from the database.
    *  The document will only be deleted if the caller provided the last revision
    */
-  def deleteDoc[T: Manifest](doc: T with Doc) =
+  def deleteDoc[T: Manifest](doc: T with Doc): Result[Boolean] =
     couch.http((request / doc._id).DELETE <<? Map("rev" -> doc._rev.getOrElse("")))
-      .map(couch.ok)
+      .right.map(couch.ok)
 
   /** Deletes the document identified by the given id from the database.
    *  If the document exists it is deleted and the method returns `true`,
    *  otherwise returns `false`.
    */
-  def deleteDoc(id: String) =
-    getDocRevision(id).flatMap {
+  def deleteDoc(id: String): Result[Boolean] =
+    getDocRevision(id).right.flatMap {
       case Some(rev) =>
         couch.http((request / id).DELETE <<? Map("rev" -> rev))
-          .map(couch.ok)
-      case None => Http.promise(false)
+          .right.map(couch.ok)
+      case None => Http.promise(Right(false))
     }
 
   /** Attaches the given file to the given document id.
@@ -347,7 +334,7 @@ case class Database(val name: String,
    *  attached...
    *  This method returns `true` iff the file was attached to the document.
    */
-  def attachTo(docId: String, file: File, contentType: Option[String]) = {
+  def attachTo(docId: String, file: File, contentType: Option[String]): Result[Boolean] = {
     // first get the last revision of the document (if it exists)
     val rev = getDocRevision(docId)
     val mime = contentType match {
@@ -356,9 +343,9 @@ case class Database(val name: String,
     }
 
     if (mime == MimeUtil.UNKNOWN_MIME_TYPE) {
-      Http.promise(false) // unknown mime type, cannot attach the file
+      Http.promise(Right(false)) // unknown mime type, cannot attach the file
     } else {
-      rev.flatMap { r =>
+      rev.right.flatMap { r =>
         val params = r match {
           case Some(r) =>
             List("rev" -> r)
@@ -368,7 +355,7 @@ case class Database(val name: String,
             Nil
         }
         couch.http(request / docId / file.getName
-          <<? params <<< file <:< Map("Content-Type" -> mime)).map(couch.ok)
+          <<? params <<< file <:< Map("Content-Type" -> mime)).right.map(couch.ok)
       }
     }
   }
@@ -382,7 +369,7 @@ case class Database(val name: String,
   def attachTo(docId: String,
                attachment: String,
                stream: InputStream,
-               contentType: Option[String]): Promise[Boolean] = {
+               contentType: Option[String]): Result[Boolean] = {
     // create a temporary file with the content of the input stream
     val file = File.createTempFile(attachment, null)
     import Arm._
@@ -400,38 +387,38 @@ case class Database(val name: String,
    *  It returns the mime type if any given in the response and the input stream
    *  to read the response from the server.
    */
-  def getAttachment(docId: String, attachment: String) =
-    couch.http(request / docId / attachment > readFile _)
+  def getAttachment(docId: String, attachment: String): Result[Option[(String, InputStream)]] =
+    couch._http(request / docId / attachment > readFile _).map(v => Right(v))
 
   /** Deletes the given attachment for the given docId */
-  def deleteAttachment(docId: String, attachment: String) = {
+  def deleteAttachment(docId: String, attachment: String): Result[Boolean] = {
     // first get the last revision of the document (if it exists)
     val rev = getDocRevision(docId)
-    rev.flatMap { r =>
+    rev.right.flatMap { r =>
       r match {
         case Some(r) =>
           couch.http((request / docId / attachment <<?
-            List("rev" -> r)).DELETE).map(couch.ok)
+            List("rev" -> r)).DELETE).right.map(couch.ok)
         case None =>
           // doc does not exist? well... good... just do nothing
-          Http.promise(false)
+          Http.promise(Right(false))
       }
     }
   }
 
   /** Returns the security document of this database if any defined */
-  def securityDoc =
-    couch.http(request / "_security").map(extractSecurityDoc _)
+  def securityDoc: Result[SecurityDoc] =
+    couch.http(request / "_security").right.map(extractSecurityDoc _)
 
   /** Creates or updates the security document.
    *  Security documents are special documents with no `_id` nor `_rev` fields.
    */
-  def saveSecurityDoc(doc: SecurityDoc) = {
-    couch.http((request / "_security" << serializer.toJson(doc)).PUT).map(couch.ok)
+  def saveSecurityDoc(doc: SecurityDoc): Result[Boolean] = {
+    couch.http((request / "_security" << serializer.toJson(doc)).PUT).right.map(couch.ok)
   }
 
   /** Returns a design object that allows user to work with views */
-  def design(designName: String, language: String = "javascript") =
+  def design(designName: String, language: String = "javascript"): Design =
     Design(this, designName, language)
 
   // helper methods
@@ -498,11 +485,11 @@ case class Design(db: Database,
   /** Returns the design document from the couchdb instance.
    *  Returns `None` if the design document does not exist.
    */
-  def getDesignDocument =
-    db.couch.optHttp(request).map(_.map(designDoc))
+  def getDesignDocument: Result[Option[DesignDoc]] =
+    db.couch.optHttp(request).right.map(_.map(designDoc))
 
   /** Deletes this design document from the couchdb instance */
-  def delete =
+  def delete: Result[Boolean] =
     db.deleteDoc("_design/" + name.trim)
 
   /** Creates or updates the view in this design
@@ -511,24 +498,24 @@ case class Design(db: Database,
    */
   def saveView(viewName: String,
                mapFun: String,
-               reduceFun: Option[String] = None) = {
+               reduceFun: Option[String] = None): Result[Boolean] = {
     val view = ViewDoc(mapFun, reduceFun)
-    getDesignDocument.map {
+    getDesignDocument.right.map {
       case Some(design) =>
         // the updated design
         design.copy(views = design.views + (viewName -> view))
       case None =>
         // the design does not exist...
         DesignDoc("_design/" + name, language, Map(viewName -> view), None)
-    }.flatMap(db.saveDoc(_).map(_.isDefined))
+    }.right.flatMap(db.saveDoc(_).right.map(_.isDefined))
   }
 
   /** Deletes the view with the given name from the design */
-  def deleteView(viewName: String) = {
-    getDesignDocument.flatMap {
+  def deleteView(viewName: String): Result[Boolean] = {
+    getDesignDocument.right.flatMap {
       case Some(design) =>
-        db.saveDoc(design.copy(views = design.views - viewName)).map(_.isDefined)
-      case None => Http.promise(false)
+        db.saveDoc(design.copy(views = design.views - viewName)).right.map(_.isDefined)
+      case None => Http.promise(Right(false))
     }
   }
 
@@ -538,29 +525,29 @@ case class Design(db: Database,
    *  - Value: Type of the value returned in the result
    *  - Doc: Type of the full document in the case where the view is queried with `include_docs` set to `true`
    */
-  def view[Key: Manifest, Value: Manifest, Doc: Manifest](viewName: String) =
+  def view[Key: Manifest, Value: Manifest, Doc: Manifest](viewName: String): View[Key, Value, Doc] =
     View[Key, Value, Doc](this, viewName)
 
   /** Creates or updates the document validation function.
    *  If the design does not exist yet, it is created.
    */
-  def saveValidateFunction(validateFun: String) = {
-    getDesignDocument.map {
+  def saveValidateFunction(validateFun: String): Result[Boolean] = {
+    getDesignDocument.right.map {
       case Some(design) =>
         // the updated design
         design.copy(validate_doc_update = Some(validateFun))
       case None =>
         // the design does not exist...
         DesignDoc("_design/" + name, language, Map(), Some(validateFun))
-    }.flatMap(db.saveDoc(_).map(_.isDefined))
+    }.right.flatMap(db.saveDoc(_).right.map(_.isDefined))
   }
 
   /** Deletes the document validation function from the design */
-  def deleteValidateFunction = {
-    getDesignDocument.flatMap {
+  def deleteValidateFunction: Result[Boolean] = {
+    getDesignDocument.right.flatMap {
       case Some(design) =>
-        db.saveDoc(design.copy(validate_doc_update = None)).map(_.isDefined)
-      case None => Http.promise(false)
+        db.saveDoc(design.copy(validate_doc_update = None)).right.map(_.isDefined)
+      case None => Http.promise(Right(false))
     }
   }
 
@@ -601,7 +588,7 @@ case class View[Key: Manifest, Value: Manifest, Doc: Manifest](design: Design,
             reduce: Boolean = true,
             include_docs: Boolean = false,
             inclusive_end: Boolean = true,
-            update_seq: Boolean = false) = {
+            update_seq: Boolean = false): Result[ViewResult[Key, Value, Doc]] = {
 
     // build options
     val options = List(
@@ -627,15 +614,7 @@ case class View[Key: Manifest, Value: Manifest, Doc: Manifest](design: Design,
         case (name, value) => (name, value.toString)
       }
 
-    design.db.couch.http(request <<? options).map(viewResult[Key,Value,Doc])/*.map { raw =>
-      ViewResult(raw.total_rows, raw.offset,
-        raw.rows.map { raw =>
-          Row(raw.id,
-            serializer.fromJson[Key](raw.key),
-            serializer.fromJson[Value](raw.value),
-            raw.doc.map(serializer.fromJson[Doc]))
-        })
-    }*/
+    design.db.couch.http(request <<? options).right.map(viewResult[Key,Value,Doc])
 
   }
 

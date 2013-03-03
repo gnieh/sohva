@@ -43,43 +43,43 @@ class CouchSession private[sohva] (val couch: CouchClient) extends CouchDB {
    *  all requests will be done with the given credentials.
    *  This performs a cookie authentication.
    */
-  def login(name: String, password: String) = {
-    http(request / "_session" <<
+  def login(name: String, password: String): Result[Boolean] = {
+    _http(request / "_session" <<
       Map("name" -> name, "password" -> password) <:<
       Map("Accept" -> "application/json, text/javascript, */*",
-        "Cookie" -> "AuthSession=") > setCookie _)
+        "Cookie" -> "AuthSession=") > setCookie _).map(v => Right(v))
   }
 
   /** Logs the session out */
-  def logout =
-    http((request / "_session").DELETE > setCookie _)
+  def logout: Result[Boolean] =
+    _http((request / "_session").DELETE > setCookie _).map(v => Right(v))
 
   /** Returns the user associated to the current session, if any */
-  def currentUser = userContext.flatMap {
+  def currentUser: Result[Option[CouchUser]] = userContext.right.flatMap {
     case UserCtx(name, _) if name != null =>
-      http(request / "_users" / ("org.couchdb.user:" + name)).map(user)
-    case _ => Http.promise(None)
+      http(request / "_users" / ("org.couchdb.user:" + name)).right.map(user)
+    case _ => Http.promise(Right(None))
   }
 
   /** Indicates whether the current session is logged in to the couch server */
-  def isLoggedIn = userContext.map {
+  def isLoggedIn: Result[Boolean] = userContext.right.map {
     case UserCtx(name, _) if name != null =>
       true
     case _ => false
   }
 
   /** Indicates whether the current session gives the given role to the user */
-  def hasRole(role: String) = userContext.map {
+  def hasRole(role: String): Result[Boolean] = userContext.right.map {
     case UserCtx(_, roles) => roles.contains(role)
     case _                 => false
   }
 
   /** Indicates whether the current session is a server admin session */
-  def isServerAdmin = hasRole("_admin")
+  def isServerAdmin: Result[Boolean] = hasRole("_admin")
 
   /** Returns the current user context */
-  def userContext =
-    http((request / "_session")).map(userCtx)
+  def userContext: Result[UserCtx] =
+    http((request / "_session")).right.map(userCtx)
 
   // helper methods
 

@@ -5,7 +5,7 @@
 * you may not use this file except in compliance with the License.
 * You may obtain a copy of the License at
 *
-* http://www.apache.org/licenses/LICENSE-2.0
+*couch.http://www.apache.org/licenses/LICENSE-2.0
 *
 * Unless required by applicable law or agreed to in writing, software
 * distributed under the License is distributed on an "AS IS" BASIS,
@@ -14,22 +14,15 @@
 * limitations under the License.
 */
 package gnieh.sohva
-package test
 
-import liftjson.serializer
+package object sync {
 
-/** @author satabin
- *
- */
-object TestUuids extends App {
-
-  val couch = new CouchClient
-
-  val uuids = couch._uuids(4)!
-
-  for (uuid <- uuids.right)
-    println(uuid)
-
-  couch.shutdown
+  def synced[T](result: Result[T]): T = result() match {
+    case Right(t) => t
+    case Left((409, error)) =>
+      throw new ConflictException(error)
+    case Left((code, error)) =>
+      throw new CouchException(code, error)
+  }
 
 }

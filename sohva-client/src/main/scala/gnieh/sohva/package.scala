@@ -43,6 +43,8 @@ package object sohva {
     val _rev: Option[String]
   }
 
+  type Result[T] = Promise[Either[(Int, Option[ErrorResult]), T]]
+
   implicit def promise2bang[T](promise: Promise[T]) = new {
     def ! = promise()
   }
