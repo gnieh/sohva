@@ -17,6 +17,8 @@ package gnieh.sohva
 
 import dispatch._
 
+import resource._
+
 import com.ning.http.client.{
   Request,
   RequestBuilder,
@@ -397,9 +399,8 @@ case class Database(val name: String,
                contentType: Option[String]): Result[Boolean] = {
     // create a temporary file with the content of the input stream
     val file = File.createTempFile(attachment, null)
-    import Arm._
-    using(new FileOutputStream(file)) { fos =>
-      using(new BufferedInputStream(stream)) { bis =>
+    for(fos <- managed(new FileOutputStream(file))) {
+      for(bis <- managed(new BufferedInputStream(stream))) {
         val array = new Array[Byte](bis.available)
         bis.read(array)
         fos.write(array)

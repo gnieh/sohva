@@ -85,6 +85,7 @@ object SohvaBuild extends Build {
 
   lazy val clientDependencies = Seq(
     "net.databinder.dispatch" %% "dispatch-core" % "0.9.5" exclude("commons-logging", "commons-logging"),
+    "com.jsuereth" %% "scala-arm" % "1.3",
     "net.liftweb" %% "lift-json" % "2.5-M4",
     "net.sf.mime-util" % "mime-util" % "1.2" excludeAll(
       ExclusionRule(organization = "log4j", name = "log4j"),
