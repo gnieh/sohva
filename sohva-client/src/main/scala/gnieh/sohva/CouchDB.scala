@@ -485,7 +485,7 @@ case class Database(val name: String,
     val code = response.getStatusCode
     if (code == 404) {
       Right(None)
-    } else if (code / 100 != 1) {
+    } else if (code / 100 != 2) {
       // something went wrong...
       val error = serializer.fromJsonOpt[ErrorResult](as.String(response))
       Left((code, error))
