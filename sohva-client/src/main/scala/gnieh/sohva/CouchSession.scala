@@ -43,16 +43,17 @@ class CouchSession private[sohva] (val couch: CouchClient) extends CouchDB {
    *  all requests will be done with the given credentials.
    *  This performs a cookie authentication.
    */
-  def login(name: String, password: String): Result[Boolean] = {
-    _http(request / "_session" <<
-      Map("name" -> name, "password" -> password) <:<
-      Map("Accept" -> "application/json, text/javascript, */*",
-        "Cookie" -> "AuthSession=") > setCookie _).map(v => Right(v))
-  }
+  def login(name: String, password: String): Result[Boolean] =
+    for(res <- _http(request / "_session" <<
+         Map("name" -> name, "password" -> password) <:<
+         Map("Accept" -> "application/json, text/javascript, */*",
+           "Cookie" -> "AuthSession=") > setCookie _))
+             yield Right(res)
 
   /** Logs the session out */
   def logout: Result[Boolean] =
-    _http((request / "_session").DELETE > setCookie _).map(v => Right(v))
+    for(res <- _http((request / "_session").DELETE > setCookie _))
+      yield Right(res)
 
   /** Returns the user associated to the current session, if any */
   def currentUser: Result[Option[CouchUser]] = userContext.right.flatMap {
