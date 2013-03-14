@@ -50,7 +50,7 @@ package object sohva {
   }
 
   object liftjson {
-    implicit def serializer = LiftJsonSerializer
+    implicit val serializer = LiftJsonSerializer
   }
 
 }

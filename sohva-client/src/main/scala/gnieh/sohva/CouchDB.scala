@@ -15,7 +15,13 @@
 */
 package gnieh.sohva
 
+import strategy._
+
 import dispatch._
+import dispatch.retry.{
+  CountingRetry,
+  Success
+}
 
 import resource._
 
@@ -67,8 +73,8 @@ abstract class CouchDB {
   val serializer: JsonSerializer
 
   /** Returns the database on the given couch instance. */
-  def database(name: String): Database =
-    new Database(name, this)
+  def database(name: String, credit: Int = 0, strategy: Strategy = BarneyStinsonStrategy): Database =
+    new Database(name, this, credit, strategy)
 
   /** Returns the names of all databases in this couch instance. */
   def _all_dbs: Result[List[String]] =
@@ -251,12 +257,56 @@ abstract class CouchDB {
  *  Among other operation this is the key class to get access to the documents
  *  of this database.
  *
+ * @param credit The credit assigned to the conflict resolver. It represents the number of times the client tries to save the document before giving up.
+ *  @param strategy The strategy being used to resolve conflicts
+ *
  *  @author Lucas Satabin
  */
-case class Database(val name: String,
-                    private[sohva] val couch: CouchDB) {
+class Database(val name: String,
+               private[sohva] val couch: CouchDB,
+               val credit: Int,
+               val strategy: Strategy) {
 
   import couch.serializer
+
+  private object resolver extends CountingRetry {
+    // only retry if a conflict occurred, other errors are considered as 'Success'
+    val saveOk = new Success[Either[(Int, Option[ErrorResult]), String]] ({
+      case Left((409, _)) => false
+      case _              => true
+    })
+    def apply(credit: Int, docId: String, baseRev: Option[String], doc: String): Result[String] = {
+      def doit(count: Int): Result[String] =
+        // get the base document if any
+        getRawDocById(docId, baseRev) flatMap {
+          case Right(base) =>
+            // get the last document from database
+            getRawDocById(docId) flatMap {
+              case Right(last) =>
+                // apply the merge strategy between base, last and current revision of the document
+                val baseDoc = base map (parse _)
+                val lastDoc = last map (parse _)
+                val lastRev = lastDoc map (d => (d \ "_rev").toString)
+                val currentDoc = parse(doc)
+                val resolvedDoc = strategy(baseDoc, lastDoc, currentDoc)
+                val resolved = compact(render(resolvedDoc))
+                resolver(count, docId, lastRev, resolved)
+              case Left(res) =>
+                // some other error occurred
+                Http.promise(Left(res))
+            }
+          case Left(res) =>
+            // some other error occurred
+            Http.promise(Left(res))
+        }
+
+      retry(credit,
+        couch.http((request / docId << doc).PUT),
+        saveOk,
+        doit)
+    }
+
+  }
 
   /** Returns the information about this database */
   def info: Result[Option[InfoResult]] =
@@ -304,8 +354,12 @@ case class Database(val name: String,
 
   /** Returns the document identified by the given id if it exists */
   def getDocById[T: Manifest](id: String, revision: Option[String] = None): Result[Option[T]] =
-   for(res <- couch.optHttp(request / id <<? revision.map("rev" -> _).toList).right)
-     yield res.map(docResult[T])
+    for(raw <- getRawDocById(id, revision).right)
+      yield raw.map(docResult[T])
+
+  /** Returns the raw document (as a string representing a json object) identified by the given id if it exists */
+  def getRawDocById(id: String, revision: Option[String] = None): Result[Option[String]] =
+    couch.optHttp(request / id <<? revision.map("rev" -> _).toList)
 
   /** Returns the current revision of the document if it exists */
   def getDocRevision(id: String): Result[Option[String]] =
@@ -317,7 +371,7 @@ case class Database(val name: String,
    */
   def saveDoc[T: Manifest](doc: T with Doc): Result[Option[T]] =
     for {
-      upd <- couch.http((request / doc._id << serializer.toJson(doc)).PUT).right
+      upd <- resolver(credit, doc._id, doc._rev, serializer.toJson(doc)).right
       res <- update(docUpdateResult(upd))
     } yield res
 

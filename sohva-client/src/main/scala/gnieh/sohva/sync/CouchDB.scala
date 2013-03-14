@@ -28,6 +28,7 @@ import gnieh.sohva.{
   DesignDoc,
   ViewResult
 }
+import gnieh.sohva.strategy._
 
 import java.io.{
   File,
@@ -60,8 +61,8 @@ abstract class CouchDB private[sync] (wrapped: ACouchDB) {
   val serializer = wrapped.serializer
 
   /** Returns the database on the given couch instance. */
-  def database(name: String): Database =
-    new Database(wrapped.database(name))
+  def database(name: String, credit: Int = 0, strategy: Strategy = BarneyStinsonStrategy): Database =
+    new Database(wrapped.database(name, credit, strategy))
 
   /** Returns the names of all databases in this couch instance. */
   def _all_dbs: List[String] =

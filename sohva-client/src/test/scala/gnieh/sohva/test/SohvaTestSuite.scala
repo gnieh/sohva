@@ -36,7 +36,9 @@ abstract class SohvaTestSpec extends FlatSpec {
 
 }
 
-class SohvaTestSuite extends Specs(TestBasic, TestPasswordReset) with BeforeAndAfterAll {
+class SohvaTestSuite extends Specs(TestBasic,
+  TestPasswordReset,
+  TestBarneyStinsonStrategy) with BeforeAndAfterAll {
 
   override def beforeAll() {
     // login
