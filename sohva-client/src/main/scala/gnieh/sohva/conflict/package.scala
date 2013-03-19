@@ -40,7 +40,7 @@ package object conflict {
     case _        => pretty(render(v))
   }
 
-  private[conflict] def pointerString(path: Pointer): String =
+  def pointerString(path: Pointer): String =
     path.map(_.replace("~", "~0").replace("/", "~1")).mkString("/", "/", "")
 
 }

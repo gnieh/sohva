@@ -28,7 +28,7 @@ import net.liftweb.json._
  */
 object BarneyStinsonStrategy extends Strategy {
 
-  def apply(baseDoc: Option[JValue], lastDoc: Option[JValue], currentDoc: JValue): JValue = lastDoc match {
+  def apply(baseDoc: Option[JValue], lastDoc: Option[JValue], currentDoc: JValue) = lastDoc match {
     case Some(lastDoc) =>
       // simply replace the revision by the last one, and return the object unchanged (or add it if not present)
       currentDoc match {

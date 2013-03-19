@@ -21,6 +21,8 @@ import liftjson.serializer
 
 import org.scalatest._
 
+import strategy._
+
 object SohvaTests {
   val couch = new CouchClient
   val session = couch.startSession
@@ -38,7 +40,8 @@ abstract class SohvaTestSpec extends FlatSpec {
 
 class SohvaTestSuite extends Specs(TestBasic,
   TestPasswordReset,
-  TestBarneyStinsonStrategy) with BeforeAndAfterAll {
+  TestBarneyStinsonStrategy,
+  TestCommuteStrategy) with BeforeAndAfterAll {
 
   override def beforeAll() {
     // login

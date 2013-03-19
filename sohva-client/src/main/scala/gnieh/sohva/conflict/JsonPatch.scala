@@ -35,22 +35,9 @@ final case class Patch(ops: List[Operation]) {
       op(acc)
     }
 
-  /** Indicates whether this patch modifies the given path */
-  def isModified(pointer: Pointer): Boolean = {
-    @tailrec
-    def modifies(ops: List[Operation]): Boolean = ops match {
-      case op :: _ if pointerString(pointer).startsWith(pointerString(op.path)) =>
-        true
-      case _ :: rest =>
-        modifies(rest)
-      case _ => false
-    }
-    modifies(ops)
-  }
-
-  /** Returns the operation to apply to the given pointer, or `None` if no operation */
-  def operation(pointer: Pointer): Option[Operation] =
-    ops.find(_.path == pointer)
+  /** Create a patch that applies `this` patch and then `that` patch */
+  def andThen(that: Patch): Patch =
+    Patch(this.ops ::: that.ops)
 
   override def toString = pretty(render(toJson))
 

@@ -30,7 +30,8 @@ trait Strategy {
   /** Applies the resolving strategy between the last known revision `baseDoc`
    *  (or `None` if the document did not exist before to the client knowledge),
    *  the last revision in the database `lastDoc` (or `None` if the document was deleted)
-   *  and the document the client wants to save `currentDoc`. */
+   *  and the document the client wants to save `currentDoc`.
+   *  If no automatic merge could be found, then returns `None` */
   def apply(baseDoc: Option[JValue],
             lastDoc: Option[JValue],
             currentDoc: JValue): JValue
