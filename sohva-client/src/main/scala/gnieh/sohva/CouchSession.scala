@@ -136,11 +136,11 @@ case class AuthInfo(authentication_db: String,
 case class UserInfo(val name: String,
                      val roles: List[String])
 
-private case class CouchUser(val name: String,
-                                val password: String,
-                                val roles: List[String],
-                                val `type`: String = "user",
-                                val _rev: Option[String] = None) {
+case class CouchUser(val name: String,
+                     val password: String,
+                     val roles: List[String],
+                     val `type`: String = "user",
+                     val _rev: Option[String] = None) {
   val _id = "org.couchdb.user:" + name
 }
 
