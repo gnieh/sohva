@@ -17,7 +17,6 @@ package gnieh.sohva
 package test
 
 import sync._
-import liftjson.serializer
 
 import org.scalatest._
 
@@ -39,6 +38,7 @@ abstract class SohvaTestSpec extends FlatSpec {
 }
 
 class SohvaTestSuite extends Specs(TestBasic,
+  TestSerializer,
   TestPasswordReset,
   TestBarneyStinsonStrategy,
   TestCommuteStrategy) with BeforeAndAfterAll {

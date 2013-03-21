@@ -17,7 +17,6 @@ package gnieh.sohva
 package test
 
 import sync._
-import liftjson.serializer
 
 /** @author Lucas Satabin
  *

@@ -18,9 +18,9 @@ package test
 
 import org.scalatest._
 
-class TestSerializer extends FlatSpec with ShouldMatchers {
+object TestSerializer extends SohvaTestSpec with ShouldMatchers {
 
-  import LiftJsonSerializer.toJson
+  import couch.serializer.toJson
 
   "a string" should "be correctly serialized" in {
     toJson("this is my string to serialize") should be("\"this is my string to serialize\"")

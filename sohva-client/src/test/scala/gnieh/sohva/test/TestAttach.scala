@@ -16,8 +16,6 @@
 package gnieh.sohva
 package test
 
-import liftjson.serializer
-
 import java.io.File
 
 /** @author Lucas Satabin

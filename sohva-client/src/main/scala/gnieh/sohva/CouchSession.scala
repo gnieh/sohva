@@ -56,7 +56,7 @@ class CouchSession private[sohva] (val couch: CouchClient) extends CouchDB {
       yield Right(res)
 
   /** Returns the user associated to the current session, if any */
-  def currentUser: Result[Option[CouchUser]] = userContext.right.flatMap {
+  def currentUser: Result[Option[UserInfo]] = userContext.right.flatMap {
     case UserCtx(name, _) if name != null =>
       http(request / "_users" / ("org.couchdb.user:" + name)).right.map(user)
     case _ => Http.promise(Right(None))
@@ -115,7 +115,7 @@ class CouchSession private[sohva] (val couch: CouchClient) extends CouchDB {
   }
 
   private def user(json: String) =
-    serializer.fromJsonOpt[CouchUser](json)
+    serializer.fromJsonOpt[UserInfo](json)
 
 }
 
@@ -133,19 +133,10 @@ case class AuthInfo(authentication_db: String,
                     authenticated: String)
 
 /** A couchdb user has a name, a password and a lit of roles. */
-case class CouchUser(val name: String,
+case class UserInfo(val name: String,
                      val roles: List[String])
 
-private case class LegacyCouchUser(val name: String,
-                                   val salt: String,
-                                   val password_sha: String,
-                                   val roles: List[String],
-                                   val `type`: String = "user",
-                                   val _rev: Option[String] = None) {
-  val _id = "org.couchdb.user:" + name
-}
-
-private case class NewCouchUser(val name: String,
+private case class CouchUser(val name: String,
                                 val password: String,
                                 val roles: List[String],
                                 val `type`: String = "user",

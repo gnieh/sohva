@@ -18,7 +18,6 @@ package conflict
 
 import scala.annotation.tailrec
 
-import liftjson.serializer.formats
 import net.liftweb.json.JsonAST._
 
 object JsonDiff {

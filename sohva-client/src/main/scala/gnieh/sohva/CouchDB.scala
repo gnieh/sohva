@@ -108,18 +108,10 @@ abstract class CouchDB {
             password: String,
             roles: List[String] = Nil): Result[Boolean] = {
 
-      if (version >= "1.2") {
-        val user = NewCouchUser(name, password, roles)
+      val user = CouchUser(name, password, roles)
 
-        for(res <- http((request / dbName / user._id << serializer.toJson(user)).PUT).right)
-          yield ok(res)
-      } else {
-        val (salt, password_sha) = passwordSha(password)
-        val user = LegacyCouchUser(name, salt, password_sha, roles)
-
-        for(res <- http((request / dbName / user._id << serializer.toJson(user)).PUT).right)
-          yield ok(res)
-      }
+      for(res <- http((request / dbName / user._id << serializer.toJson(user)).PUT).right)
+        yield ok(res)
 
     }
 
@@ -173,7 +165,7 @@ abstract class CouchDB {
               val saltedToken = hash(token + savedSalt)
               if(new Date().before(validity) && savedToken == saltedToken) {
                 // save the user with the new password
-                val newUser = new NewCouchUser(user.name, password, roles = user.roles, _rev = user._rev)
+                val newUser = new CouchUser(user.name, password, roles = user.roles, _rev = user._rev)
                 http((request / dbName / user._id << serializer.toJson(newUser)).PUT).right.map(ok _)
               } else {
                 Http.promise(Right(false))
@@ -204,7 +196,7 @@ abstract class CouchDB {
     bytes2string(md.digest(s.getBytes("UTF-8")))
   }
 
-  private[this] def passwordSha(password: String) = {
+  private[sohva] def passwordSha(password: String) = {
 
     // compute the password hash
     // the password string is concatenated with the generated salt
@@ -687,6 +679,7 @@ case class View[Key: Manifest, Value: Manifest, Doc: Manifest](design: Design,
                                                                view: String) {
 
   import design.db.couch.serializer
+  import serializer.formats
 
   private def request = design.request / "_view" / view
 
@@ -743,7 +736,6 @@ case class View[Key: Manifest, Value: Manifest, Doc: Manifest](design: Design,
   // helper methods
 
   private def viewResult[Key: Manifest, Value: Manifest, Doc: Manifest](json: String) = {
-    import LiftJsonSerializer.formats
     val ast = parse(json)
     val res = for {
       total_rows <- (ast \ "total_rows").extractOpt[Int]

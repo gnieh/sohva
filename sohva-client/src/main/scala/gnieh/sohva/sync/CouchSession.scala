@@ -17,7 +17,7 @@ package gnieh.sohva.sync
 
 import gnieh.sohva.{
   CouchSession => ACouchSession,
-  CouchUser,
+  UserInfo,
   UserCtx
 }
 
@@ -48,7 +48,7 @@ class CouchSession private[sync] (wrapped: ACouchSession) extends CouchDB(wrappe
 
   /** Returns the user associated to the current session, if any */
   @inline
-  def currentUser: Option[CouchUser] =
+  def currentUser: Option[UserInfo] =
     synced(wrapped.currentUser)
 
   /** Indicates whether the current session is logged in to the couch server */

@@ -49,8 +49,4 @@ package object sohva {
     def ! = promise()
   }
 
-  object liftjson {
-    implicit val serializer = LiftJsonSerializer
-  }
-
 }
