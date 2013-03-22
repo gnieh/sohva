@@ -29,9 +29,7 @@ class JsonPointer(errorHandler: PartialFunction[(JValue, String), JValue] = allE
   private def handle(value: JValue, pointer: String): JValue =
     errorHandler.orElse(allError)(value, pointer)
 
-  /** Parses a JSON pointer and returns the resolved path.
-   *  Upon syntax errors, the error handler is called with a [[gnieh.sohva.conflict.SyntaxError]]
-   *  containing the description message and the entire input */
+  /** Parses a JSON pointer and returns the resolved path. */
   def parse(input: String): Pointer = {
     if(input == null || input.isEmpty)
       // shortcut if input is empty

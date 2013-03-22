@@ -23,6 +23,8 @@ package object conflict {
 
   implicit def s2path(s: String) = List(s)
 
+  implicit def i2path(i: Int) = List(i.toString)
+
   private[conflict] val allError: PartialFunction[(JValue, String), JValue] = {
     case (value, pointer) =>
       throw new PointerException("Non existent value '" + pointer + "' in " + pp(value))

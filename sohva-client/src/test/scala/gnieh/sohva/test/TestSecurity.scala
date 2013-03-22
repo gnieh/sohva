@@ -16,54 +16,96 @@
 package gnieh.sohva
 package test
 
+import org.scalatest._
+import OptionValues._
+
+import sync._
+
 /** @author satabin
  *
  */
-object TestSecurity extends App {
+object TestSecurity extends SohvaTestSpec with ShouldMatchers with BeforeAndAfterEach {
 
-  val couch = new CouchClient
-  val session = couch.startSession
+  var secDb: Database = couch.database("sohva_test_security")
+  var adminSecDb: Database = _
 
-  val db = session.database("test_sec")
+  val secDoc1 = SecurityDoc(admins = SecurityList(names = List("secUser2")))
+  val secDoc2 = SecurityDoc(admins = SecurityList(roles = List("role1")))
+  val secDoc3 = SecurityDoc(members = SecurityList(roles = List("role2")))
+  val secDoc4 = SecurityDoc(members = SecurityList(names = List("secUser1")))
 
-  couch.users.add("test", "test")!
-
-  session.login("admin", "admin")!
-
-  db.delete!
-
-  println("database created: " + (db.create!))
-
-  case class TestDoc(_id: String, value: Int)(val _rev: Option[String] = None)
-
-  db.saveDoc(TestDoc("test", 18)())!
-
-  session.logout!
-
-  println("doc as anonymous (no security doc): " + (db.getDocById[TestDoc]("test")!))
-
-  session.login("admin", "admin")!
-
-  println(db.saveSecurityDoc(SecurityDoc(members = SecurityList(names = List("test"))))!)
-
-  session.logout!
-
-  try {
-    println("doc as anonymous (with security doc): " + (db.getDocById[TestDoc]("test")!))
-  } catch {
-    case _ => println("héhéhé")
+  override def beforeEach() {
+    // create the database for tests
+    adminSecDb = session.database("sohva_test_security")
+    adminSecDb.create
+    // add the test users
+    session.users.add("secUser1", "secUser1", List("role1", "role2"))
+    session.users.add("secUser2", "secUser2", List("role2"))
   }
 
-  session.login("test", "test")!
+  override def afterEach() {
+    // delete the database
+    adminSecDb.delete
+    // delete the test user
+    session.users.delete("secUser1")
+    session.users.delete("secUser2")
+  }
 
-  println("doc as `test' (with security doc): " + (db.getDocById[TestDoc]("test")!))
+  "a database with no security document" should "be readable by everybody" in {
 
-  db.deleteDoc("test")!
+    secDb.info should be('defined)
 
-  session.login("admin", "admin")!
+  }
 
-  session.users.delete("test")!
+  it should "be writtable to anybody" in {
 
-  couch.shutdown
+    val saved = secDb.saveDoc(TestDoc("some_doc", 17)())
+
+    saved should be('defined)
+    saved.value should have(
+      '_id("some_doc"),
+      'toto(17))
+
+  }
+
+  "server admin" should "be able to add a security document" in {
+
+    adminSecDb.saveSecurityDoc(secDoc1) should be(true)
+
+  }
+
+  "database admin" should "be able to update the security document" in {
+    adminSecDb.saveSecurityDoc(secDoc1) should be(true)
+
+    val session2 = couch.startSession
+    session2.login("secUser2", "secUser2")
+
+    session2.database("sohva_test_security").saveSecurityDoc(secDoc2) should be(true)
+  }
+
+  "anonymous user" should "not be able to read a database with a members list" in {
+
+    secDb.saveDoc(TestDoc("some_doc", 13)())
+    adminSecDb.saveSecurityDoc(secDoc3) should be(true)
+
+    val thrown = evaluating {
+      secDb.getDocById("some_doc")
+    } should produce[CouchException]
+
+    thrown.status should be(401)
+
+  }
+
+  it should "not be able to write into a database with a member list" in {
+
+    adminSecDb.saveSecurityDoc(secDoc3) should be(true)
+
+    val thrown = evaluating {
+      secDb.saveDoc(TestDoc("some_doc", 13)())
+    } should produce[CouchException]
+
+    thrown.status should be(401)
+
+  }
 
 }
