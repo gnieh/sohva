@@ -3,7 +3,7 @@ import Keys._
 
 object SohvaBuild extends Build {
 
-  val sohvaVersion = "0.2-SNAPSHOT"
+  val sohvaVersion = "0.2"
 
   lazy val sohva = (Project(id = "sohva",
     base = file(".")) settings (
@@ -43,6 +43,7 @@ object SohvaBuild extends Build {
     },
     pomIncludeRepository in ThisBuild := { x => false },
     pomExtra in ThisBuild := (
+      <url>https://github.com/gnieh/sohva</url>
       <licenses>
         <license>
           <name>The Apache Software License, Version 2.0</name>
@@ -67,10 +68,6 @@ object SohvaBuild extends Build {
         <system>travis</system>
         <url>https://travis-ci.org/#!/gnieh/sohva</url>
       </ciManagement>
-      <organization>
-        <name>gnieh.org</name>
-        <url>https://github.com/gnieh</url>
-      </organization>
       <issueManagement>
         <system>github</system>
         <url>https://github.com/gnieh/sohva/issues</url>
@@ -86,7 +83,7 @@ object SohvaBuild extends Build {
   lazy val clientDependencies = Seq(
     "net.databinder.dispatch" %% "dispatch-core" % "0.9.5" exclude("commons-logging", "commons-logging"),
     "com.jsuereth" %% "scala-arm" % "1.3",
-    "net.liftweb" %% "lift-json" % "2.5-M4",
+    "net.liftweb" %% "lift-json" % "2.5-RC2",
     "net.sf.mime-util" % "mime-util" % "1.2" excludeAll(
       ExclusionRule(organization = "log4j", name = "log4j"),
       ExclusionRule(organization = "commons-logging", name = "commons-logging")

@@ -1,0 +1,25 @@
+Changelog
+=========
+
+This is the changelog of Sohva for version 0.2.
+
+Statistics
+----------
+This version contains 6 contribution(s) made by 1 contributor(s).
+
+Contributors
+------------
+Following people contributed to this version (ordered by number of contributions):
+- Lucas Satabin (lucas.satabin@gnieh.org) - 6 contribution(s)
+
+Changes
+-------
+Summary of changes in this version:
+- new: new [Json serializer](https://github.com/gnieh/sohva/wiki/Custom-Serializers) infrastructure allowing support for any type
+- new: [automatic conflict resolution](https://github.com/gnieh/sohva/wiki/Automatic-Conflict-Resolution) on document update
+- new: use scala-arm for resource handling
+- new: use promising `Either` as results instead of throwing exceptions in asynchronous mode
+- fix: a lot of bug fixes, in particular correctly deserialize view results
+- new: mechanism for password reset (generate token with validity, reset password using the generated token, ...)
+
+Moreover, this version is much more tested than the previous one!

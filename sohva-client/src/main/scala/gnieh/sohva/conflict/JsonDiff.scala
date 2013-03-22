@@ -20,10 +20,15 @@ import scala.annotation.tailrec
 
 import net.liftweb.json.JsonAST._
 
+/** Methods to compute diffs between two Json values
+ *
+ *  @author Lucas Satabin
+ */
 object JsonDiff {
 
   private val patience = new Patience[JValue]
 
+  /** Computes the difference from `json1` to `json2` */
   def diff(json1: JValue, json2: JValue): Patch =
     Patch(diff(json1, json2, Nil))
 
