@@ -3,7 +3,7 @@ import Keys._
 
 object SohvaBuild extends Build {
 
-  val sohvaVersion = "0.2"
+  val sohvaVersion = "0.3-SNAPSHOT"
 
   lazy val sohva = (Project(id = "sohva",
     base = file(".")) settings (
