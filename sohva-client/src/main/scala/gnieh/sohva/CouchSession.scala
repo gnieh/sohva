@@ -16,6 +16,7 @@
 package gnieh.sohva
 
 import dispatch._
+import Defaults._
 
 import com.ning.http.client.Response
 
@@ -59,7 +60,7 @@ class CouchSession private[sohva] (val couch: CouchClient) extends CouchDB {
   def currentUser: Result[Option[UserInfo]] = userContext.right.flatMap {
     case UserCtx(name, _) if name != null =>
       http(request / "_users" / ("org.couchdb.user:" + name)).right.map(user)
-    case _ => Http.promise(Right(None))
+    case _ => Future.successful(Right(None))
   }
 
   /** Indicates whether the current session is logged in to the couch server */

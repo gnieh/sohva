@@ -15,9 +15,12 @@
 */
 package gnieh.sohva
 
+import scala.concurrent.Await
+import scala.concurrent.duration.Duration
+
 package object sync {
 
-  def synced[T](result: Result[T]): T = result() match {
+  def synced[T](result: Result[T]): T = Await.result(result, Duration.Inf) match {
     case Right(t) => t
     case Left((409, error)) =>
       throw new ConflictException(error)

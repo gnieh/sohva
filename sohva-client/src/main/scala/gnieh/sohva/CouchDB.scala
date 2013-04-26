@@ -18,6 +18,7 @@ package gnieh.sohva
 import strategy._
 
 import dispatch._
+import Defaults._
 import dispatch.retry.{
   CountingRetry,
   Success
@@ -142,7 +143,7 @@ abstract class CouchDB {
           for (user <- userDb.saveDoc(u).right)
             yield user.map(_ => token)
         case None =>
-          Http.promise(Right(None))
+          Future.successful(Right(None))
       }
 
     /** Resets the user password to the given one if:
@@ -168,13 +169,13 @@ abstract class CouchDB {
                 val newUser = new CouchUser(user.name, password, roles = user.roles, _rev = user._rev)
                 http((request / dbName / user._id << serializer.toJson(newUser)).PUT).right.map(ok _)
               } else {
-                Http.promise(Right(false))
+                Future.successful(Right(false))
               }
             case _ =>
-              Http.promise(Right(false))
+              Future.successful(Right(false))
           }
         case None =>
-          Http.promise(Right(false))
+          Future.successful(Right(false))
       }
 
   }
@@ -285,15 +286,15 @@ class Database(val name: String,
                 resolver(count, docId, lastRev, resolved)
               case Left(res) =>
                 // some other error occurred
-                Http.promise(Left(res))
+                Future.successful(Left(res))
             }
           case Left(res) =>
             // some other error occurred
-            Http.promise(Left(res))
+            Future.successful(Left(res))
         }
 
       retry(credit,
-        couch.http((request / docId << doc).PUT),
+        () => couch.http((request / docId << doc).PUT),
         saveOk,
         doit)
     }
@@ -321,7 +322,7 @@ class Database(val name: String,
 
   private[this] def create(exist: Boolean) =
     if(exist) {
-      Http.promise(Right(false))
+      Future.successful(Right(false))
     } else {
       for(result <- couch.http(request.PUT).right)
         yield couch.ok(result)
@@ -341,7 +342,7 @@ class Database(val name: String,
       for(result <- couch.http(request.DELETE).right)
         yield couch.ok(result)
     } else {
-      Http.promise(Right(false))
+      Future.successful(Right(false))
     }
 
   /** Returns the document identified by the given id if it exists */
@@ -371,7 +372,7 @@ class Database(val name: String,
     case DocUpdate(true, id, _) =>
       getDocById[T](id)
     case DocUpdate(false, _, _) =>
-      Http.promise(Right(None))
+      Future.successful(Right(None))
   }
 
   /** Deletes the document from the database.
@@ -397,7 +398,7 @@ class Database(val name: String,
         for(res <- couch.http((request / id).DELETE <<? Map("rev" -> rev)).right)
           yield couch.ok(res)
       case None =>
-        Http.promise(Right(false))
+        Future.successful(Right(false))
     }
 
   /** Attaches the given file to the given document id.
@@ -413,7 +414,7 @@ class Database(val name: String,
     }
 
     if (mime == MimeUtil.UNKNOWN_MIME_TYPE) {
-      Http.promise(Right(false)) // unknown mime type, cannot attach the file
+      Future.successful(Right(false)) // unknown mime type, cannot attach the file
     } else {
       // first get the last revision of the document (if it exists)
       for {
@@ -478,7 +479,7 @@ class Database(val name: String,
             yield couch.ok(res)
       case None =>
         // doc does not exist? well... good... just do nothing
-        Http.promise(Right(false))
+        Future.successful(Right(false))
     }
 
   /** Returns the security document of this database if any defined */
@@ -618,7 +619,7 @@ case class Design(db: Database,
     design match {
       case Some(design) =>
         db.saveDoc(design.copy(views = design.views - viewName)).right.map(_.isDefined)
-      case None => Http.promise(Right(false))
+      case None => Future.successful(Right(false))
     }
 
   /** Returns the (typed) view in this design document.
@@ -661,7 +662,7 @@ case class Design(db: Database,
       case Some(design) =>
         for(doc <- db.saveDoc(design.copy(validate_doc_update = None)).right)
           yield doc.isDefined
-      case None => Http.promise(Right(false))
+      case None => Future.successful(Right(false))
     }
 
   // helper methods

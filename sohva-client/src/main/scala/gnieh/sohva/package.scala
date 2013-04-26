@@ -16,6 +16,9 @@
 package gnieh
 
 import dispatch._
+import Defaults._
+
+import scala.concurrent.Future
 
 /** Contains all the classes needed to interact with a couchdb server.
  *  Classes in this package allows the user to:
@@ -43,10 +46,6 @@ package object sohva {
     val _rev: Option[String]
   }
 
-  type Result[T] = Promise[Either[(Int, Option[ErrorResult]), T]]
-
-  implicit def promise2bang[T](promise: Promise[T]) = new {
-    def ! = promise()
-  }
+  type Result[T] = Future[Either[(Int, Option[ErrorResult]), T]]
 
 }

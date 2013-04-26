@@ -11,7 +11,7 @@ object SohvaBuild extends Build {
     name := "sohva",
     version in ThisBuild := sohvaVersion,
     scalaVersion in ThisBuild := "2.10.0",
-    crossScalaVersions in ThisBuild := Seq("2.9.2", "2.10.0"),
+    crossScalaVersions in ThisBuild := Seq("2.9.3", "2.10.0"),
     libraryDependencies in ThisBuild ++= globalDependencies,
     parallelExecution in ThisBuild := false,
     compileOptions)
@@ -19,9 +19,9 @@ object SohvaBuild extends Build {
   ) aggregate(client, server)
 
   lazy val globalDependencies = Seq(
-    "org.scalatest" %% "scalatest" % "2.0.M5" % "test" cross CrossVersion.binaryMapped {
-      case "2.9.2" => "2.9.0"
-      case v => v
+    "org.scalatest" %% "scalatest" % "2.0.M5b" % "test" cross CrossVersion.binaryMapped {
+      case "2.9.3" => "2.9.0"
+      case v => "2.10"
     }
   )
 
@@ -81,9 +81,15 @@ object SohvaBuild extends Build {
   )
 
   lazy val clientDependencies = Seq(
-    "net.databinder.dispatch" %% "dispatch-core" % "0.9.5" exclude("commons-logging", "commons-logging"),
-    "com.jsuereth" %% "scala-arm" % "1.3",
-    "net.liftweb" %% "lift-json" % "2.5-RC2",
+    "net.databinder.dispatch" %% "dispatch-core" % "0.10.0" exclude("commons-logging", "commons-logging"),
+    "com.jsuereth" %% "scala-arm" % "1.3" cross CrossVersion.binaryMapped {
+      case "2.9.3" => "2.9.2"
+      case v => "2.10"
+    },
+    "net.liftweb" %% "lift-json" % "2.5-RC2" cross CrossVersion.binaryMapped {
+      case "2.9.3" => "2.9.2"
+      case v => "2.10"
+    },
     "net.sf.mime-util" % "mime-util" % "1.2" excludeAll(
       ExclusionRule(organization = "log4j", name = "log4j"),
       ExclusionRule(organization = "commons-logging", name = "commons-logging")
@@ -98,6 +104,9 @@ object SohvaBuild extends Build {
   )
 
   lazy val serverDependencies = Seq(
-    "net.liftweb" %% "lift-json" % "2.5-M4"
+    "net.liftweb" %% "lift-json" % "2.5-M4" cross CrossVersion.binaryMapped {
+      case "2.9.3" => "2.9.2"
+      case v => "2.10"
+    }
   )
 }

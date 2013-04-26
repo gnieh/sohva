@@ -16,6 +16,7 @@
 package gnieh.sohva
 
 import dispatch._
+import Defaults._
 
 import com.ning.http.client._
 
