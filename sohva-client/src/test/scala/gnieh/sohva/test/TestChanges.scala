@@ -139,4 +139,63 @@ object TestChanges extends SohvaTestSpec with ShouldMatchers with AsyncAssertion
     db.unregisterHandler(hid)
   }
 
+  it should "not be notified if unregistered" in {
+
+    val w = new Waiter
+
+    val hid = db.onChange { (id, doc) =>
+      w.dismiss()
+    }
+
+    val saved = db.saveDoc(TestDoc("new-doc", 17)())
+
+    saved should be('defined)
+
+    val changed = saved flatMap { saved =>
+      db.saveDoc(saved.copy(toto = 5)(saved._rev))
+    }
+
+    changed should be('defined)
+
+    db.unregisterHandler(hid)
+
+    changed map { saved =>
+      db.deleteDoc(saved)
+    }
+
+    w.await(timeout(3 seconds), dismissals(2))
+
+  }
+
+  "all registered handlers" should "be notified" in {
+
+    val w = new Waiter
+
+    val hid1 = db.onChange { (id, doc) =>
+      w.dismiss()
+    }
+
+    val hid2 = db.onChange { (id, doc) =>
+      w.dismiss()
+    }
+
+    val hid3 = db.onChange { (id, doc) =>
+      w.dismiss()
+    }
+
+    val hid4 = db.onChange { (id, doc) =>
+      w.dismiss()
+    }
+
+    db.saveDoc(TestDoc("new-doc", 17)())
+
+    w.await(timeout(3 seconds), dismissals(4))
+
+    db.unregisterHandler(hid1)
+    db.unregisterHandler(hid2)
+    db.unregisterHandler(hid3)
+    db.unregisterHandler(hid4)
+
+  }
+
 }
