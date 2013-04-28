@@ -19,10 +19,11 @@ import strategy._
 
 import dispatch._
 import Defaults._
-import dispatch.retry.{
+import retry.{
   CountingRetry,
   Success
 }
+import stream.Strings
 
 import resource._
 
@@ -317,7 +318,7 @@ class Database(val name: String,
     private def request = self.request / "_changes"
 
     // own instance of http that can be shutted down when no more listeners
-    private var http: Option[Http] = None
+    private var http: Option[Strings[Unit]] = None
 
     // holds all change handlers that are currently registered for this database
     private val handlers = Map.empty[Int, (String, Option[JObject]) => Unit]
@@ -338,29 +339,29 @@ class Database(val name: String,
     // starts the background task
     private def start {
       if(http.isEmpty) {
-        // copy the global http context
-        val h = couch._http.configure(identity)
         // send a continuous feed request started from current update sequence
         // thus we do not get all the changes since the beginning of the times
         // but only new changes up from now
+        // create a new stream handler
+        lazy val handler = as.stream.Lines(onChange)
         for {
-          info <- h(self.request OK as.String).map(infoResult)
-          handler <- h(
-            request <<? Map(
+          info <- couch._http(self.request OK as.String).map(infoResult)
+          _ <- couch._http(request <<? Map(
               "feed" -> "continuous",
               "since" -> info.update_seq.toString,
               "include_docs" -> "true",
               "heartbeat" -> "15000"
-            ) > as.stream.Lines(onChange)
+            ) > handler
           )
         } {}
-        http = Some(h)
+        http = Some(handler)
       }
     }
 
     // stops the background task
     private def stop {
       http map { h =>
+        h.stop
         http = None
       }
     }
