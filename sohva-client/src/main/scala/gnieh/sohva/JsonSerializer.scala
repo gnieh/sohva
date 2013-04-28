@@ -151,7 +151,9 @@ private class ChangeSerializer extends Serializer[Change] {
   }
 
   def serialize(implicit format: Formats): PartialFunction[Any, JValue] =
-    PartialFunction.empty
+    {
+      case (x: Change) => throw new MatchError(x)
+    }
 
 }
 
