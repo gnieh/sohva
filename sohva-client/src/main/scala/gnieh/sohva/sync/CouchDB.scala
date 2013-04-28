@@ -36,6 +36,8 @@ import java.io.{
 }
 import java.util.Date
 
+import net.liftweb.json.JObject
+
 /** A CouchDB instance.
  *  Allows users to access the different databases and information.
  *  This is the key class to start with when one wants to work with couchdb.
@@ -135,6 +137,21 @@ case class Database(wrapped: ADatabase) {
   @inline
   def exists: Boolean =
     synced(wrapped.exists)
+
+  /** Registers a handler that is executed everytime an update is done on the database.
+   *  This handler is executed synchronously on received change,
+   *  thus any potentially blocking task must be done asynchronously in the handler to avoid
+   *  blocking the update mechanism.
+   *  The identifier of this update handler is immediately returned. It can then be used
+   *  to dynamically unregister the handler.
+   *  Registering a new change handler does not result in a new request being sent. At most one
+   *  request is sent per database, no matter how many handlers there are.
+   */
+  def onChange(action: (String, Option[JObject]) => Unit): Int =
+    wrapped.onChange(action)
+
+  def unregisterHandler(id: Int) =
+    wrapped.unregisterHandler(id)
 
   /** Creates this database in the couchdb instance if it does not already exist.
    *  Returns <code>true</code> iff the database was actually created.

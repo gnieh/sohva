@@ -31,7 +31,11 @@ class JsonSerializer(couch: CouchDB, custom: List[CustomSerializer[_]]) {
 
   implicit val formats = new DefaultFormats {
     override def dateFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SS")
-  } + new UserSerializer(couch) + new SecurityDocSerializer(couch.version) ++ custom.map(_.serializer(couch.version))
+  } +
+  new UserSerializer(couch) +
+  new SecurityDocSerializer(couch.version) +
+  new ChangeSerializer ++
+  custom.map(_.serializer(couch.version))
 
   import Implicits._
 
@@ -115,6 +119,40 @@ private class SecurityDocSerializer(version: String) extends Serializer[Security
         JField("admins", Extraction.decompose(security.admins))
       ))
   }
+}
+
+/** Deserialize a change sent by the server. This never needs to be serialized.
+ *
+ *  @author Lucas Satabin
+ */
+private class ChangeSerializer extends Serializer[Change] {
+
+  private val ChangeClass = classOf[Change]
+
+  def deserialize(implicit format: Formats): PartialFunction[(TypeInfo, JValue), Change] = {
+    case (TypeInfo(ChangeClass, _), json) =>
+      val seq = (json \ "seq").extract[Int]
+      val id = (json \ "id").extract[String]
+      val rev = (json \ "changes") match {
+        // changes of the form [{"rev": "1-ef334230a0d99ee043"}]
+        case JArray(List(JObject(List(JField("rev", JString(rev)))))) => rev
+        case _                          => throw new MappingException("Malformed change object, rev field is not a single-element array")
+      }
+      val deleted = (json \ "deleted") match {
+        case JBool(b) => b
+        case JNothing => false
+        case _        => throw new MappingException("Malformed change object, deleted field is not a valid Json boolean")
+      }
+      val doc = (json \ "doc") match {
+        case obj: JObject if !deleted => Some(obj)
+        case _            => None
+      }
+      Change(seq, id, rev, deleted, doc)
+  }
+
+  def serialize(implicit format: Formats): PartialFunction[Any, JValue] =
+    PartialFunction.empty
+
 }
 
 /** Implement this trait to define a custom serializer that may

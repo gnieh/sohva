@@ -247,8 +247,11 @@ abstract class CouchDB {
 }
 
 /** Gives the user access to the different operations available on a database.
- *  Among other operation this is the key class to get access to the documents
+ *  Among other operations this is the key class to get access to the documents
  *  of this database.
+ *
+ *  It also exposes the change handler interface, that allows people to react to change notifications. This
+ *  is a low-level API, that handles raw Json objects
  *
  * @param credit The credit assigned to the conflict resolver. It represents the number of times the client tries to save the document before giving up.
  *  @param strategy The strategy being used to resolve conflicts
@@ -260,8 +263,12 @@ class Database(val name: String,
                val credit: Int,
                val strategy: Strategy) {
 
+  self =>
+
   import couch.serializer
 
+  /* the resolver is responsible for applying the merging strategy on conflict and retrying
+   * to save the document after resolution process */
   private object resolver extends CountingRetry {
     // only retry if a conflict occurred, other errors are considered as 'Success'
     val saveOk = new Success[Either[(Int, Option[ErrorResult]), String]] ({
@@ -301,6 +308,83 @@ class Database(val name: String,
 
   }
 
+  /* the change notifier is responsible for managing the change handlers
+   * and also for managing the change request and response stream */
+  private object changeNotifier {
+
+    import scala.collection.mutable.Map
+
+    private def request = self.request / "_changes"
+
+    // own instance of http that can be shutted down when no more listeners
+    private var http: Option[Http] = None
+
+    // holds all change handlers that are currently registered for this database
+    private val handlers = Map.empty[Int, (String, Option[JObject]) => Unit]
+
+    // this is called with each new received line. if the line is empty, this is
+    // just a heartbeat, otherwise, notify all registered handlers
+    private def onChange(json: String) = synchronized {
+      if(json != null & json.nonEmpty) {
+        serializer.fromJsonOpt[Change](json) map { change =>
+          handlers.foreach {
+            case (_, h) =>
+              h(change.id, change.doc)
+          }
+        }
+      }
+    }
+
+    // starts the background task
+    private def start {
+      if(http.isEmpty) {
+        // copy the global http context
+        val h = couch._http.configure(identity)
+        // send a continuous feed request started from current update sequence
+        // thus we do not get all the changes since the beginning of the times
+        // but only new changes up from now
+        for {
+          info <- h(self.request OK as.String).map(infoResult)
+          handler <- h(
+            request <<? Map(
+              "feed" -> "continuous",
+              "since" -> info.update_seq.toString,
+              "include_docs" -> "true",
+              "heartbeat" -> "15000"
+            ) > as.stream.Lines(onChange)
+          )
+        } {}
+        http = Some(h)
+      }
+    }
+
+    // stops the background task
+    private def stop {
+      http map { h =>
+        http = None
+      }
+    }
+
+    /* add a new handler and return its identifier */
+    def addHandler(handler: (String, Option[JObject]) => Unit) = synchronized {
+      val id = handler.hashCode
+      handlers(id) = handler
+      if(http.isEmpty)
+        start
+      id
+    }
+
+    /* remove a handler by id */
+   def removeHandler(id: Int) = synchronized {
+     handlers -= id
+     // no more handlers registered, we do not need to get notified
+     // about changes anymore
+     if(handlers.isEmpty)
+       stop
+   }
+
+  }
+
   /** Returns the information about this database */
   def info: Result[Option[InfoResult]] =
     for(info <- couch.optHttp(request).right)
@@ -310,6 +394,22 @@ class Database(val name: String,
   @inline
   def exists: Result[Boolean] =
     couch.contains(name)
+
+  /** Registers a handler that is executed everytime an update is done on the database.
+   *  This handler is executed synchronously on received change,
+   *  thus any potentially blocking task must be done asynchronously in the handler to avoid
+   *  blocking the update mechanism.
+   *  The identifier of this update handler is immediately returned. It can then be used
+   *  to dynamically unregister the handler.
+   *  Registering a new change handler does not result in a new request being sent. At most one
+   *  request is sent per database, no matter how many handlers there are.
+   */
+  def onChange(action: (String, Option[JObject]) => Unit): Int =
+    changeNotifier.addHandler(action)
+
+  def unregisterHandler(id: Int) {
+    changeNotifier.removeHandler(id)
+  }
 
   /** Creates this database in the couchdb instance if it does not already exist.
    *  Returns <code>true</code> iff the database was actually created.
