@@ -147,7 +147,7 @@ private class ChangeSerializer extends Serializer[Change] {
         case obj: JObject if !deleted => Some(obj)
         case _            => None
       }
-      Change(seq, id, rev, deleted, doc)
+      new Change(seq, id, rev, deleted, doc)
   }
 
   def serialize(implicit format: Formats): PartialFunction[Any, JValue] =
