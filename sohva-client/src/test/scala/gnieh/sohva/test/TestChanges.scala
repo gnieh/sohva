@@ -177,6 +177,45 @@ object TestChanges extends SohvaTestSpec with ShouldMatchers with AsyncAssertion
 
   }
 
+  it should "be notified only for filtered documents if a filter was specified" in {
+
+    // register a design with a filter
+    val design = db.design("test")
+
+    val ok = design.saveFilter("my_filter", "function(doc, req) { if(doc.toto > 10) { return true; } else { return false; } }")
+
+    ok should be(true)
+
+    val w = new Waiter
+
+    val changes = db.changes(Some("test/my_filter"))
+
+    val hid = for((_, doc) <- changes) {
+      doc should be('defined)
+      doc.value.extract[TestDoc].toto should be > (10)
+      w.dismiss()
+    }
+
+    val d1 = db.saveDoc(TestDoc("doc1", 8)())
+
+    d1 should be('defined)
+
+    val d2 = db.saveDoc(TestDoc("doc2", 17)())
+
+    d2 should be('defined)
+
+    val d3 = db.saveDoc(d1.get.copy(toto = 14)(_rev = d1.get._rev))
+
+    d3 should be('defined)
+
+    val deleted = db.deleteDoc("doc1")
+
+    deleted should be(true)
+
+    w.await(timeout(1 seconds), dismissals(2))
+
+  }
+
   "all registered handlers" should "be notified" in {
 
     val w = new Waiter

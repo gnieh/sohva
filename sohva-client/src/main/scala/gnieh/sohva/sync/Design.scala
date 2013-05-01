@@ -79,4 +79,16 @@ case class Design(wrapped: ADesign) {
   def deleteValidateFunction: Boolean =
     synced(wrapped.deleteValidateFunction)
 
+  /** Creates or updates a filter function.
+   *  If the design does not exist yet, it is created.
+   */
+  @inline
+  def saveFilter(name: String, filterFun: String): Boolean =
+    synced(wrapped.saveFilter(name, filterFun))
+
+  /** Deletes the filter identified by its name from the design document */
+   @inline
+  def deleteFilter(name: String): Boolean =
+    synced(wrapped.deleteFilter(name))
+
 }

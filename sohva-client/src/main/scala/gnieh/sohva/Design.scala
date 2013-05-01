@@ -123,6 +123,41 @@ case class Design(db: Database,
       case None => Future.successful(Right(false))
     }
 
+  /** Creates or updates a filter function.
+   *  If the design does not exist yet, it is created.
+   */
+  def saveFilter(name: String, filterFun: String): Result[Boolean] =
+    for {
+      design <- getDesignDocument.right
+      res <- db.saveDoc(withFilterDoc(design, name, filterFun)).right
+    } yield res.isDefined
+
+  private[this] def withFilterDoc(design: Option[DesignDoc], filterName: String, filterFun: String) =
+    design match {
+      case Some(design) =>
+        // the updated design
+        design.copy(filters = design.filters.updated(filterName, filterFun))
+      case None =>
+        // the design does not exist yet
+        DesignDoc("_design/" + name, language, Map(), None, Map(filterName -> filterFun))
+    }
+
+  /** Deletes the filter identified by its name from the design document */
+  def deleteFilter(name: String): Result[Boolean] =
+    for {
+      design <- getDesignDocument.right
+      res <- deleteFilter(design, name)
+    } yield res
+
+  private[this] def deleteFilter(design: Option[DesignDoc], filterName: String) =
+    design match {
+      case Some(design) =>
+        for(doc <- db.saveDoc(design.copy(filters = design.filters - filterName)).right)
+          yield doc.isDefined
+      case None =>
+        Future.successful(Right(false))
+    }
+
   // helper methods
 
   private def designDoc(json: String) =
@@ -134,5 +169,6 @@ private[sohva] case class DesignDoc(_id: String,
                                     language: String,
                                     views: Map[String, ViewDoc],
                                     validate_doc_update: Option[String],
+                                    filters: Map[String, String] = Map(),
                                     val _rev: Option[String] = None)
 

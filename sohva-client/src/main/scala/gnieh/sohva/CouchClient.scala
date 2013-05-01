@@ -49,7 +49,9 @@ class CouchClient(val host: String = "localhost",
 
   // ========== internals ==========
 
-  private[sohva] val _http = new Http
+  private[sohva] val _http = Http.configure { builder =>
+    builder.setFollowRedirects(true)
+  }
 
   // the base request to this couch instance
   private[sohva] def request =
