@@ -20,7 +20,8 @@ import gnieh.sohva.{
   Doc,
   SecurityDoc,
   InfoResult,
-  ChangeStream
+  ChangeStream,
+  OriginalChangeStream
 }
 
 import java.io.{
@@ -52,7 +53,7 @@ case class Database(wrapped: ADatabase) {
 
   /** Registers to the change stream of this database with potential filter */
   def changes(filter: Option[String] = None): ChangeStream =
-    new ChangeStream(wrapped, filter)
+    wrapped.changes(filter)
 
   /** Creates this database in the couchdb instance if it does not already exist.
    *  Returns <code>true</code> iff the database was actually created.

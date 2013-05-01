@@ -114,7 +114,7 @@ class Database(val name: String,
 
   /** Registers to the change stream of this database with potential filter */
   def changes(filter: Option[String] = None): ChangeStream =
-    new ChangeStream(this, filter)
+    new OriginalChangeStream(this, filter)
 
   /** Creates this database in the couchdb instance if it does not already exist.
    *  Returns <code>true</code> iff the database was actually created.

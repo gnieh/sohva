@@ -44,7 +44,7 @@ object TestChanges extends SohvaTestSpec with ShouldMatchers with AsyncAssertion
 
     val changes = db.changes()
 
-    val hid = changes.foreach { (id, doc) =>
+    val hid = changes.foreach { case (id, doc) =>
       w {
         id should be("new-doc")
         val d = doc.map(_.extract[TestDoc])
@@ -72,7 +72,7 @@ object TestChanges extends SohvaTestSpec with ShouldMatchers with AsyncAssertion
 
     saved should be('defined)
 
-    val hid = changes.foreach { (id, doc) =>
+    val hid = changes.foreach { case (id, doc) =>
       w {
         id should be("new-doc")
         val d = doc.map(_.extract[TestDoc])
@@ -101,7 +101,7 @@ object TestChanges extends SohvaTestSpec with ShouldMatchers with AsyncAssertion
 
     val changes = db.changes()
 
-    val hid = changes.foreach { (id, doc) =>
+    val hid = changes.foreach { case (id, doc) =>
       w {
         id should be("new-doc")
         doc should not be('defined)
@@ -124,7 +124,7 @@ object TestChanges extends SohvaTestSpec with ShouldMatchers with AsyncAssertion
 
     val changes = db.changes()
 
-    val hid = changes.foreach { (id, doc) =>
+    val hid = changes.foreach { case (id, doc) =>
       w.dismiss()
     }
 
@@ -142,7 +142,7 @@ object TestChanges extends SohvaTestSpec with ShouldMatchers with AsyncAssertion
       db.deleteDoc(saved)
     }
 
-    w.await(timeout(3 seconds), dismissals(3))
+    w.await(timeout(1 seconds), dismissals(3))
 
     changes.unregister(hid)
   }
@@ -153,7 +153,7 @@ object TestChanges extends SohvaTestSpec with ShouldMatchers with AsyncAssertion
 
     val changes = db.changes()
 
-    val hid = changes.foreach { (id, doc) =>
+    val hid = changes.foreach { case (id, doc) =>
       w.dismiss()
     }
 
@@ -173,7 +173,7 @@ object TestChanges extends SohvaTestSpec with ShouldMatchers with AsyncAssertion
       db.deleteDoc(saved)
     }
 
-    w.await(timeout(3 seconds), dismissals(2))
+    w.await(timeout(1 seconds), dismissals(2))
 
   }
 
@@ -222,30 +222,59 @@ object TestChanges extends SohvaTestSpec with ShouldMatchers with AsyncAssertion
 
     val changes = db.changes()
 
-    val hid1 = changes.foreach { (id, doc) =>
+    val hid1 = changes.foreach { case (id, doc) =>
       w.dismiss()
     }
 
-    val hid2 = changes.foreach { (id, doc) =>
+    val hid2 = changes.foreach { case (id, doc) =>
       w.dismiss()
     }
 
-    val hid3 = changes.foreach { (id, doc) =>
+    val hid3 = changes.foreach { case (id, doc) =>
       w.dismiss()
     }
 
-    val hid4 = changes.foreach { (id, doc) =>
+    val hid4 = changes.foreach { case (id, doc) =>
       w.dismiss()
     }
 
     db.saveDoc(TestDoc("new-doc", 17)())
 
-    w.await(timeout(3 seconds), dismissals(4))
+    w.await(timeout(1 seconds), dismissals(4))
 
     changes.unregister(hid1)
     changes.unregister(hid2)
     changes.unregister(hid3)
     changes.unregister(hid4)
+
+  }
+
+  "a client filter" should "filter out some results" in {
+
+    val w = new Waiter
+
+    val changes = db.changes()
+
+    val hid1 =
+      for((id, doc) <-changes)
+        w.dismiss()
+
+    val hid2 =
+      for((id, Some(doc)) <- changes)
+        w.dismiss()
+
+    val saved = db.saveDoc(TestDoc("doc", 23)())
+
+    saved should be('defined)
+
+    val ok = db.deleteDoc(saved.get)
+
+    ok should be(true)
+
+    w.await(timeout(1 second), dismissals(3))
+
+    changes.unregister(hid1)
+    changes.unregister(hid2)
 
   }
 

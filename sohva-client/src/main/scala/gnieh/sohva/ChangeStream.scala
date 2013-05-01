@@ -27,8 +27,43 @@ import scala.collection.mutable.Map
  *
  *  @author Lucas Satabin
  */
-class ChangeStream(database: Database,
-                   filter: Option[String]) {
+abstract class ChangeStream {
+
+  /** Calls the function for each received change. If the document was added or updated,
+   *  it is passed along with its identifier, if it was deleted, only the identifier is
+   *  given.
+   *  The identifier of the registered handler is immediately returned to allow for later
+   *  unregistration.
+   *  If the stream is closed, the handler is not registered and the function returns `-1`
+   */
+  def foreach(f: Tuple2[String, Option[JObject]] => Unit): Int
+
+  /** Alias for `filter(f)`. this is intended to be used in for-comprehensions */
+  def withFilter(f: Tuple2[String, Option[JObject]] => Boolean): ChangeStream = {
+    require(f != null, "Function must not be null")
+    filter(f)
+  }
+  /** Returns a change stream that is filtered by the given predicate */
+  def filter(p: Tuple2[String, Option[JObject]] => Boolean): ChangeStream =
+    new FilteredChangeStream(p, this)
+
+
+  /** Unregisters the change handler identifier by the given identifier */
+  def unregister(id: Int)
+
+  /** Indicates whether this stream is closed */
+  def closed: Boolean
+
+}
+
+
+/** The original change stream (meaning unfiltered on the client side
+ *  which contains the active connection to the database
+ *
+ *  @author Lucas Satabin
+ */
+class OriginalChangeStream(database: Database,
+                           filter: Option[String]) extends ChangeStream {
 
   import database.couch.serializer.formats
 
@@ -38,7 +73,7 @@ class ChangeStream(database: Database,
 
   private[this] var request = database.request / "_changes"
 
-  private[this] var actions = Map.empty[Int, (String, Option[JObject]) => Unit]
+  private[this] var actions = Map.empty[Int, Tuple2[String, Option[JObject]] => Unit]
 
   private[this] var _closed = false
 
@@ -85,12 +120,6 @@ class ChangeStream(database: Database,
   /** Indicates whether this stream is closed */
   def closed = _closed
 
-  /** Alias for `foreach((id, doc) => f(id, doc))`. this is intended to be used in for-comprehensions */
-  def foreach(f: Tuple2[String, Option[JObject]] => Unit): Int = {
-    require(f != null, "Function must not be null")
-    foreach((id, doc) => f(id, doc))
-  }
-
   /** Calls the function for each received change. If the document was added or updated,
    *  it is passed along with its identifier, if it was deleted, only the identifier is
    *  given.
@@ -98,7 +127,7 @@ class ChangeStream(database: Database,
    *  unregistration.
    *  If the stream is closed, the handler is not registered and the function returns `-1`
    */
-  def foreach(f: (String, Option[JObject]) => Unit): Int = synchronized {
+  def foreach(f: Tuple2[String, Option[JObject]] => Unit): Int = synchronized {
     if(!closed) {
       require(f != null, "Function must not be null")
       val fId = f.hashCode
@@ -114,6 +143,28 @@ class ChangeStream(database: Database,
     if(!closed)
       actions -= id
   }
+
+}
+
+/** The filtered change stream
+ *
+ *  @author Lucas Satabin
+ */
+class FilteredChangeStream(p: Tuple2[String, Option[JObject]] => Boolean, original: ChangeStream) extends ChangeStream {
+
+  def foreach(f: Tuple2[String, Option[JObject]] => Unit) =
+    original.foreach {
+      case (id, doc) if p(id, doc) =>
+        f(id, doc)
+      case _ =>
+        // do nothing
+    }
+
+  def closed =
+    original.closed
+
+  def unregister(id: Int) =
+    original.unregister(id)
 
 }
 
