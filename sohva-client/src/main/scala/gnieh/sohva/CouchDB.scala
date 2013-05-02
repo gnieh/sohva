@@ -26,7 +26,6 @@ import com.ning.http.client.{
 }
 
 import java.security.MessageDigest
-import java.util.Date
 
 import scala.util.Random
 
@@ -78,90 +77,8 @@ abstract class CouchDB {
   // user management section
 
   /** Exposes the interface for managing couchdb users. */
-  object users {
+  object users extends Users(this)
 
-    /** The user database name. By default `_users`. */
-    var dbName: String = "_users"
-
-    private def userDb = self.database(dbName)
-
-    /** Adds a new user with the given role list to the user database,
-     *  and returns the new instance.
-     */
-    def add(name: String,
-            password: String,
-            roles: List[String] = Nil): Result[Boolean] = {
-
-      val user = CouchUser(name, password, roles)
-
-      for(res <- http((request / dbName / user._id << serializer.toJson(user)).PUT).right)
-        yield ok(res)
-
-    }
-
-    /** Deletes the given user from the database. */
-    def delete(name: String): Result[Boolean] =
-      database(dbName).deleteDoc("org.couchdb.user:" + name)
-
-    /** Generates a password reset token for the given user with the given validity and returns it */
-    def generateResetToken(name: String, until: Date): Result[Option[String]] =
-      for {
-        tokens <- _uuids().right
-        user <- userDb.getDocById[PasswordResetUser]("org.couchdb.user:" + name).right
-        token <- generate(user, tokens, until)
-      } yield token
-
-    private[this] def generate(user: Option[PasswordResetUser], tokens: List[String], until: Date) =
-      user match {
-        case Some(user) =>
-          val List(token) = tokens
-          // enrich the user document with password reset information
-          val (token_salt, token_sha) = passwordSha(token)
-          val u =
-            user.copy(
-              reset_token_sha = Some(token_sha),
-              reset_token_salt = Some(token_salt),
-              reset_validity = Some(until))
-          // save back the enriched user document
-          for (user <- userDb.saveDoc(u).right)
-            yield user.map(_ => token)
-        case None =>
-          Future.successful(Right(None))
-      }
-
-    /** Resets the user password to the given one if:
-     *   - a password reset token exists in the database
-     *   - the token is still valid
-     *   - the saved token matches the one given as parameter
-     */
-    def resetPassword(name: String, token: String, password: String): Result[Boolean] =
-      for {
-        user <- userDb.getDocById[PasswordResetUser]("org.couchdb.user:" + name).right
-        ok <- reset(user, token, password)
-      } yield ok
-
-    private[this] def reset(user: Option[PasswordResetUser], token: String, password: String) =
-      user match {
-        case Some(user) =>
-          // check the token with the one in the database (if still valid)
-          (user.reset_token_sha, user.reset_token_salt, user.reset_validity) match {
-            case (Some(savedToken), Some(savedSalt), Some(validity)) =>
-              val saltedToken = hash(token + savedSalt)
-              if(new Date().before(validity) && savedToken == saltedToken) {
-                // save the user with the new password
-                val newUser = new CouchUser(user.name, password, roles = user.roles, _rev = user._rev)
-                http((request / dbName / user._id << serializer.toJson(newUser)).PUT).right.map(ok _)
-              } else {
-                Future.successful(Right(false))
-              }
-            case _ =>
-              Future.successful(Right(false))
-          }
-        case None =>
-          Future.successful(Right(false))
-      }
-
-  }
 
   // helper methods
 
@@ -169,13 +86,13 @@ abstract class CouchDB {
 
   private[sohva] def _http: Http
 
-  private[this] def bytes2string(bytes: Array[Byte]) =
+  private[sohva] def bytes2string(bytes: Array[Byte]) =
     bytes.foldLeft(new StringBuilder) {
       (res, byte) =>
         res.append(Integer.toHexString(byte & 0xff))
     }.toString
 
-  private[this] def hash(s: String) = {
+  private[sohva] def hash(s: String) = {
     val md = MessageDigest.getInstance("SHA-1")
     bytes2string(md.digest(s.getBytes("UTF-8")))
   }
@@ -191,7 +108,6 @@ abstract class CouchDB {
 
     (salt, hash(password + salt))
   }
-
 
   private[sohva] def http(request: RequestBuilder): Result[String] =
     _http(request > handleCouchResponse _)
@@ -228,9 +144,6 @@ abstract class CouchDB {
     serializer.fromJson[Uuids](json).uuids
 
 }
-
-
-
 
 // the different object that may be returned by the couchdb server
 
