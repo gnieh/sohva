@@ -41,11 +41,6 @@ package object sohva {
     val _rev: Option[String]
   }
 
-  type OptIdDoc = {
-    val _id: Option[String]
-    val _rev: Option[String]
-  }
-
   type Result[T] = Future[Either[(Int, Option[ErrorResult]), T]]
 
 }
