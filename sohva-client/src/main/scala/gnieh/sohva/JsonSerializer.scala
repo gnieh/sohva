@@ -16,6 +16,8 @@
 package gnieh.sohva
 
 import net.liftweb.json._
+
+import java.net.URL
 import java.text.SimpleDateFormat
 
 case class SohvaJsonException(msg: String, inner: Exception) extends Exception(msg, inner)
@@ -34,7 +36,8 @@ class JsonSerializer(couch: CouchDB, custom: List[CustomSerializer[_]]) {
   } +
   new UserSerializer(couch) +
   new SecurityDocSerializer(couch.version) +
-  new ChangeSerializer ++
+  ChangeSerializer +
+  DbRefSerializer ++
   custom.map(_.serializer(couch.version))
 
   import Implicits._
@@ -125,7 +128,7 @@ private class SecurityDocSerializer(version: String) extends Serializer[Security
  *
  *  @author Lucas Satabin
  */
-private class ChangeSerializer extends Serializer[Change] {
+private object ChangeSerializer extends Serializer[Change] {
 
   private val ChangeClass = classOf[Change]
 
@@ -154,6 +157,39 @@ private class ChangeSerializer extends Serializer[Change] {
     {
       case (x: Change) => throw new MatchError(x)
     }
+
+}
+
+/** (De)Serialize a database reference (remote or local).
+ *
+ *  @author Lucas Satabin
+ */
+private object DbRefSerializer extends Serializer[DbRef] {
+
+  private val DbRefClass = classOf[DbRef]
+
+  def deserialize(implicit format: Formats): PartialFunction[(TypeInfo, JValue), DbRef] = {
+    case (TypeInfo(DbRefClass, _), JString(url(u))) =>
+      RemoteDb(u)
+    case (TypeInfo(DbRefClass, _), JString(name)) =>
+      LocalDb(name)
+  }
+
+  def serialize(implicit format: Formats): PartialFunction[Any, JValue] = {
+    case LocalDb(name) =>
+      JString(name)
+    case RemoteDb(url) =>
+      JString(url.toString)
+  }
+
+  object url {
+    def unapply(s: String): Option[URL] = try {
+      Some(new URL(s))
+    } catch {
+      case _: Exception =>
+        None
+    }
+  }
 
 }
 

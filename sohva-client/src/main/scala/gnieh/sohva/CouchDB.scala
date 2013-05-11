@@ -59,6 +59,10 @@ abstract class CouchDB {
   def database(name: String, credit: Int = 0, strategy: Strategy = BarneyStinsonStrategy): Database =
     new Database(name, this, credit, strategy)
 
+  /** Returns the replicator database */
+  def replicator(name: String = "_replicator", credit: Int = 0, strategy: Strategy = BarneyStinsonStrategy): Replicator =
+    new Replicator(name, this, credit, strategy)
+
   /** Returns the names of all databases in this couch instance. */
   def _all_dbs: Result[List[String]] =
     for(dbs <- http(request / "_all_dbs").right)
@@ -78,7 +82,6 @@ abstract class CouchDB {
 
   /** Exposes the interface for managing couchdb users. */
   object users extends Users(this)
-
 
   // helper methods
 
