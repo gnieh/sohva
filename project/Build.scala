@@ -1,5 +1,9 @@
 import sbt._
 import Keys._
+import com.typesafe.sbt.osgi.SbtOsgi._
+import com.typesafe.sbt.osgi.OsgiKeys
+
+import java.io.File
 
 object SohvaBuild extends Build {
 
@@ -77,8 +81,19 @@ object SohvaBuild extends Build {
 
   lazy val client = Project(id = "sohva-client",
     base = file("sohva-client")) settings (
-    libraryDependencies ++= clientDependencies
-  )
+      libraryDependencies ++= clientDependencies,
+      resourceDirectories in Compile := List()
+    ) settings(osgiSettings: _*) settings (
+      OsgiKeys.exportPackage := Seq(
+        "gnieh.sohva",
+        "gnieh.sohva.*"
+      ),
+      OsgiKeys.additionalHeaders := Map (
+        "Bundle-Name" -> "Sohva CouchDB Client"
+      ),
+      OsgiKeys.bundleSymbolicName := "org.gnieh.sohva",
+      OsgiKeys.privatePackage := Seq()
+    )
 
   lazy val clientDependencies = Seq(
     "net.databinder.dispatch" %% "dispatch-core" % "0.10.0" exclude("commons-logging", "commons-logging"),
