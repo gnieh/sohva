@@ -17,7 +17,8 @@ package gnieh.sohva.sync
 
 import gnieh.sohva.{
   Design => ADesign,
-  DesignDoc
+  DesignDoc,
+  ViewDoc
 }
 
 /** A design gives access to the different views.
@@ -52,6 +53,13 @@ case class Design(wrapped: ADesign) {
                mapFun: String,
                reduceFun: Option[String] = None): Boolean =
     synced(wrapped.saveView(viewName, mapFun, reduceFun))
+
+  /** Creates or updates the view in this design with the given name.
+   *  If the design does not exist yet, it is created.
+   */
+  @inline
+  def saveView(viewName: String, view: ViewDoc): Boolean =
+    synced(wrapped.saveView(viewName, view))
 
   /** Deletes the view with the given name from the design */
   @inline

@@ -103,8 +103,7 @@ case class View[Key: Manifest, Value: Manifest, Doc: Manifest](design: Design,
 
 }
 
-private[sohva] case class ViewDoc(map: String,
-                                  reduce: Option[String])
+case class ViewDoc(map: String, reduce: Option[String])
 
 final case class ViewResult[Key, Value, Doc](total_rows: Int,
                                              offset: Int,

@@ -48,13 +48,17 @@ case class Design(db: Database,
    */
   def saveView(viewName: String,
                mapFun: String,
-               reduceFun: Option[String] = None): Result[Boolean] = {
-    val view = ViewDoc(mapFun, reduceFun)
+               reduceFun: Option[String] = None): Result[Boolean] =
+    saveView(viewName, ViewDoc(mapFun, reduceFun))
+
+  /** Creates or updates the view in this design with the given name.
+   *  If the design does not exist yet, it is created.
+   */
+  def saveView(viewName: String, view: ViewDoc): Result[Boolean] =
     for {
       design <- getDesignDocument.right
       doc <- db.saveDoc(newDoc(design, viewName, view)).right
     } yield doc.isDefined
-  }
 
   private[this] def newDoc(design: Option[DesignDoc], viewName: String, view: ViewDoc) =
     design match {

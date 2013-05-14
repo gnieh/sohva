@@ -20,7 +20,7 @@ object SohvaBuild extends Build {
     parallelExecution in ThisBuild := false,
     compileOptions)
     settings(publishSettings: _*)
-  ) aggregate(client, server)
+  ) aggregate(client, dsl, server)
 
   lazy val globalDependencies = Seq(
     "org.scalatest" %% "scalatest" % "2.0.M5b" % "test" cross CrossVersion.binaryMapped {
@@ -101,7 +101,7 @@ object SohvaBuild extends Build {
       case "2.9.3" => "2.9.2"
       case v => "2.10"
     },
-    "net.liftweb" %% "lift-json" % "2.5-RC2" cross CrossVersion.binaryMapped {
+    "net.liftweb" %% "lift-json" % "2.5-RC5" cross CrossVersion.binaryMapped {
       case "2.9.3" => "2.9.2"
       case v => "2.10"
     },
@@ -113,13 +113,25 @@ object SohvaBuild extends Build {
     "org.slf4j" % "jcl-over-slf4j" % "1.7.2"
   )
 
+  lazy val dsl = Project(id = "sohva-dsl",
+    base = file("sohva-dsl")) settings (
+      scalaVersion := "2.10.0",
+      scalaOrganization := "org.scala-lang.virtualized",
+      scalacOptions ++= Seq("-deprecation", "-unchecked", "-feature", "-Yvirtualize"),
+      unmanagedBase <<= baseDirectory(_ / "lib"),
+      libraryDependencies ++= dslDependencies
+    ) dependsOn(client)
+
+  lazy val dslDependencies = Seq(
+  )
+
   lazy val server = Project(id = "sohva-server",
     base = file("sohva-server")) settings (
     libraryDependencies ++= serverDependencies
   )
 
   lazy val serverDependencies = Seq(
-    "net.liftweb" %% "lift-json" % "2.5-M4" cross CrossVersion.binaryMapped {
+    "net.liftweb" %% "lift-json" % "2.5-RC5" cross CrossVersion.binaryMapped {
       case "2.9.3" => "2.9.2"
       case v => "2.10"
     }
