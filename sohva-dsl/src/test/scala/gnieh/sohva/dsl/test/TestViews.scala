@@ -72,4 +72,28 @@ class TestViews extends FlatSpec with ShouldMatchers {
 
   }
 
+  "requiring a module" should "be correctly translated and checked" in {
+    val view = View.compile(new JSCouchViewExp[String, Int] {
+      val map: Rep[Doc => Unit] = fun { doc =>
+        val module = require[Int]("path")
+        emit(doc._id, module)
+      }
+    })
+
+    val expectedRequire =
+      """(function map() {
+        |var x0 = function(x1) {
+        |var x2 = require("path");
+        |var x3 = x1._id;
+        |var x4 = emit(x3, x2);
+        |};
+        |return x0
+        |}
+        |)()""".stripMargin
+
+    val expected = ViewDoc(expectedRequire, None)
+
+    view should be(expected)
+  }
+
 }

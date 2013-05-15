@@ -25,26 +25,35 @@ import scala.virtualization.lms.common._
  */
 trait JSCouch extends JS with JSJson with Casts {
 
+  /** Checks whether the object is an array */
   def isArray(obj: Rep[Any]): Rep[Boolean]
 
+  /** Logs the message */
   def log[A](msg: Rep[A]): Rep[Unit]
 
+  /** Sums the numeric values in the array */
   def sum[A: Numeric: Manifest](array: Rep[Array[A]]): Rep[A]
 
+  /** Converts the object to its Json representation (alias for `JSON.stringify(obj)` */
   def toJSON(obj: Rep[Any]): Rep[String]
+
+  /** Imports the CommonJS module */
+  def require[A](path: Rep[String]): Rep[A]
 
 }
 
-trait JSCouchExp extends JSExp with JSCouch with JSJsonExp with CastsCheckedExp { 
+trait JSCouchExp extends JSExp with JSCouch with JSJsonExp with CastsCheckedExp {
   case class IsArray(obj: Rep[Any]) extends Def[Boolean]
   case class Log[A](s: Rep[A]) extends Def[Unit]
   case class Sum[A](array: Rep[Array[A]]) extends Def[A]
   case class ToJSON(obj: Rep[Any]) extends Def[String]
+  case class Require[A](path: Rep[String]) extends Def[A]
 
   def isArray(obj: Rep[Any]): Rep[Boolean] = reflectEffect(IsArray(obj))
   def log[A](s: Rep[A]): Rep[Unit] = reflectEffect(Log(s))
   def sum[A: Numeric: Manifest](a: Rep[Array[A]]): Rep[A] = reflectEffect(Sum(a))
   def toJSON(obj: Rep[Any]): Rep[String] = reflectEffect(ToJSON(obj))
+  def require[A](path: Rep[String]): Rep[A] = reflectEffect(Require(path))
 
 }
 
@@ -53,10 +62,11 @@ trait JSGenCouch extends JSGen with JSGenStruct with JSGenProxy with QuoteGen wi
   import IR._
 
   override def emitNode(sym: Sym[Any], rhs: Def[Any]) = rhs match {
-    case IsArray(obj) => emitValDef(sym, q"isArray($obj)")
-    case Log(s)       => emitValDef(sym, q"log($s)")
-    case Sum(a)       => emitValDef(sym, q"sum($a)")
-    case ToJSON(obj)  => emitValDef(sym, q"toJSON($obj)")
-    case _            => super.emitNode(sym, rhs)
+    case IsArray(obj)  => emitValDef(sym, q"isArray($obj)")
+    case Log(s)        => emitValDef(sym, q"log($s)")
+    case Sum(a)        => emitValDef(sym, q"sum($a)")
+    case ToJSON(obj)   => emitValDef(sym, q"toJSON($obj)")
+    case Require(path) => emitValDef(sym, q"require($path)")
+    case _             => super.emitNode(sym, rhs)
   }
 }
