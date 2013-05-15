@@ -20,13 +20,21 @@ import scala.js._
 
 import net.liftweb.json._
 
+/** `JSON2` object access
+ *
+ *  @author Lucas Satabin
+ */
 trait JSJson extends JSProxyBase {
 
+  /** the special `undefined` javascript value */
   val undefined: Rep[Nothing]
+  /** the JSON2 object */
   val JSON: Rep[JSON]
 
   trait JSON {
+    /** Returns the string representation of the javascript object */
     def stringify(value: Rep[Any], replacer: Rep[Any] = undefined, space: Rep[Any] = undefined): Rep[String]
+    /** Parses a Json object to a javascript value */
     def parse(data: Rep[String], reviver: Rep[(String, Any) => Any] = undefined): Rep[Any]
   }
 

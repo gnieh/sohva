@@ -25,6 +25,13 @@ import scala.virtualization.lms.common._
  */
 trait JSCouch extends JS with JSJson with Casts {
 
+  trait Doc {
+    var _id: Rep[String]
+    var _rev: Rep[String]
+  }
+  implicit def repToDoc(x: Rep[Doc]): Doc =
+    repProxy[Doc](x)
+
   /** Checks whether the object is an array */
   def isArray(obj: Rep[Any]): Rep[Boolean]
 

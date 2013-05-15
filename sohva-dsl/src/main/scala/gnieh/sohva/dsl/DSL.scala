@@ -21,10 +21,16 @@ import java.io.{
   PrintWriter
 }
 
-object View {
+/** Code written in the Sohva-DSL must be compiled to Sohva representations.
+ *   - views are compiled to Sohva `ViewDoc`
+ *   - designs are compiled to Sohva `DesignDoc`
+ *
+ *  @author Lucas Satabin
+ */
+object DSL {
 
   /** Compiles the given view written in the Sohva DSL to a couch view */
-  def compile[Key: Manifest, Mapped: Manifest](view: JSCouchViewExp[Key, Mapped]): ViewDoc = {
+  def compile[Key: Manifest, Mapped: Manifest](view: JSView[Key, Mapped]): ViewDoc = {
     val codegen = new JSGenCouchView[Key, Mapped] {
       val IR: view.type = view
     }

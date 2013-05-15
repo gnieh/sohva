@@ -43,7 +43,7 @@ class TestViews extends FlatSpec with ShouldMatchers {
       |)()""".stripMargin
 
   "compiling a view with only a map" should "be correct" in {
-    val view = View.compile(new JSCouchViewExp[String, Int] {
+    val view = DSL.compile(new JSView[String, Int] {
       val map: Rep[Doc => Unit] = fun { doc =>
         emit(doc._id, 1)
       }
@@ -55,7 +55,7 @@ class TestViews extends FlatSpec with ShouldMatchers {
   }
 
   "compiling a view with a reduce method" should "be correct" in {
-    val view = View.compile(new JSCouchViewExp[String, Int] {
+    val view = DSL.compile(new JSView[String, Int] {
       val map: Rep[Doc => Unit] = fun { doc =>
         emit(doc._id, 1)
       }
@@ -73,7 +73,7 @@ class TestViews extends FlatSpec with ShouldMatchers {
   }
 
   "requiring a module" should "be correctly translated and checked" in {
-    val view = View.compile(new JSCouchViewExp[String, Int] {
+    val view = DSL.compile(new JSView[String, Int] {
       val map: Rep[Doc => Unit] = fun { doc =>
         val module = require[Int]("path")
         emit(doc._id, module)
