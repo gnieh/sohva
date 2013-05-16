@@ -83,7 +83,7 @@ object SohvaBuild extends Build {
     base = file("sohva-client")) settings (
       libraryDependencies ++= clientDependencies,
       resourceDirectories in Compile := List()
-    ) settings(osgiSettings: _*) settings (
+    ) settings(defaultOsgiSettings: _*) settings (
       OsgiKeys.exportPackage := Seq(
         "gnieh.sohva",
         "gnieh.sohva.*"
@@ -119,7 +119,20 @@ object SohvaBuild extends Build {
       scalaOrganization := "org.scala-lang.virtualized",
       scalacOptions ++= Seq("-deprecation", "-unchecked", "-feature", "-Yvirtualize"),
       unmanagedBase <<= baseDirectory(_ / "lib"),
-      libraryDependencies ++= dslDependencies
+      libraryDependencies ++= dslDependencies,
+      resourceDirectories in Compile := List()
+    ) settings(defaultOsgiSettings: _*) settings (
+      OsgiKeys.exportPackage := Seq(
+        "gnieh.sohva.dsl",
+        "scala.js",
+        "scala.virtualization.lms.*"
+      ),
+      OsgiKeys.importPackage += "javax.swing;resolution:=optional",
+      OsgiKeys.additionalHeaders := Map (
+        "Bundle-Name" -> "Sohva CouchDB DSL"
+      ),
+      OsgiKeys.bundleSymbolicName := "org.gnieh.sohva-dsl",
+      OsgiKeys.privatePackage := Seq()
     ) dependsOn(client)
 
   lazy val dslDependencies = Seq(
