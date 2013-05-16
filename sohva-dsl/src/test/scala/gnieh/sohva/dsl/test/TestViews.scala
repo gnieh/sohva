@@ -19,6 +19,8 @@ package test
 
 import org.scalatest._
 
+import scala.collection.mutable.Map
+
 class TestViews extends FlatSpec with ShouldMatchers {
 
   val expectedMap =
@@ -86,33 +88,6 @@ class TestViews extends FlatSpec with ShouldMatchers {
         |var x2 = require("path");
         |var x3 = x1._id;
         |var x4 = emit(x3, x2);
-        |};
-        |return x0
-        |}
-        |)()""".stripMargin
-
-    val expected = ViewDoc(expectedRequire, None)
-
-    view should be(expected)
-  }
-
-  "a scala map" should "be correctly compiled" in {
-    val view = DSL.compile(new JSView[String, Int] {
-      val map: Rep[Doc => Unit] = fun { doc =>
-        val m = Map[String, Int]()
-        m("test") = 5
-        emit(doc._id, m("test"))
-      }
-    })
-
-    val expectedRequire =
-      """(function map() {
-        |var x0 = function(x1) {
-        |var x2 = {};
-        |var x3 = x2["test"] = 5;
-        |var x4 = x1._id;
-        |var x5 = x2["test"];
-        |var x6 = emit(x4, x5);
         |};
         |return x0
         |}
