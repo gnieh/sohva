@@ -83,7 +83,7 @@ object SohvaBuild extends Build {
     base = file("sohva-client")) settings (
       libraryDependencies ++= clientDependencies,
       resourceDirectories in Compile := List()
-    ) settings(defaultOsgiSettings: _*) settings (
+    ) settings(osgiSettings: _*) settings (
       OsgiKeys.exportPackage := Seq(
         "gnieh.sohva",
         "gnieh.sohva.*"
@@ -121,7 +121,7 @@ object SohvaBuild extends Build {
       unmanagedBase <<= baseDirectory(_ / "lib"),
       libraryDependencies ++= dslDependencies,
       resourceDirectories in Compile := List()
-    ) settings(defaultOsgiSettings: _*) settings (
+    ) settings(osgiSettings: _*) settings (
       OsgiKeys.exportPackage := Seq(
         "gnieh.sohva.dsl",
         "scala.js",
