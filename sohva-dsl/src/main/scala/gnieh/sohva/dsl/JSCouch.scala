@@ -158,11 +158,12 @@ trait JSCouchExp extends JSExp with JSCouch with JSJsonExp with JSMapsExp with C
 
 }
 
-trait JSGenCouch extends JSGen with JSGenJson with JSGenMaps with JSGenStruct with JSGenProxy with QuoteGen with GenCastChecked {
+trait JSGenCouch extends JSGen with JSGenJson with JSGenMaps with JSGenStruct with JSGenProxy with QuoteGen {
   val IR: JSCouchExp
   import IR._
 
   override def emitNode(sym: Sym[Any], rhs: Def[Any]) = rhs match {
+    case Cast(x, m)    => emitValDef(sym, quote(x))
     case IsArray(obj)  => emitValDef(sym, q"isArray($obj)")
     case Log(s)        => emitValDef(sym, q"log($s)")
     case Sum(a)        => emitValDef(sym, q"sum($a)")
