@@ -44,8 +44,7 @@ abstract class ChangeStream {
     filter(f)
   }
   /** Returns a change stream that is filtered by the given predicate */
-  def filter(p: Tuple2[String, Option[JObject]] => Boolean): ChangeStream =
-    new FilteredChangeStream(p, this)
+  def filter(p: Tuple2[String, Option[JObject]] => Boolean): ChangeStream
 
 
   /** Unregisters the change handler identifier by the given identifier */
@@ -56,119 +55,7 @@ abstract class ChangeStream {
 
 }
 
-
-/** The original change stream (meaning unfiltered on the client side
- *  which contains the active connection to the database
- *
- *  @author Lucas Satabin
- */
-class OriginalChangeStream(database: Database,
-                           filter: Option[String]) extends ChangeStream {
-
-  import database.couch.serializer.formats
-
-  import ChangeStream._
-
-  private[this] var handler = as.stream.Lines(onChange)
-
-  private[this] var request = database.request / "_changes"
-
-  private[this] var actions = Map.empty[Int, Tuple2[String, Option[JObject]] => Unit]
-
-  private[this] var _closed = false
-
-  for {
-    info <- database.info.right
-    () <- database.couch._http(request <<? List(
-      "feed" -> "continuous",
-      "since" -> info.map(_.update_seq.toString).getOrElse("0"),
-      "include_docs" -> "true"
-    ) <<? (if(filter.isDefined) List("filter" -> filter.get) else Nil) > handler)
-  } {
-    // if the request ends for any reason, close and clear everything
-    close
-  }
-
-  /* notify the registered handler if any */
-  private[this] def onChange(json: String) = synchronized {
-    json match {
-      case change(seq, id, rev, deleted, doc) if !closed =>
-        for((_, f) <- actions)
-          f(id, doc)
-      case last_seq(seq) =>
-      case _ =>
-        // ignore other messages
-    }
-  }
-
-  /** Closes this change stream. After calling this not new events are sent to the
-   *  registered handler if any.
-   */
-  def close(): Unit = synchronized {
-    // unregister the handlers if any
-    actions.clear
-    // stop the request handler
-    handler.stop
-    // mark the stream as closed
-    _closed = true
-    // free resources
-    handler = null
-    request = null
-    actions = null
-  }
-
-  /** Indicates whether this stream is closed */
-  def closed = _closed
-
-  /** Calls the function for each received change. If the document was added or updated,
-   *  it is passed along with its identifier, if it was deleted, only the identifier is
-   *  given.
-   *  The identifier of the registered handler is immediately returned to allow for later
-   *  unregistration.
-   *  If the stream is closed, the handler is not registered and the function returns `-1`
-   */
-  def foreach(f: Tuple2[String, Option[JObject]] => Unit): Int = synchronized {
-    if(!closed) {
-      require(f != null, "Function must not be null")
-      val fId = f.hashCode
-      actions(fId) = f
-      fId
-    } else {
-      -1
-    }
-  }
-
-  /** Unregisters the change handler identifier by the given identifier */
-  def unregister(id: Int): Unit = synchronized {
-    if(!closed)
-      actions -= id
-  }
-
-}
-
-/** The filtered change stream
- *
- *  @author Lucas Satabin
- */
-class FilteredChangeStream(p: Tuple2[String, Option[JObject]] => Boolean, original: ChangeStream) extends ChangeStream {
-
-  def foreach(f: Tuple2[String, Option[JObject]] => Unit) =
-    original.foreach {
-      case (id, doc) if p(id, doc) =>
-        f(id, doc)
-      case _ =>
-        // do nothing
-    }
-
-  def closed =
-    original.closed
-
-  def unregister(id: Int) =
-    original.unregister(id)
-
-}
-
-private[sohva] object ChangeStream {
+protected[sohva] object ChangeStream {
 
   object change {
     def unapply(json: String)(implicit formats: Formats) =
@@ -186,11 +73,11 @@ private[sohva] object ChangeStream {
  *
  *  @author Lucas Satabin
  */
-private[sohva] case class Change(seq: Int, id: String, rev: String, deleted: Boolean, doc: Option[JObject])
+protected[sohva] case class Change(seq: Int, id: String, rev: String, deleted: Boolean, doc: Option[JObject])
 
 /** Last update sequence sent by the server
  *
  *  @author Lucas Satabin
  */
-private[sohva] case class LastSeq(last_seq: Int)
+protected[sohva] case class LastSeq(last_seq: Int)
 

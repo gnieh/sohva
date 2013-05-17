@@ -14,6 +14,14 @@
 * limitations under the License.
 */
 package gnieh.sohva
+package async
+
+import dispatch._
+import Defaults._
+
+import com.ning.http.client._
+
+import net.liftweb.json._
 
 /** A CouchDB instance.
  *  Allows users to access the different databases and instance information.
@@ -24,12 +32,31 @@ package gnieh.sohva
  *  @author Lucas Satabin
  *
  */
-trait CouchClient extends CouchDB {
+class CouchClient(val host: String = "localhost",
+                  val port: Int = 5984,
+                  val ssl: Boolean = false,
+                  val version: String = "1.2",
+                  val custom: List[SohvaSerializer[_]] = Nil) extends CouchDB with gnieh.sohva.CouchClient {
 
-  /** Starts a new session to with this client */
-  def startSession: CouchSession
+  val serializer = new JsonSerializer(this, custom)
 
-  /** Shuts down this instance of couchdb client. */
-  def shutdown
+  def startSession =
+    new CouchSession(this)
+
+  def shutdown =
+    _http.shutdown
+
+  // ========== internals ==========
+
+  protected[sohva] val _http = Http.configure { builder =>
+    builder.setFollowRedirects(true)
+  }
+
+  // the base request to this couch instance
+  protected[sohva] def request =
+    if (ssl)
+      :/(host, port).secure
+    else
+      :/(host, port)
 
 }

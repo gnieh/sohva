@@ -41,6 +41,4 @@ package object sohva {
     val _rev: Option[String]
   }
 
-  type Result[T] = Future[Either[(Int, Option[ErrorResult]), T]]
-
 }

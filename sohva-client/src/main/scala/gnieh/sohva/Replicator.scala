@@ -17,9 +17,6 @@ package gnieh.sohva
 
 import strategy._
 
-import dispatch._
-import Defaults._
-
 import java.net.URL
 
 /** A replicator database that allows people to manage replications:
@@ -29,37 +26,21 @@ import java.net.URL
  *
  *  @author Lucas Satabin
  */
-class Replicator(name: String, couch: CouchDB, credit: Int, strategy: Strategy)
-  extends Database(name, couch, credit, strategy) {
+trait Replicator extends Database {
 
   /** Starts a new replication from `source` to `target`. if a replication
    *  task already exists for the same source and target, the document is added
    *  but the replication is not started again. The result only contains the identifier
    *  of the actual replication task, not its state.
    */
-  def start(replication: Replication): Result[Option[Replication]] =
-    saveDoc(replication)
+  def start(replication: Replication): Result[Option[Replication]]
 
   /** Stops the replication identified by the given replication document id.
    *  if the identifier does not describe the document that started the replication,
    *  it is deleted from the replicator database, but the replication task is not stopped.
    *  It returns `true` only if the replication was actually stopped, `false` otherwise.
    */
-  def stop(id: String): Result[Boolean] =
-    for {
-      repl <- getDocById[Replication](id).right
-      ok <- deleteReplication(repl).right
-    } yield ok
-
-  private def deleteReplication(repl: Option[Replication]) = repl match {
-    case Some(r) =>
-      for {
-        ok <- deleteDoc(r).right
-        // is this the original document that started the replication task?
-      } yield r._replication_state.isDefined && ok
-    case None =>
-      Future.successful(Right(false))
-  }
+  def stop(id: String): Result[Boolean]
 
 }
 

@@ -15,22 +15,13 @@
 */
 package gnieh.sohva
 
-import dispatch._
-import Defaults._
-
-import net.liftweb.json._
-
 /** A view can be queried to get the result.
  *
  *  @author Lucas Satabin
  */
-case class View[Key: Manifest, Value: Manifest, Doc: Manifest](design: Design,
-                                                               view: String) {
+trait View[Key, Value, Doc] {
 
-  import design.db.couch.serializer
-  import serializer.formats
-
-  private def request = design.request / "_view" / view
+  type Result[T]
 
   /** Queries the view on the server and returned the typed result.
    *  BE CAREFUL: If the types given to the constructor are not correct,
@@ -51,55 +42,7 @@ case class View[Key: Manifest, Value: Manifest, Doc: Manifest](design: Design,
             reduce: Boolean = true,
             include_docs: Boolean = false,
             inclusive_end: Boolean = true,
-            update_seq: Boolean = false): Result[ViewResult[Key, Value, Doc]] = {
-
-    // build options
-    val options = List(
-      key.map(k => "key" -> serializer.toJson(k)),
-      if (keys.nonEmpty) Some("keys" -> serializer.toJson(keys)) else None,
-      startkey.map(k => "startkey" -> serializer.toJson(k)),
-      startkey_docid.map("startkey_docid" -> _),
-      endkey.map(k => "endkey" -> serializer.toJson(k)),
-      endkey_docid.map("endkey_docid" -> _),
-      if (limit > 0) Some("limit" -> limit) else None,
-      stale.map("stale" -> _),
-      if (descending) Some("descending" -> true) else None,
-      if (skip > 0) Some("skip" -> skip) else None,
-      if (group) Some("group" -> true) else None,
-      if (group_level >= 0) Some("group_level" -> group_level) else None,
-      if (reduce) None else Some("reduce" -> false),
-      if (include_docs) Some("include_docs" -> true) else None,
-      if (inclusive_end) None else Some("inclusive_end" -> false),
-      if (update_seq) Some("update_seq" -> true) else None)
-      .flatten
-      .filter(_ != null) // just in case somebody gave Some(null)...
-      .map {
-        case (name, value) => (name, value.toString)
-      }
-
-    for(res <- design.db.couch.http(request <<? options).right)
-      yield viewResult[Key,Value,Doc](res)
-
-  }
-
-  // helper methods
-
-  private def viewResult[Key: Manifest, Value: Manifest, Doc: Manifest](json: String) = {
-    val ast = parse(json)
-    val res = for {
-      total_rows <- (ast \ "total_rows").extractOpt[Int]
-      offset <- (ast \ "offset").extractOpt[Int]
-      JArray(rows) = (ast \ "rows")
-    } yield ViewResult(total_rows, offset, rows.flatMap { row =>
-        for {
-          id <- (row \ "id").extractOpt[String]
-          key <- (row \ "key").extractOpt[Key]
-          value <- (row \ "value").extractOpt[Value]
-          doc = (row \ "doc").extractOpt[Doc]
-        } yield Row(id, key, value, doc)
-    })
-    res.getOrElse(ViewResult(0, 0, Nil))
-  }
+            update_seq: Boolean = false): Result[ViewResult[Key, Value, Doc]]
 
 }
 

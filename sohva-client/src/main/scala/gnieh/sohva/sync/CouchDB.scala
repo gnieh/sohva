@@ -13,14 +13,18 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package gnieh.sohva.sync
+package gnieh.sohva
+package sync
 
-import gnieh.sohva.{
+import gnieh.sohva.async.{
   CouchDB => ACouchDB
 }
 import gnieh.sohva.strategy._
 
 import java.util.Date
+
+import scala.concurrent._
+import duration._
 
 /** A CouchDB instance.
  *  Allows users to access the different databases and information.
@@ -32,73 +36,71 @@ import java.util.Date
  *  @author Lucas Satabin
  *
  */
-abstract class CouchDB private[sync] (wrapped: ACouchDB) {
+abstract class CouchDB private[sync] (wrapped: ACouchDB) extends gnieh.sohva.CouchDB {
 
-  /** The couchdb instance host name. */
+  type Result[T] = T
+
+  def synced[T](result: wrapped.Result[T]): T = Await.result(result, Duration.Inf) match {
+    case Right(t) => t
+    case Left((409, error)) =>
+      throw new ConflictException(error)
+    case Left((code, error)) =>
+      throw new CouchException(code, error)
+  }
+
   val host = wrapped.host
 
-  /** The couchdb instance port. */
   val port = wrapped.port
 
-  /** The couchdb instance version. */
   val version = wrapped.version
 
-  /** The Json (de)serializer */
   val serializer = wrapped.serializer
 
-  /** Returns the database on the given couch instance. */
   def database(name: String, credit: Int = 0, strategy: Strategy = BarneyStinsonStrategy): Database =
     new Database(wrapped.database(name, credit, strategy))
 
-  /** Returns the names of all databases in this couch instance. */
+  def replicator(name: String = "_replicator", credit: Int = 0, strategy: Strategy = BarneyStinsonStrategy): Replicator =
+    new Replicator(wrapped.replicator(name, credit, strategy))
+
   def _all_dbs: List[String] =
     synced(wrapped._all_dbs)
 
-  /** Returns the requested number of UUIDS (by default 1). */
   def _uuids(count: Int = 1): List[String] =
     synced(wrapped._uuids(count))
 
-  /** Indicates whether this couchdb instance contains the given database */
   def contains(dbName: String): Boolean =
     synced(wrapped.contains(dbName))
 
   // user management section
 
-  /** Exposes the interface for managing couchdb users. */
-  object users {
+  object users extends Users {
 
-    /** The user database name. By default `_users`. */
+    type Result[T] = T
+
     def dbName: String =
       wrapped.users.dbName
 
     def dbName_=(n: String) =
       wrapped.users.dbName = n
 
-    /** Adds a new user with the given role list to the user database,
-     *  and returns the new instance.
-     */
     def add(name: String,
             password: String,
             roles: List[String] = Nil): Boolean =
       synced(wrapped.users.add(name, password, roles))
 
-    /** Deletes the given user from the database. */
     def delete(name: String): Boolean =
       synced(wrapped.users.delete(name))
 
-    /** Generates a password reset token for the given user with the given validity and returns it */
     def generateResetToken(name: String, until: Date): Option[String] =
       synced(wrapped.users.generateResetToken(name, until))
 
-    /** Resets the user password to the given one if:
-     *   - a password reset token exists in the database
-     *   - the token is still valid
-     *   - the saved token matches the one given as parameter
-     */
     def resetPassword(name: String, token: String, password: String): Boolean =
       synced(wrapped.users.resetPassword(name, token, password))
 
   }
+
+  protected[sohva] def passwordSha(password: String): (String, String) =
+    wrapped.passwordSha(password)
 
 }
 

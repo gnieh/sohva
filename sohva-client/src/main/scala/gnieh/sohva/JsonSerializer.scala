@@ -29,7 +29,7 @@ case class SohvaJsonException(msg: String, inner: Exception) extends Exception(m
  *  @author Lucas Satabin
  *
  */
-class JsonSerializer(couch: CouchDB, custom: List[CustomSerializer[_]]) {
+class JsonSerializer(couch: CouchDB, custom: List[SohvaSerializer[_]]) {
 
   implicit val formats = new DefaultFormats {
     override def dateFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SS")
@@ -212,6 +212,6 @@ private object DbRefSerializer extends Serializer[DbRef] {
  *  handle object differently based on the CouchDB version
  *
  *  @author Lucas Satabin */
-trait CustomSerializer[T] {
+trait SohvaSerializer[T] {
   def serializer(couchVersion: String): Serializer[T]
 }

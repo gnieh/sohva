@@ -15,32 +15,25 @@
 */
 package gnieh.sohva
 
-import dispatch._
-import Defaults._
-
 /** A design gives access to the different views.
  *  Use this class to get or create new views.
  *
  *  @author Lucas Satabin
  */
-case class Design(db: Database,
-                  name: String,
-                  language: String) {
+trait Design {
 
-  import db.couch.serializer
+  val name: String
+  val language: String
 
-  private[sohva] def request = db.request / "_design" / name.trim
+  type Result[T]
 
   /** Returns the design document from the couchdb instance.
    *  Returns `None` if the design document does not exist.
    */
-  def getDesignDocument: Result[Option[DesignDoc]] =
-    for(design <- db.couch.optHttp(request).right)
-      yield design.map(designDoc)
+  def getDesignDocument: Result[Option[DesignDoc]]
 
   /** Deletes this design document from the couchdb instance */
-  def delete: Result[Boolean] =
-    db.deleteDoc("_design/" + name.trim)
+  def delete: Result[Boolean]
 
   /** Creates or updates the view in this design
    *  with the given name, map function and reduce function.
@@ -48,41 +41,15 @@ case class Design(db: Database,
    */
   def saveView(viewName: String,
                mapFun: String,
-               reduceFun: Option[String] = None): Result[Boolean] =
-    saveView(viewName, ViewDoc(mapFun, reduceFun))
+               reduceFun: Option[String] = None): Result[Boolean]
 
   /** Creates or updates the view in this design with the given name.
    *  If the design does not exist yet, it is created.
    */
-  def saveView(viewName: String, view: ViewDoc): Result[Boolean] =
-    for {
-      design <- getDesignDocument.right
-      doc <- db.saveDoc(newDoc(design, viewName, view)).right
-    } yield doc.isDefined
-
-  private[this] def newDoc(design: Option[DesignDoc], viewName: String, view: ViewDoc) =
-    design match {
-      case Some(design) =>
-        // the updated design
-        design.copy(views = design.views + (viewName -> view))
-      case None =>
-        // the design does not exist...
-        DesignDoc("_design/" + name, language, Map(viewName -> view), None)
-    }
+  def saveView(viewName: String, view: ViewDoc): Result[Boolean]
 
   /** Deletes the view with the given name from the design */
-  def deleteView(viewName: String): Result[Boolean] =
-   for {
-     design <- getDesignDocument.right
-     res <- deleteView(design, viewName)
-   } yield res
-
-  private[this] def deleteView(design: Option[DesignDoc], viewName: String) =
-    design match {
-      case Some(design) =>
-        db.saveDoc(design.copy(views = design.views - viewName)).right.map(_.isDefined)
-      case None => Future.successful(Right(false))
-    }
+  def deleteView(viewName: String): Result[Boolean]
 
   /** Returns the (typed) view in this design document.
    *  The different types are:
@@ -90,82 +57,23 @@ case class Design(db: Database,
    *  - Value: Type of the value returned in the result
    *  - Doc: Type of the full document in the case where the view is queried with `include_docs` set to `true`
    */
-  def view[Key: Manifest, Value: Manifest, Doc: Manifest](viewName: String): View[Key, Value, Doc] =
-    View[Key, Value, Doc](this, viewName)
+  def view[Key: Manifest, Value: Manifest, Doc: Manifest](viewName: String): View[Key, Value, Doc]
 
   /** Creates or updates the document validation function.
    *  If the design does not exist yet, it is created.
    */
-  def saveValidateFunction(validateFun: String): Result[Boolean] =
-    for {
-      design <- getDesignDocument.right
-      res <- db.saveDoc(newDoc(design, validateFun)).right
-    } yield res.isDefined
-
-  private[this] def newDoc(design: Option[DesignDoc], validateFun: String) =
-    design match {
-      case Some(design) =>
-        // the updated design
-        design.copy(validate_doc_update = Some(validateFun))
-      case None =>
-        // the design does not exist...
-        DesignDoc("_design/" + name, language, Map(), Some(validateFun))
-    }
+  def saveValidateFunction(validateFun: String): Result[Boolean]
 
   /** Deletes the document validation function from the design */
-  def deleteValidateFunction: Result[Boolean] =
-    for {
-      design <- getDesignDocument.right
-      res <- deleteValidateFunction(design)
-    } yield res
-
-  private[this] def deleteValidateFunction(design: Option[DesignDoc]) =
-    design match {
-      case Some(design) =>
-        for(doc <- db.saveDoc(design.copy(validate_doc_update = None)).right)
-          yield doc.isDefined
-      case None => Future.successful(Right(false))
-    }
+  def deleteValidateFunction: Result[Boolean]
 
   /** Creates or updates a filter function.
    *  If the design does not exist yet, it is created.
    */
-  def saveFilter(name: String, filterFun: String): Result[Boolean] =
-    for {
-      design <- getDesignDocument.right
-      res <- db.saveDoc(withFilterDoc(design, name, filterFun)).right
-    } yield res.isDefined
-
-  private[this] def withFilterDoc(design: Option[DesignDoc], filterName: String, filterFun: String) =
-    design match {
-      case Some(design) =>
-        // the updated design
-        design.copy(filters = design.filters.updated(filterName, filterFun))
-      case None =>
-        // the design does not exist yet
-        DesignDoc("_design/" + name, language, Map(), None, Map(filterName -> filterFun))
-    }
+  def saveFilter(name: String, filterFun: String): Result[Boolean]
 
   /** Deletes the filter identified by its name from the design document */
-  def deleteFilter(name: String): Result[Boolean] =
-    for {
-      design <- getDesignDocument.right
-      res <- deleteFilter(design, name)
-    } yield res
-
-  private[this] def deleteFilter(design: Option[DesignDoc], filterName: String) =
-    design match {
-      case Some(design) =>
-        for(doc <- db.saveDoc(design.copy(filters = design.filters - filterName)).right)
-          yield doc.isDefined
-      case None =>
-        Future.successful(Right(false))
-    }
-
-  // helper methods
-
-  private def designDoc(json: String) =
-    serializer.fromJson[DesignDoc](json)
+  def deleteFilter(name: String): Result[Boolean]
 
 }
 

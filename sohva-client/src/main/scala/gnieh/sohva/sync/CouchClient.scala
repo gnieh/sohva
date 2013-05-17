@@ -13,11 +13,11 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package gnieh.sohva.sync
+package gnieh.sohva
+package sync
 
-import gnieh.sohva.{
-  CouchClient => ACouchClient,
-  JsonSerializer
+import gnieh.sohva.async.{
+  CouchClient => ACouchClient
 }
 
 /** A CouchDB instance.
@@ -29,7 +29,7 @@ import gnieh.sohva.{
  *  @author Lucas Satabin
  *
  */
-class CouchClient private[sync] (wrapped: ACouchClient) extends CouchDB(wrapped) {
+class CouchClient private[sync] (wrapped: ACouchClient) extends CouchDB(wrapped) with gnieh.sohva.CouchClient {
 
   def this(host: String = "localhost",
            port: Int = 5984,
@@ -37,11 +37,9 @@ class CouchClient private[sync] (wrapped: ACouchClient) extends CouchDB(wrapped)
            version: String = "1.2") =
     this(new ACouchClient(host, port, ssl, version))
 
-  /** Starts a new session to with this client */
   def startSession =
     new CouchSession(wrapped.startSession)
 
-  /** Shuts down this instance of couchdb client. */
   def shutdown =
     wrapped.shutdown
 

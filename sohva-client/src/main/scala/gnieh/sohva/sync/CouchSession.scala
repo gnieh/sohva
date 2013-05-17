@@ -13,12 +13,11 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package gnieh.sohva.sync
+package gnieh.sohva
+package sync
 
-import gnieh.sohva.{
-  CouchSession => ACouchSession,
-  UserInfo,
-  UserCtx
+import gnieh.sohva.async.{
+  CouchSession => ACouchSession
 }
 
 /** An instance of a Couch session, that allows the user to login and
@@ -30,43 +29,32 @@ import gnieh.sohva.{
  *  @author Lucas Satabin
  *
  */
-class CouchSession private[sync] (wrapped: ACouchSession) extends CouchDB(wrapped) {
+class CouchSession private[sync] (wrapped: ACouchSession) extends CouchDB(wrapped) with gnieh.sohva.CouchSession {
 
-  /** Performs a login and returns true if login succeeded.
-   *  from now on, if login succeeded the couch instance is identified and
-   *  all requests will be done with the given credentials.
-   *  This performs a cookie authentication.
-   */
   @inline
   def login(name: String, password: String): Boolean =
     synced(wrapped.login(name, password))
 
-  /** Logs the session out */
   @inline
   def logout: Boolean =
     synced(wrapped.logout)
 
-  /** Returns the user associated to the current session, if any */
   @inline
   def currentUser: Option[UserInfo] =
     synced(wrapped.currentUser)
 
-  /** Indicates whether the current session is logged in to the couch server */
   @inline
   def isLoggedIn: Boolean =
     synced(wrapped.isLoggedIn)
 
-  /** Indicates whether the current session gives the given role to the user */
   @inline
   def hasRole(role: String): Boolean =
     synced(wrapped.hasRole(role))
 
-  /** Indicates whether the current session is a server admin session */
   @inline
   def isServerAdmin: Boolean =
     synced(wrapped.isServerAdmin)
 
-  /** Returns the current user context */
   @inline
   def userContext: UserCtx =
     synced(wrapped.userContext)

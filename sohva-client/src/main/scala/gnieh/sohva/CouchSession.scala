@@ -15,11 +15,6 @@
 */
 package gnieh.sohva
 
-import dispatch._
-import Defaults._
-
-import com.ning.http.client.Response
-
 /** An instance of a Couch session, that allows the user to login and
  *  send request identified with the login credentials.
  *  This performs a cookie based authentication against the couchdb server.
@@ -29,94 +24,32 @@ import com.ning.http.client.Response
  *  @author Lucas Satabin
  *
  */
-class CouchSession private[sohva] (val couch: CouchClient) extends CouchDB {
-
-  val host = couch.host
-
-  val port = couch.port
-
-  val version = couch.version
-
-  val serializer = couch.serializer
+trait CouchSession extends CouchDB {
 
   /** Performs a login and returns true if login succeeded.
    *  from now on, if login succeeded the couch instance is identified and
    *  all requests will be done with the given credentials.
    *  This performs a cookie authentication.
    */
-  def login(name: String, password: String): Result[Boolean] =
-    for(res <- _http(request / "_session" <<
-         Map("name" -> name, "password" -> password) <:<
-         Map("Accept" -> "application/json, text/javascript, */*",
-           "Cookie" -> "AuthSession=") > setCookie _))
-             yield Right(res)
+  def login(name: String, password: String): Result[Boolean]
 
   /** Logs the session out */
-  def logout: Result[Boolean] =
-    for(res <- _http((request / "_session").DELETE > setCookie _))
-      yield Right(res)
+  def logout: Result[Boolean]
 
   /** Returns the user associated to the current session, if any */
-  def currentUser: Result[Option[UserInfo]] = userContext.right.flatMap {
-    case UserCtx(name, _) if name != null =>
-      http(request / "_users" / ("org.couchdb.user:" + name)).right.map(user)
-    case _ => Future.successful(Right(None))
-  }
+  def currentUser: Result[Option[UserInfo]]
 
   /** Indicates whether the current session is logged in to the couch server */
-  def isLoggedIn: Result[Boolean] = userContext.right.map {
-    case UserCtx(name, _) if name != null =>
-      true
-    case _ => false
-  }
+  def isLoggedIn: Result[Boolean]
 
   /** Indicates whether the current session gives the given role to the user */
-  def hasRole(role: String): Result[Boolean] = userContext.right.map {
-    case UserCtx(_, roles) => roles.contains(role)
-    case _                 => false
-  }
+  def hasRole(role: String): Result[Boolean]
 
   /** Indicates whether the current session is a server admin session */
-  def isServerAdmin: Result[Boolean] = hasRole("_admin")
+  def isServerAdmin: Result[Boolean]
 
   /** Returns the current user context */
-  def userContext: Result[UserCtx] =
-    http((request / "_session")).right.map(userCtx)
-
-  // helper methods
-
-  private[sohva] val _http =
-    couch._http
-
-  private var _cookie = ""
-
-  private def cookie = _cookie.synchronized {
-    _cookie
-  }
-
-  private def cookie_=(c: String) = _cookie.synchronized {
-    _cookie = c
-  }
-
-  private[sohva] def request =
-    couch.request <:< Map("Cookie" -> cookie)
-
-  private def userCtx(json: String) =
-    serializer.fromJson[AuthResult](json).userCtx
-
-  private def setCookie(response: Response) = {
-    response.getHeader("Set-Cookie") match {
-      case null | "" =>
-        // no cookie to set
-        false
-      case c =>
-        cookie = c
-        response.getStatusCode / 100 == 2
-    }
-  }
-
-  private def user(json: String) =
-    serializer.fromJsonOpt[UserInfo](json)
+  def userContext: Result[UserCtx]
 
 }
 
@@ -145,7 +78,7 @@ case class CouchUser(val name: String,
   val _id = "org.couchdb.user:" + name
 }
 
-private case class PasswordResetUser(val name: String,
+private[sohva] case class PasswordResetUser(val name: String,
                                      val salt: String,
                                      val password_sha: String,
                                      val roles: List[String],

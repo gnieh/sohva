@@ -13,23 +13,32 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-package gnieh.sohva.sync
+package gnieh.sohva
+package sync
 
-import gnieh.sohva.{
-  View => AView,
-  ViewResult
+import gnieh.sohva.async.{
+  View => AView
 }
+
+import scala.concurrent._
+import duration._
 
 /** A view can be queried to get the result.
  *
  *  @author Lucas Satabin
  */
-case class View[Key: Manifest, Value: Manifest, Doc: Manifest](wrapped: AView[Key, Value, Doc]) {
+case class View[Key: Manifest, Value: Manifest, Doc: Manifest](wrapped: AView[Key, Value, Doc]) extends gnieh.sohva.View[Key, Value, Doc] {
 
-  /** Queries the view on the server and returned the typed result.
-   *  BE CAREFUL: If the types given to the constructor are not correct,
-   *  strange things may happen! By 'strange', I mean exceptions
-   */
+  type Result[T] = T
+
+  def synced[T](result: wrapped.Result[T]): T = Await.result(result, Duration.Inf) match {
+    case Right(t) => t
+    case Left((409, error)) =>
+      throw new ConflictException(error)
+    case Left((code, error)) =>
+      throw new CouchException(code, error)
+  }
+
   @inline
   def query(key: Option[Key] = None,
             keys: List[Key] = Nil,

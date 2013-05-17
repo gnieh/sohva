@@ -17,20 +17,6 @@ package gnieh.sohva
 
 import strategy._
 
-import dispatch._
-import Defaults._
-
-import com.ning.http.client.{
-  RequestBuilder,
-  Response
-}
-
-import java.security.MessageDigest
-
-import scala.util.Random
-
-import net.liftweb.json._
-
 /** A CouchDB instance.
  *  Allows users to access the different databases and information.
  *  This is the key class to start with when one wants to work with couchdb.
@@ -39,9 +25,9 @@ import net.liftweb.json._
  *  @author Lucas Satabin
  *
  */
-abstract class CouchDB {
+trait CouchDB {
 
-  self =>
+  type Result[T]
 
   /** The couchdb instance host name. */
   val host: String
@@ -56,95 +42,24 @@ abstract class CouchDB {
   val serializer: JsonSerializer
 
   /** Returns the database on the given couch instance. */
-  def database(name: String, credit: Int = 0, strategy: Strategy = BarneyStinsonStrategy): Database =
-    new Database(name, this, credit, strategy)
+  def database(name: String, credit: Int = 0, strategy: Strategy = BarneyStinsonStrategy): Database
 
   /** Returns the replicator database */
-  def replicator(name: String = "_replicator", credit: Int = 0, strategy: Strategy = BarneyStinsonStrategy): Replicator =
-    new Replicator(name, this, credit, strategy)
+  def replicator(name: String = "_replicator", credit: Int = 0, strategy: Strategy = BarneyStinsonStrategy): Replicator
 
   /** Returns the names of all databases in this couch instance. */
-  def _all_dbs: Result[List[String]] =
-    for(dbs <- http(request / "_all_dbs").right)
-      yield asStringList(dbs)
+  def _all_dbs: Result[List[String]]
 
   /** Returns the requested number of UUIDS (by default 1). */
-  def _uuids(count: Int = 1): Result[List[String]] =
-    for(uuids <- http(request / "_uuids" <<? Map("count" -> count.toString)).right)
-      yield asUuidsList(uuids)
+  def _uuids(count: Int = 1): Result[List[String]]
 
   /** Indicates whether this couchdb instance contains the given database */
-  def contains(dbName: String): Result[Boolean] =
-    for(dbs <- _all_dbs.right)
-      yield dbs.contains(dbName)
-
-  // user management section
+  def contains(dbName: String): Result[Boolean]
 
   /** Exposes the interface for managing couchdb users. */
-  object users extends Users(this)
+  val users: Users
 
-  // helper methods
-
-  private[sohva] def request: RequestBuilder
-
-  private[sohva] def _http: Http
-
-  private[sohva] def bytes2string(bytes: Array[Byte]) =
-    bytes.foldLeft(new StringBuilder) {
-      (res, byte) =>
-        res.append(Integer.toHexString(byte & 0xff))
-    }.toString
-
-  private[sohva] def hash(s: String) = {
-    val md = MessageDigest.getInstance("SHA-1")
-    bytes2string(md.digest(s.getBytes("UTF-8")))
-  }
-
-  private[sohva] def passwordSha(password: String) = {
-
-    // compute the password hash
-    // the password string is concatenated with the generated salt
-    // and the result is hashed using SHA-1
-    val saltArray = new Array[Byte](16)
-    Random.nextBytes(saltArray)
-    val salt = bytes2string(saltArray)
-
-    (salt, hash(password + salt))
-  }
-
-  private[sohva] def http(request: RequestBuilder): Result[String] =
-    _http(request > handleCouchResponse _)
-
-  private[sohva] def optHttp(request: RequestBuilder): Result[Option[String]] =
-    _http(request > handleOptionalCouchResponse _)
-
-  private def handleCouchResponse(response: Response): Either[(Int, Option[ErrorResult]), String] = {
-    val json = as.String(response)
-    val code = response.getStatusCode
-    if (code / 100 != 2) {
-      // something went wrong...
-      val error = serializer.fromJsonOpt[ErrorResult](json)
-      Left((code, error))
-    } else {
-      Right(json)
-    }
-  }
-
-  private def handleOptionalCouchResponse(response: Response): Either[(Int, Option[ErrorResult]), Option[String]] =
-    handleCouchResponse(response) match {
-      case Right(v) => Right(Some(v))
-      case Left((404, _)) => Right(None)
-      case Left(err) => Left(err)
-    }
-
-  private[sohva] def ok(json: String) =
-    serializer.fromJson[OkResult](json).ok
-
-  private def asStringList(json: String) =
-    serializer.fromJson[List[String]](json)
-
-  private def asUuidsList(json: String) =
-    serializer.fromJson[Uuids](json).uuids
+  protected[sohva] def passwordSha(password: String): (String, String)
 
 }
 

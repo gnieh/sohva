@@ -14,18 +14,30 @@
 * limitations under the License.
 */
 package gnieh.sohva
+package sync
 
-import scala.concurrent.Await
-import scala.concurrent.duration.Duration
+import strategy._
 
-package object sync {
+import gnieh.sohva.async.{
+  Replicator => AReplicator
+}
 
-  def synced[T](result: Result[T]): T = Await.result(result, Duration.Inf) match {
-    case Right(t) => t
-    case Left((409, error)) =>
-      throw new ConflictException(error)
-    case Left((code, error)) =>
-      throw new CouchException(code, error)
-  }
+import java.net.URL
+
+/** A replicator database that allows people to manage replications:
+ *   - start replication
+ *   - cancel or stop replications
+ *   - list current replications
+ *
+ *  @author Lucas Satabin
+ */
+class Replicator(wrapped: AReplicator)
+  extends Database(wrapped) with gnieh.sohva.Replicator {
+
+  def start(replication: Replication): Option[Replication] =
+    synced(wrapped.start(replication))
+
+  def stop(id: String): Result[Boolean] =
+    synced(wrapped.stop(id))
 
 }
