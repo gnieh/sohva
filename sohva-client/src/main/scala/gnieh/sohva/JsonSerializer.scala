@@ -34,6 +34,7 @@ class JsonSerializer(couch: CouchDB, custom: List[CustomSerializer[_]]) {
   implicit val formats = new DefaultFormats {
     override def dateFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SS")
   } +
+  DbResultSerializer +
   new UserSerializer(couch) +
   new SecurityDocSerializer(couch.version) +
   ChangeSerializer +
@@ -43,7 +44,7 @@ class JsonSerializer(couch: CouchDB, custom: List[CustomSerializer[_]]) {
   import Implicits._
 
   /** Serializes the given object to a json string */
-  def toJson[T: Manifest](obj: T) = obj match {
+  def toJson[T](obj: T) = obj match {
     case i: Int => compact(render(JInt(i)))
     case i: BigInt => compact(render(JInt(i)))
     case l: Long => compact(render(JInt(l)))
@@ -71,6 +72,20 @@ class JsonSerializer(couch: CouchDB, custom: List[CustomSerializer[_]]) {
    */
   def fromJsonOpt[T: Manifest](json: String) =
     Extraction.extractOpt(JsonParser.parse(json))
+
+}
+
+private object DbResultSerializer extends Serializer[DbResult] {
+  private val DbResultClass = classOf[DbResult]
+
+  def deserialize(implicit format: Formats): PartialFunction[(TypeInfo, JValue), DbResult] = {
+    case (TypeInfo(DbResultClass, _), json) =>
+      json.extractOpt[OkResult].getOrElse(json.extract[ErrorResult])
+  }
+
+  def serialize(implicit format: Formats): PartialFunction[Any, JValue] = {
+    case x: DbResult => throw new MatchError(x)
+  }
 
 }
 

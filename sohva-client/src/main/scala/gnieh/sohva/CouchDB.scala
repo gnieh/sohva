@@ -150,8 +150,10 @@ abstract class CouchDB {
 
 // the different object that may be returned by the couchdb server
 
-final case class OkResult(ok: Boolean, id: Option[String], rev: Option[String])
+sealed trait DbResult
 
-final case class ErrorResult(error: String, reason: String)
+final case class OkResult(ok: Boolean, id: Option[String], rev: Option[String]) extends DbResult
+
+final case class ErrorResult(id: Option[String], error: String, reason: String) extends DbResult
 
 private[sohva] final case class Uuids(uuids: List[String])

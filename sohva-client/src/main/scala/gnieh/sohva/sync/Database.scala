@@ -21,7 +21,8 @@ import gnieh.sohva.{
   SecurityDoc,
   InfoResult,
   ChangeStream,
-  OriginalChangeStream
+  OriginalChangeStream,
+  DbResult
 }
 
 import java.io.{
@@ -74,6 +75,14 @@ case class Database(wrapped: ADatabase) {
   def getDocById[T: Manifest](id: String, revision: Option[String] = None): Option[T] =
     synced(wrapped.getDocById(id, revision))
 
+  /** Returns all the documents with given identifiers and of the given type.
+   *  If the document with an identifier exists in the database but has not the
+   *  required type, it is not added to the result
+   */
+  @inline
+  def getDocsById[T: Manifest](ids: List[String]): List[T] =
+    synced(wrapped.getDocsById(ids))
+
   /** Returns the current revision of the document if it exists */
   @inline
   def getDocRevision(id: String): Option[String] =
@@ -87,12 +96,29 @@ case class Database(wrapped: ADatabase) {
   def saveDoc[T: Manifest](doc: T with Doc): Option[T] =
     synced(wrapped.saveDoc(doc))
 
+  /** Creates or updates a bunch of documents at once returning the results
+   *  for each identifier in the document list. One can choose the update strategy
+   *  by setting the parameter `all_or_nothing` to `true` or `false`.
+   *  **The retry strategy is not used in such case.**
+   */
+  @inline
+  def saveDocs[T](docs: List[T with Doc], all_or_nothing: Boolean = false): List[DbResult] =
+    synced(wrapped.saveDocs(docs, all_or_nothing))
+
   /** Deletes the document from the database.
    *  The document will only be deleted if the caller provided the last revision
    */
   @inline
   def deleteDoc[T: Manifest](doc: T with Doc): Boolean =
     synced(wrapped.deleteDoc(doc))
+
+  /** Deletes a bunch of documents at once returning the results
+   *  for each identifier in the document list. One can choose the update strategy
+   *  by setting the parameter `all_or_nothing` to `true` or `false`.
+   */
+  @inline
+  def deleteDocs(ids: List[String], all_or_nothing: Boolean = false): List[DbResult] =
+    synced(wrapped.deleteDocs(ids, all_or_nothing))
 
   /** Deletes the document identified by the given id from the database.
    *  If the document exists it is deleted and the method returns `true`,

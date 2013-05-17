@@ -155,6 +155,43 @@ class Database(val name: String,
     for(raw <- getRawDocById(id, revision).right)
       yield raw.map(docResult[T])
 
+  /** Returns all the documents with given identifiers and of the given type.
+   *  If the document with an identifier exists in the database but has not the
+   *  required type, it is not added to the result
+   */
+  def getDocsById[T: Manifest](ids: List[String]): Result[List[T]] =
+    for {
+      rows <- _all_docs(ids, true).right
+    } yield bulkDocs[T](rows)
+
+  private[this] def _all_docs[T: Manifest](ids: List[String], include_docs: Boolean): Result[List[BulkDocRow[T]]] =
+    for {
+      raw <- couch.http(request / "_all_docs"
+        <<? Map("include_docs" -> include_docs.toString)
+        << serializer.toJson(Map("keys" -> ids))
+        <:< Map("Content-Type" -> "application/json")
+      ).right
+    } yield {
+      import couch.serializer.formats
+      parse(raw) \ "rows" match {
+        case JArray(rows) =>
+          for {
+            row <- rows
+            id <- (row \ "id").extractOpt[String]
+            value <- (row \ "value").extractOpt[Map[String, String]]
+            doc = (row \ "doc").extractOpt[T]
+          } yield BulkDocRow(id, value("rev"), doc)
+        case _ =>
+          Nil
+      }
+    }
+
+  private[this] def bulkDocs[T: Manifest](bulkDocs: List[BulkDocRow[T]]) =
+    for {
+      row <- bulkDocs
+      doc <- row.doc
+    } yield doc
+
   /** Returns the raw document (as a string representing a json object) identified by the given id if it exists */
   def getRawDocById(id: String, revision: Option[String] = None): Result[Option[String]] =
     couch.optHttp(request / id <<? revision.map("rev" -> _).toList)
@@ -162,6 +199,12 @@ class Database(val name: String,
   /** Returns the current revision of the document if it exists */
   def getDocRevision(id: String): Result[Option[String]] =
     couch._http((request / id).HEAD > extractRev _)
+
+  /** Returns the current revision of the documents */
+  def getDocRevisions(ids: List[String]): Result[List[(String, String)]] =
+    for {
+      rows <- _all_docs(ids, false).right
+    } yield rows.map(row => (row.id, row.rev))
 
   /** Creates or updates the given object as a document into this database
    *  The given object must have an `_id` and an optional `_rev` fields
@@ -179,6 +222,27 @@ class Database(val name: String,
     case DocUpdate(false, _, _) =>
       Future.successful(Right(None))
   }
+
+  /** Creates or updates a bunch of documents at once returning the results
+   *  for each identifier in the document list. One can choose the update strategy
+   *  by setting the parameter `all_or_nothing` to `true` or `false`.
+   *  **The retry strategy is not used in such case.**
+   */
+  def saveDocs[T](docs: List[T with Doc], all_or_nothing: Boolean = false): Result[List[DbResult]] =
+    for {
+      raw <- couch.http(
+        request / "_bulk_docs" << serializer.toJson(
+          Map(
+            "all_or_nothing" -> all_or_nothing,
+            "docs" -> docs
+          )
+        )
+        <:< Map("Content-Type" -> "application/json")
+      ).right
+    } yield bulkSaveResult(raw)
+
+  private[this] def bulkSaveResult(json: String) =
+    serializer.fromJson[List[DbResult]](json)
 
   /** Deletes the document from the database.
    *  The document will only be deleted if the caller provided the last revision
@@ -205,6 +269,28 @@ class Database(val name: String,
       case None =>
         Future.successful(Right(false))
     }
+
+  /** Deletes a bunch of documents at once returning the results
+   *  for each identifier in the document list. One can choose the update strategy
+   *  by setting the parameter `all_or_nothing` to `true` or `false`.
+   */
+  def deleteDocs(ids: List[String], all_or_nothing: Boolean = false): Result[List[DbResult]] =
+    for {
+      revs <- getDocRevisions(ids).right
+      raw <- couch.http(
+        request / "_bulk_docs"
+          << serializer.toJson(
+            Map(
+              "all_or_nothing" -> all_or_nothing,
+              "docs" -> revs.map {
+                case (id, rev) => Map("_id" -> id, "_rev" -> rev, "_deleted" -> true)
+              }
+            )
+          )
+          <:< Map("Content-Type" -> "application/json")
+      ).right
+    } yield bulkSaveResult(raw)
+
 
   /** Attaches the given file to the given document id.
    *  If no mime type is given, sohva tries to guess the mime type of the file
@@ -330,6 +416,9 @@ class Database(val name: String,
   private def docResult[T: Manifest](json: String) =
     serializer.fromJson[T](json)
 
+  private def docResultOpt[T: Manifest](json: String) =
+    serializer.fromJsonOpt[T](json)
+
   private def docUpdateResult(json: String) =
     serializer.fromJson[DocUpdate](json)
 
@@ -374,4 +463,8 @@ final case class Attachment(content_type: String,
                             digest: String,
                             length: Int,
                             stub: Boolean)
+
+private[sohva] final case class BulkDocs[T](rows: List[BulkDocRow[T]])
+
+private[sohva] final case class BulkDocRow[T](id: String, rev: String, doc: Option[T])
 
