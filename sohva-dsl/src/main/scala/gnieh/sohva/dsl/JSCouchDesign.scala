@@ -26,9 +26,16 @@ import scala.virtualization.lms.common._
  *   - an optional validation function
  *   - the (possibly empty) list of `show` functions
  *   - the (possibly empty) list of `list` functions
+ *   - the (possibly empty) list of `filter` functions
  *
  *  @author Lucas Satabin
  */
 trait JSCouchDesign extends JSCouch with JSFunctions {
+
+  val views: Map[String, JSCouchView[_, _]] = Map()
+
+  val views_lib: Map[String, Rep[Any]] = Map()
+
+  val validate_doc_update: Rep[((Doc, Doc, UserCtx)) => Boolean]
 
 }
