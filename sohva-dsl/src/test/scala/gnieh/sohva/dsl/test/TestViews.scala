@@ -20,21 +20,23 @@ package test
 import org.scalatest._
 
 import scala.collection.mutable.Map
+import scala.virtualization.lms.internal.GenerationFailedException
 
 class TestViews extends FlatSpec with ShouldMatchers {
 
   val expectedMap =
-    """(function map() {
+    """(function () {
       |var x0 = function(x1) {
       |var x2 = x1._id;
       |var x3 = emit(x2, 1);
       |};
       |return x0
       |}
-      |)()""".stripMargin
+      |)()
+      |""".stripMargin
 
   val expectedReduce =
-    """(function reduce() {
+    """(function () {
       |var x5 = function(x6,x7,x8) {
       |var x10 = x7;
       |var x12 = sum(x10);
@@ -42,7 +44,8 @@ class TestViews extends FlatSpec with ShouldMatchers {
       |};
       |return x5
       |}
-      |)()""".stripMargin
+      |)()
+      |""".stripMargin
 
   "compiling a view with only a map" should "be correct" in {
     val view = DSL.compile(new JSView[String, Int] {
@@ -83,7 +86,7 @@ class TestViews extends FlatSpec with ShouldMatchers {
     })
 
     val expectedRequire =
-      """(function map() {
+      """(function () {
         |var x0 = function(x1) {
         |var x2 = require("path");
         |var x3 = x1._id;
@@ -91,11 +94,99 @@ class TestViews extends FlatSpec with ShouldMatchers {
         |};
         |return x0
         |}
-        |)()""".stripMargin
+        |)()
+        |""".stripMargin
 
     val expected = ViewDoc(expectedRequire, None)
 
     view should be(expected)
+  }
+
+  "built-in reduce function" should "correctly be typed-checked and translated" in {
+
+    val view1 = DSL.compile(new JSView[String, Int] {
+      val map: Rep[Doc => Unit] = fun { doc =>
+        emit(doc._id, 1)
+      }
+
+      override val reduce = _sum
+
+    })
+
+    val expected1 = ViewDoc(expectedMap, Some("\"_sum\""))
+
+    view1 should be(expected1)
+
+    val view2 = DSL.compile(new JSView[String, Int] {
+      val map: Rep[Doc => Unit] = fun { doc =>
+        emit(doc._id, 1)
+      }
+
+      override val reduce = _count
+
+    })
+
+    val expected2 = ViewDoc(expectedMap, Some("\"_count\""))
+
+    view2 should be(expected2)
+
+    val view3 = DSL.compile(new JSView[String, Int] {
+      val map: Rep[Doc => Unit] = fun { doc =>
+        emit(doc._id, 1)
+      }
+
+      override val reduce = _stats
+    })
+
+    val expected3 = ViewDoc(expectedMap, Some("\"_stats\""))
+
+    view3 should be(expected3)
+  }
+
+  it should "not be possible to directly call them" in {
+
+    val exn1 = evaluating {
+      DSL.compile(new JSView[String, Int] {
+        val map: Rep[Doc => Unit] = fun { doc =>
+          emit(doc._id, 1)
+        }
+
+        override val reduce = fun {
+          (keys: Rep[Array[(String, String)]], values: Rep[Array[Int]], rereduce: Rep[Boolean]) =>
+            _sum(manifest[String], manifest[Int], implicitly[Numeric[Int]])((keys, values, rereduce))
+        }
+      })
+    } should produce[GenerationFailedException]
+    exn1.getMessage should be("built-in reduce function _sum cannot be called directly")
+
+    val exn2 = evaluating {
+      DSL.compile(new JSView[String, Int] {
+        val map: Rep[Doc => Unit] = fun { doc =>
+          emit(doc._id, 1)
+        }
+
+        override val reduce = fun {
+          (keys: Rep[Array[(String, String)]], values: Rep[Array[Int]], rereduce: Rep[Boolean]) =>
+            _count(manifest[String], manifest[Int])((keys, values, rereduce))
+        }
+      })
+    } should produce[GenerationFailedException]
+    exn2.getMessage should be("built-in reduce function _count cannot be called directly")
+
+    val exn3 = evaluating {
+      DSL.compile(new JSView[String, Int] {
+        val map: Rep[Doc => Unit] = fun { doc =>
+          emit(doc._id, 1)
+        }
+
+        override val reduce = fun {
+          (keys: Rep[Array[(String, String)]], values: Rep[Array[Int]], rereduce: Rep[Boolean]) =>
+            _stats(manifest[String], manifest[Int], implicitly[Numeric[Int]])((keys, values, rereduce))
+        }
+      })
+    } should produce[GenerationFailedException]
+    exn3.getMessage should be("built-in reduce function _stats cannot be called directly")
+
   }
 
 }

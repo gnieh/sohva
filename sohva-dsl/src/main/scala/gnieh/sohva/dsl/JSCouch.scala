@@ -17,6 +17,7 @@ package gnieh.sohva
 package dsl
 
 import scala.js._
+import scala.js.{ NumericOpsExpOpt => JSNumericOpsExpOpt }
 import scala.virtualization.lms.common._
 
 /** CouchDB methods that are available everywhere on the CouchDB server

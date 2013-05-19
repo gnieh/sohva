@@ -36,16 +36,18 @@ object DSL {
     }
     // compile the map function
     val mapWriter = new StringWriter
-    codegen.emitSource0(() => view.map, "map", new PrintWriter(mapWriter))
-    val mapFun = "(" + mapWriter.toString + ")()"
+    codegen.emitExecution(view.map, new PrintWriter(mapWriter))
+    val mapFun = mapWriter.toString
     // compile the reduce function
     val reduceFun = view.reduce match {
       case view.`undefined` =>
         None
+      case view.Builtin(name) =>
+        Some(s""""$name"""")
       case _ =>
         val reduceWriter = new StringWriter
-        codegen.emitSource0(() => view.reduce, "reduce", new PrintWriter(reduceWriter))
-        Some("(" + reduceWriter.toString + ")()")
+        codegen.emitExecution(view.reduce, new PrintWriter(reduceWriter))
+        Some(reduceWriter.toString)
     }
     ViewDoc(mapFun, reduceFun)
   }
