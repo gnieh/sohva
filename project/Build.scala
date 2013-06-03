@@ -82,6 +82,7 @@ object SohvaBuild extends Build {
   lazy val client = Project(id = "sohva-client",
     base = file("sohva-client")) settings (
       libraryDependencies ++= clientDependencies,
+      fork in test := true,
       resourceDirectories in Compile := List()
     ) settings(osgiSettings: _*) settings (
       OsgiKeys.exportPackage := Seq(
@@ -101,7 +102,7 @@ object SohvaBuild extends Build {
       case "2.9.3" => "2.9.2"
       case v => "2.10"
     },
-    "net.liftweb" %% "lift-json" % "2.5-RC5" cross CrossVersion.binaryMapped {
+    "net.liftweb" %% "lift-json" % "2.5" cross CrossVersion.binaryMapped {
       case "2.9.3" => "2.9.2"
       case v => "2.10"
     },
@@ -144,7 +145,7 @@ object SohvaBuild extends Build {
   )
 
   lazy val serverDependencies = Seq(
-    "net.liftweb" %% "lift-json" % "2.5-RC5" cross CrossVersion.binaryMapped {
+    "net.liftweb" %% "lift-json" % "2.5" cross CrossVersion.binaryMapped {
       case "2.9.3" => "2.9.2"
       case v => "2.10"
     }
