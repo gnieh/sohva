@@ -60,6 +60,9 @@ trait JSCouchView[Key, Mapped] extends JSCouch with JSFunctions {
  */
 trait JSView[Key, Mapped] extends JSCouchView[Key, Mapped] with JSCouchExp with JSFunctionsExp {
 
+  type K = Key
+  type M = Mapped
+
   case class Emit(key: Rep[Key], value: Rep[Mapped]) extends Def[Unit]
   case class BuiltinSum[K: Manifest, M: Manifest: Numeric]() extends Exp[((Array[(String, K)], Array[M], Boolean)) => M]
   case class BuiltinCount[K: Manifest, M: Manifest]() extends Exp[((Array[(String, K)], Array[M], Boolean)) => Int]
@@ -113,3 +116,4 @@ trait JSGenCouchView[Key, Mapped] extends JSGenCouch {
   }
 
 }
+

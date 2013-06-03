@@ -52,4 +52,67 @@ object DSL {
     ViewDoc(mapFun, reduceFun)
   }
 
+  def compile(design: JSDesign): DesignDoc = {
+    val codegen = new JSGenCouchDesign {
+      val IR: design.type = design
+    }
+
+    // compile the view libraries
+    val view_libs = design.view_libs.mapValues { lib =>
+      val writer = new StringWriter
+      codegen.emitExecution(lib, new PrintWriter(writer))
+      writer.toString
+    }
+
+    // compile the views
+    val views = design.views.mapValues(view => compile(view.view.asInstanceOf[JSView[view.K, view.M]])(view.mK, view.mM)).toMap
+
+    // compile the libraries
+    val libs = design.libs.mapValues { lib =>
+      val writer = new StringWriter
+      codegen.emitExecution(lib, new PrintWriter(writer))
+      writer.toString
+    }.toMap
+
+    // compile the validate function
+    val validate_doc_update = design.validate_doc_update match {
+      case design.`undefined` =>
+        None
+      case _ =>
+        val validateWriter = new StringWriter
+        codegen.emitExecution(design.validate_doc_update, new PrintWriter(validateWriter))
+        Some(validateWriter.toString)
+    }
+    // compile the sho functions
+    val shows = design.shows.mapValues { show =>
+      val writer = new StringWriter
+      codegen.emitExecution(show, new PrintWriter(writer))
+      writer.toString
+    }.toMap
+
+    // compile the lists functions
+    val lists = design.lists.mapValues { list =>
+      val writer = new StringWriter
+      codegen.emitExecution(list, new PrintWriter(writer))
+      writer.toString
+    }.toMap
+
+    // compile the filters functions
+    val filters = design.filters.mapValues { filter =>
+      val writer = new StringWriter
+      codegen.emitExecution(filter, new PrintWriter(writer))
+      writer.toString
+    }.toMap
+
+    // compile the updates functions
+    val updates = design.updates.mapValues { update =>
+      val writer = new StringWriter
+      codegen.emitExecution(update, new PrintWriter(writer))
+      writer.toString
+    }.toMap
+
+    DesignDoc(design._id, "javascript", views, validate_doc_update, updates, filters, shows, lists)
+
+  }
+
 }

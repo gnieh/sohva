@@ -88,6 +88,17 @@ trait JSCouch extends JS with JSJson with JSMaps with Casts {
   implicit def repToDbInfo(x: Rep[DbInfo]): DbInfo =
     repProxy[DbInfo](x)
 
+  /** Database head information
+   *
+   *  @author Lucas Satabin
+   */
+  trait Head {
+    var total_rows: Int
+    var offset: Int
+  }
+  implicit def repToHead(x: Rep[Head]): Head =
+    repProxy[Head](x)
+
   /** The request object containinf the request data
    *
    *  @author Lucas Satabin
@@ -126,6 +137,14 @@ trait JSCouch extends JS with JSJson with JSMaps with Casts {
   }
   implicit def repToResponse(x: Rep[Response]): Response =
     repProxy[Response](x)
+  implicit def response(str: String): Response = new Response {
+    var code: Rep[Int] = 200
+    var json: Rep[Any] = undefined
+    var body: Rep[String] = str
+    var base64: Rep[String] = null
+    var headers: Rep[Map[String, String]] = JSMap[String, String]()
+    var stop: Rep[Boolean] = false
+  }
 
   /** Checks whether the object is an array */
   def isArray(obj: Rep[Any]): Rep[Boolean]

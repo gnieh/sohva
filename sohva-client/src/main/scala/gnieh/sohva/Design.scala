@@ -77,10 +77,13 @@ trait Design {
 
 }
 
-private[sohva] case class DesignDoc(_id: String,
-                                    language: String,
-                                    views: Map[String, ViewDoc],
-                                    validate_doc_update: Option[String],
-                                    filters: Map[String, String] = Map(),
-                                    val _rev: Option[String] = None)
+case class DesignDoc(_id: String,
+                     language: String,
+                     views: Map[String, ViewDoc],
+                     validate_doc_update: Option[String],
+                     updates: Map[String, String] = Map(),
+                     filters: Map[String, String] = Map(),
+                     shows: Map[String, String] = Map(),
+                     lists: Map[String, String] = Map(),
+                     val _rev: Option[String] = None)
 
