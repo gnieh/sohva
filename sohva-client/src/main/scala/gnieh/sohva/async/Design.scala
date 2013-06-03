@@ -121,7 +121,7 @@ case class Design(db: Database,
         design.copy(filters = design.filters.updated(filterName, filterFun))
       case None =>
         // the design does not exist yet
-        DesignDoc("_design/" + name, language, Map(), None, Map(filterName -> filterFun))
+        DesignDoc("_design/" + name, language, Map(), None, filters = Map(filterName -> filterFun))
     }
 
   def deleteFilter(name: String): Result[Boolean] =
