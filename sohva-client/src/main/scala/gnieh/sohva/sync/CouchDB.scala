@@ -68,6 +68,21 @@ abstract class CouchDB private[sync] (wrapped: ACouchDB) extends gnieh.sohva.Cou
   def _uuids(count: Int = 1): List[String] =
     synced(wrapped._uuids(count))
 
+  def _config: Configuration =
+    synced(wrapped._config)
+
+  def _config(section: String): Map[String, String] =
+    synced(wrapped._config(section))
+
+  def _config(section: String, key: String): Option[String] =
+    synced(wrapped._config(section, key))
+
+  def saveConfigValue(section: String, key: String, value: String): Boolean =
+    synced(wrapped.saveConfigValue(section, key, value))
+
+  def deleteConfigValue(section: String, key: String): Boolean =
+    synced(wrapped.deleteConfigValue(section, key))
+
   def contains(dbName: String): Boolean =
     synced(wrapped.contains(dbName))
 

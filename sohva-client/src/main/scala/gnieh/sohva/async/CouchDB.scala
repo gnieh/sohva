@@ -60,6 +60,26 @@ abstract class CouchDB extends gnieh.sohva.CouchDB {
     for(uuids <- http(request / "_uuids" <<? Map("count" -> count.toString)).right)
       yield asUuidsList(uuids)
 
+  def _config: Result[Configuration] =
+    for(config <- http(request / "_config").right)
+      yield serializer.fromJson[Configuration](config)
+
+  def _config(section: String): Result[Map[String, String]] =
+    for(section <- http(request / "_config" / section).right)
+      yield serializer.fromJson[Map[String, String]](section)
+
+  def _config(section: String, key: String): Result[Option[String]] =
+    for(section <- _config(section).right)
+      yield section.get(key)
+
+  def saveConfigValue(section: String, key: String, value: String): Result[Boolean] =
+    for(res <- http((request / "_config" / section / key << serializer.toJson(value)).PUT).right)
+      yield ok(res)
+
+  def deleteConfigValue(section: String, key: String): Result[Boolean] =
+    for(res <- http((request / "_config" / section / key).DELETE).right)
+      yield ok(res)
+
   def contains(dbName: String): Result[Boolean] =
     for(dbs <- _all_dbs.right)
       yield dbs.contains(dbName)
@@ -131,5 +151,8 @@ abstract class CouchDB extends gnieh.sohva.CouchDB {
 
   private def asUuidsList(json: String) =
     serializer.fromJson[Uuids](json).uuids
+
+  private def asConfiguration(json: String) =
+    serializer.fromJson[Configuration](json)
 
 }

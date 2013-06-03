@@ -38,6 +38,7 @@ class JsonSerializer(couch: CouchDB, custom: List[SohvaSerializer[_]]) {
   new UserSerializer(couch) +
   new SecurityDocSerializer(couch.version) +
   ChangeSerializer +
+  ConfigurationSerializer +
   DbRefSerializer ++
   custom.map(_.serializer(couch.version))
 
@@ -207,6 +208,23 @@ private object DbRefSerializer extends Serializer[DbRef] {
   }
 
 }
+
+private object ConfigurationSerializer extends Serializer[Configuration] {
+
+  private val ConfigurationClass = classOf[Configuration]
+
+  def deserialize(implicit format: Formats): PartialFunction[(TypeInfo, JValue), Configuration] = {
+    case (TypeInfo(ConfigurationClass, _), json) =>
+      Configuration(json.extract[Map[String, Map[String, String]]].withDefaultValue(Map()))
+  }
+
+  def serialize(implicit format: Formats): PartialFunction[Any, JValue] = {
+    case Configuration(sections) =>
+      Extraction.decompose(sections)
+  }
+
+}
+
 
 /** Implement this trait to define a custom serializer that may
  *  handle object differently based on the CouchDB version
