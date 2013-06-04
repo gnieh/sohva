@@ -14,13 +14,13 @@ object SohvaBuild extends Build {
     organization in ThisBuild := "org.gnieh",
     name := "sohva",
     version in ThisBuild := sohvaVersion,
-    scalaVersion in ThisBuild := "2.10.0",
-    crossScalaVersions in ThisBuild := Seq("2.9.3", "2.10.0"),
+    scalaVersion in ThisBuild := "2.10.1",
+    crossScalaVersions in ThisBuild := Seq("2.9.3", "2.10.1"),
     libraryDependencies in ThisBuild ++= globalDependencies,
     parallelExecution in ThisBuild := false,
     compileOptions)
     settings(publishSettings: _*)
-  ) aggregate(client, dsl, server)
+  ) aggregate(client, dsl, testing, server)
 
   lazy val globalDependencies = Seq(
     "org.scalatest" %% "scalatest" % "2.0.M5b" % "test" cross CrossVersion.binaryMapped {
@@ -116,7 +116,8 @@ object SohvaBuild extends Build {
 
   lazy val dsl = Project(id = "sohva-dsl",
     base = file("sohva-dsl")) settings (
-      scalaVersion := "2.10.0",
+      scalaVersion := "2.10.1",
+      crossScalaVersions := Seq("2.10.1"),
       scalaOrganization := "org.scala-lang.virtualized",
       scalacOptions ++= Seq("-deprecation", "-unchecked", "-feature", "-Yvirtualize"),
       unmanagedBase <<= baseDirectory(_ / "lib"),
@@ -138,6 +139,9 @@ object SohvaBuild extends Build {
 
   lazy val dslDependencies = Seq(
   )
+
+  lazy val testing = Project(id = "sohva-testing",
+    base = file("sohva-testing")) dependsOn(client)
 
   lazy val server = Project(id = "sohva-server",
     base = file("sohva-server")) settings (
