@@ -25,31 +25,21 @@ import scala.virtualization.lms.internal.GenerationFailedException
 class TestViews extends FlatSpec with ShouldMatchers {
 
   val expectedMap =
-    """(function () {
-      |var x0 = function(x1) {
-      |var x2 = x1._id;
-      |var x3 = emit(x2, 1);
-      |};
-      |return x0
-      |}
-      |)()
-      |""".stripMargin
+    """function(x0) {
+      |var x1 = x0._id;
+      |var x2 = emit(x1, 1);
+      |}""".stripMargin
 
   val expectedReduce =
-    """(function () {
-      |var x5 = function(x6,x7,x8) {
-      |var x10 = x7;
-      |var x12 = sum(x10);
-      |return x12
-      |};
-      |return x5
-      |}
-      |)()
-      |""".stripMargin
+    """function(x4,x5,x6) {
+      |var x8 = x5;
+      |var x10 = sum(x8);
+      |return x10
+      |}""".stripMargin
 
   "compiling a view with only a map" should "be correct" in {
     val view = DSL.compile(new JSView[String, Int] {
-      val map: Rep[Doc => Unit] = fun { doc =>
+      val map: Exp[Doc => Unit] = function { doc =>
         emit(doc._id, 1)
       }
     })
@@ -61,11 +51,11 @@ class TestViews extends FlatSpec with ShouldMatchers {
 
   "compiling a view with a reduce method" should "be correct" in {
     val view = DSL.compile(new JSView[String, Int] {
-      val map: Rep[Doc => Unit] = fun { doc =>
+      val map: Exp[Doc => Unit] = function { doc =>
         emit(doc._id, 1)
       }
 
-      override val reduce = fun { (keys: Rep[Array[(String, String)]], values: Rep[Array[Int]], rereduce: Rep[Boolean]) =>
+      override val reduce = function { (keys: Rep[Array[(String, String)]], values: Rep[Array[Int]], rereduce: Rep[Boolean]) =>
         sum(values)
       }
 
@@ -79,23 +69,18 @@ class TestViews extends FlatSpec with ShouldMatchers {
 
   "requiring a module" should "be correctly translated and checked" in {
     val view = DSL.compile(new JSView[String, Int] {
-      val map: Rep[Doc => Unit] = fun { doc =>
+      val map: Exp[Doc => Unit] = function { doc =>
         val module = require[Int]("path")
         emit(doc._id, module)
       }
     })
 
     val expectedRequire =
-      """(function () {
-        |var x0 = function(x1) {
-        |var x2 = require("path");
-        |var x3 = x1._id;
-        |var x4 = emit(x3, x2);
-        |};
-        |return x0
-        |}
-        |)()
-        |""".stripMargin
+      """function(x0) {
+        |var x1 = require("path");
+        |var x2 = x0._id;
+        |var x3 = emit(x2, x1);
+        |}""".stripMargin
 
     val expected = ViewDoc(expectedRequire, None)
 
@@ -105,7 +90,7 @@ class TestViews extends FlatSpec with ShouldMatchers {
   "built-in reduce function" should "correctly be typed-checked and translated" in {
 
     val view1 = DSL.compile(new JSView[String, Int] {
-      val map: Rep[Doc => Unit] = fun { doc =>
+      val map: Exp[Doc => Unit] = function { doc =>
         emit(doc._id, 1)
       }
 
@@ -118,7 +103,7 @@ class TestViews extends FlatSpec with ShouldMatchers {
     view1 should be(expected1)
 
     val view2 = DSL.compile(new JSView[String, Int] {
-      val map: Rep[Doc => Unit] = fun { doc =>
+      val map: Exp[Doc => Unit] = function { doc =>
         emit(doc._id, 1)
       }
 
@@ -131,7 +116,7 @@ class TestViews extends FlatSpec with ShouldMatchers {
     view2 should be(expected2)
 
     val view3 = DSL.compile(new JSView[String, Int] {
-      val map: Rep[Doc => Unit] = fun { doc =>
+      val map: Exp[Doc => Unit] = function { doc =>
         emit(doc._id, 1)
       }
 
@@ -147,11 +132,11 @@ class TestViews extends FlatSpec with ShouldMatchers {
 
     val exn1 = evaluating {
       DSL.compile(new JSView[String, Int] {
-        val map: Rep[Doc => Unit] = fun { doc =>
+        val map: Exp[Doc => Unit] = function { doc =>
           emit(doc._id, 1)
         }
 
-        override val reduce = fun {
+        override val reduce = function {
           (keys: Rep[Array[(String, String)]], values: Rep[Array[Int]], rereduce: Rep[Boolean]) =>
             _sum(manifest[String], manifest[Int], implicitly[Numeric[Int]])((keys, values, rereduce))
         }
@@ -161,11 +146,11 @@ class TestViews extends FlatSpec with ShouldMatchers {
 
     val exn2 = evaluating {
       DSL.compile(new JSView[String, Int] {
-        val map: Rep[Doc => Unit] = fun { doc =>
+        val map: Exp[Doc => Unit] = function { doc =>
           emit(doc._id, 1)
         }
 
-        override val reduce = fun {
+        override val reduce = function {
           (keys: Rep[Array[(String, String)]], values: Rep[Array[Int]], rereduce: Rep[Boolean]) =>
             _count(manifest[String], manifest[Int])((keys, values, rereduce))
         }
@@ -175,11 +160,11 @@ class TestViews extends FlatSpec with ShouldMatchers {
 
     val exn3 = evaluating {
       DSL.compile(new JSView[String, Int] {
-        val map: Rep[Doc => Unit] = fun { doc =>
+        val map: Exp[Doc => Unit] = function { doc =>
           emit(doc._id, 1)
         }
 
-        override val reduce = fun {
+        override val reduce = function {
           (keys: Rep[Array[(String, String)]], values: Rep[Array[Int]], rereduce: Rep[Boolean]) =>
             _stats(manifest[String], manifest[Int], implicitly[Numeric[Int]])((keys, values, rereduce))
         }

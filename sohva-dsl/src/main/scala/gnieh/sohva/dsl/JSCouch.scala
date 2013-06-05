@@ -146,6 +146,13 @@ trait JSCouch extends JS with JSJson with JSMaps with Casts {
     var stop: Rep[Boolean] = false
   }
 
+  def doFunction[A:Manifest,B:Manifest](fun: Rep[A] => Rep[B]): Rep[A => B]
+  def function[A:Manifest,B:Manifest](f: Rep[A] => Rep[B]): Rep[A=>B] = doFunction(f)
+  def function[A1:Manifest,A2:Manifest,B:Manifest](f: (Rep[A1], Rep[A2]) => Rep[B]): Rep[((A1,A2))=>B] =
+    function((t: Rep[(A1,A2)]) => f(tuple2_get1(t), tuple2_get2(t)))
+  def function[A1:Manifest,A2:Manifest,A3:Manifest,B:Manifest](f: (Rep[A1], Rep[A2], Rep[A3]) => Rep[B]): Rep[((A1,A2,A3))=>B] =
+    function((t: Rep[(A1,A2,A3)]) => f(tuple3_get1(t), tuple3_get2(t), tuple3_get3(t)))
+
   /** Checks whether the object is an array */
   def isArray(obj: Rep[Any]): Rep[Boolean]
 
@@ -169,6 +176,13 @@ trait JSCouchExp extends JSExp with JSCouch with JSJsonExp with JSMapsExp with C
   case class Sum[A](array: Rep[Array[A]]) extends Def[A]
   case class ToJSON(obj: Rep[Any]) extends Def[String]
   case class Require[A](path: Rep[String]) extends Def[A]
+  case class AnonFunction[A: Manifest,B: Manifest](param: Exp[A], body: Block[B]) extends Exp[A => B]
+
+  def doFunction[A:Manifest,B:Manifest](f: Exp[A] => Exp[B]) : Exp[A => B] = {
+    val x = unboxedFresh[A]
+    val y = reifyEffects(f(x)) // unfold completely at the definition site. 
+    AnonFunction(x, y)
+  }
 
   def isArray(obj: Rep[Any]): Rep[Boolean] = reflectEffect(IsArray(obj))
   def log[A](s: Rep[A]): Rep[Unit] = reflectEffect(Log(s))
@@ -181,6 +195,27 @@ trait JSCouchExp extends JSExp with JSCouch with JSJsonExp with JSMapsExp with C
 trait JSGenCouch extends JSGen with JSGenJson with JSGenMaps with JSGenStruct with JSGenProxy with QuoteGen {
   val IR: JSCouchExp
   import IR._
+
+  import java.io._
+
+  def funBody[B: Manifest](b: Block[B]): String = {
+    val block = new StringWriter
+    withStream(new PrintWriter(block)) {
+      emitBlock(b)
+      val result = getBlockResult((b))
+      if (!(result.tp <:< manifest[Unit]))
+        stream.print(q"return $result\n")
+    }
+    block.toString
+  }
+
+  override def quote(x: Exp[Any]): String = x match {
+    case AnonFunction(UnboxedTuple(ps), b) =>
+      val p = ps.map(quote).mkString(",")
+      q"function($p) {\n${funBody(b)}}"
+    case AnonFunction(p, b) => q"function($p) {\n${funBody(b)}}"
+    case _                  => super.quote(x)
+  }
 
   override def emitNode(sym: Sym[Any], rhs: Def[Any]) = rhs match {
     case Cast(x, m)    => emitValDef(sym, quote(x))

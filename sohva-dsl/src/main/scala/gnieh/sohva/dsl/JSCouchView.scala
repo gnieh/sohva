@@ -92,10 +92,10 @@ trait JSView[Key, Mapped] extends JSCouchView[Key, Mapped] with JSCouchExp with 
       BuiltinStats[Key,Mapped]()
 
   /** The map function of this view */
-  val map: Rep[Doc => Unit]
+  val map: Exp[Doc => Unit]
 
   /** The reduce function of this view. Override this if you need it */
-  val reduce: Rep[((Array[(String, Key)], Array[Mapped], Boolean)) => Any] =
+  val reduce: Exp[((Array[(String, Key)], Array[Mapped], Boolean)) => Any] =
     undefined
 }
 

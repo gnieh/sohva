@@ -95,30 +95,30 @@ trait JSDesign extends JSCouchExp with JSFunctionsExp {
     views(name) = new ViewManifest(view)
 
   /** Add a new view library */
-  def view_lib(name: String)(lib: Rep[Any]): Unit =
+  def view_lib(name: String)(lib: Exp[Any]): Unit =
     view_libs(name) = lib
 
   /** Add a show function */
-  def show(name: String)(show: Rep[((Doc, Request)) => Response]): Unit =
+  def show(name: String)(show: Exp[((Doc, Request)) => Response]): Unit =
     shows(name) = show
 
   /** Add a list function */
-  def list(name: String)(list: Rep[((Head, Request)) => String]): Unit =
+  def list(name: String)(list: Exp[((Head, Request)) => String]): Unit =
     lists(name) = list
 
   /** Add a filter function */
-  def filter(name: String)(filter: Rep[((Doc)) => Boolean]): Unit =
+  def filter(name: String)(filter: Exp[((Doc)) => Boolean]): Unit =
     filters(name) = filter
 
   /** Add an update function */
-  def udpate(name: String)(update: Rep[((Doc, Request)) => (Doc, Response)]): Unit =
+  def udpate(name: String)(update: Exp[((Doc, Request)) => (Doc, Response)]): Unit =
     updates(name) = update
 
   /** Add a library */
-  def lib(name: String)(lib: Rep[Any]): Unit =
+  def lib(name: String)(lib: Exp[Any]): Unit =
     libs(name) = lib
 
-  val validate_doc_update: Rep[((Doc, Doc, UserCtx)) => Boolean] =
+  val validate_doc_update: Exp[((Doc, Doc, UserCtx)) => Boolean] =
     undefined
 
 }
