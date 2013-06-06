@@ -63,10 +63,17 @@ class TestDesigns extends FlatSpec with ShouldMatchers {
                      |var x20 = [x17,x19];
                      |return x20
                      |}""".stripMargin
+    ),
+    filters = Map(
+      "filter1" -> """function(x21) {
+                     |var x22 = x21._id;
+                     |var x23 = x22=="test";
+                     |return x23
+                     |}""".stripMargin
     )
   )
 
-  "compiling a desing" should "be correct" in {
+  "compiling a design" should "be correct" in {
     val design = DSL.compile(new JSDesign {
 
       val _id = "test-design"
@@ -83,21 +90,25 @@ class TestDesigns extends FlatSpec with ShouldMatchers {
         }
       })
 
-    override val validate_doc_update =
-      function { (oldDoc: Rep[Doc], newDoc: Rep[Doc], ctx: Rep[UserCtx]) =>
-        oldDoc._id == newDoc._id
-      }
+      override val validate_doc_update =
+        function { (oldDoc: Rep[Doc], newDoc: Rep[Doc], ctx: Rep[UserCtx]) =>
+          oldDoc._id == newDoc._id
+        }
 
-    show("show1")(function { (doc: Rep[Doc], req: Rep[Request]) =>
-      new Record {
-        val code = 200
-        val body = "test"
-      }
-    })
+      show("show1")(function { (doc: Rep[Doc], req: Rep[Request]) =>
+        new Record {
+          val code = 200
+          val body = "test"
+        }
+      })
 
-    update("update1")(function { (doc: Rep[Doc], req: Rep[Request]) =>
-      (doc, new Record{val body = "plop"})
-    })
+      update("update1")(function { (doc: Rep[Doc], req: Rep[Request]) =>
+        (doc, new Record{val body = "plop"})
+      })
+
+      filter("filter1")(function { (doc: Rep[Doc]) =>
+        doc._id == "test"
+      })
 
     })
 
