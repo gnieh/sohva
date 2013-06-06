@@ -79,8 +79,8 @@ trait Design {
 
 case class DesignDoc(_id: String,
                      language: String,
-                     views: Map[String, ViewDoc],
-                     validate_doc_update: Option[String],
+                     views: Map[String, ViewDoc] = Map(),
+                     validate_doc_update: Option[String] = None,
                      updates: Map[String, String] = Map(),
                      filters: Map[String, String] = Map(),
                      shows: Map[String, String] = Map(),

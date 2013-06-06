@@ -16,18 +16,22 @@
 package gnieh.sohva
 package dsl
 
-import scala.js._
+import scala.collection.mutable.Map
 import scala.virtualization.lms.common._
 
-import scala.collection.mutable.Map
+import scala.js._
+import language._
+import gen.QuoteGen
+import gen.js._
+import exp._
 
-trait JSCouchDesign extends JSCouch with JSFunctions {
+trait JSCouchDesign extends JSCouch {
 
   /** Extracts the next row from a related view result */
   def getRow(): Rep[Any]
 
   /** Registers callable handler for specified MIME key. */
-  def provides(key: Rep[String], handler: Rep[() => Response]): Rep[Response]
+  def provides(key: Rep[String], handler: Rep[() => Record]): Rep[Record]
 
   /** Registers list of MIME types by associated key */
   def registerType(key: Rep[String], mime: Rep[String], mimes: Rep[String]*): Rep[Unit]
@@ -36,7 +40,7 @@ trait JSCouchDesign extends JSCouch with JSFunctions {
   def send(chunk: Rep[String]): Rep[Unit]
 
   /** Initiates chunked response */
-  def start(resp: Response): Rep[Unit]
+  def start(resp: Record): Rep[Unit]
 
 }
 
@@ -51,34 +55,34 @@ trait JSCouchDesign extends JSCouch with JSFunctions {
  *
  *  @author Lucas Satabin
  */
-trait JSDesign extends JSCouchExp with JSFunctionsExp {
+trait JSDesign extends JSCouchExp {
 
   private[dsl] val views = Map.empty[String, ViewManifest[_, _]]
 
   private[dsl] val view_libs = Map.empty[String, Rep[Any]]
 
-  private[dsl] val shows = Map.empty[String, Rep[((Doc, Request)) => Response]]
+  private[dsl] val shows = Map.empty[String, Rep[((Doc, Request)) => Record]]
 
   private[dsl] val lists = Map.empty[String, Rep[((Head, Request)) => String]]
 
   private[dsl] val filters = Map.empty[String, Rep[((Doc)) => Boolean]]
 
-  private[dsl] val updates =  Map.empty[String, Rep[((Doc, Request)) => (Doc, Response)]]
+  private[dsl] val updates =  Map.empty[String, Rep[((Doc, Request)) => (Doc, Record)]]
 
   private[dsl] val libs = Map.empty[String, Rep[Any]]
 
   case object GetRow extends Def[Any]
-  case class Provides(key: Rep[String], handler: Rep[() => Response]) extends Def[Response]
+  case class Provides(key: Rep[String], handler: Rep[() => Record]) extends Def[Record]
   case class RegisterType(key: Rep[String], mime: List[Rep[String]]) extends Def[Unit]
   case class Send(chunk: Rep[String]) extends Def[Unit]
-  case class Start(resp: Rep[Response]) extends Def[Unit]
+  case class Start(resp: Rep[Record]) extends Def[Unit]
 
   val _id: String
 
   def getRow(): Rep[Any] =
     GetRow
 
-  def provides(key: Rep[String], handler: Rep[() => Response]): Rep[Response] =
+  def provides(key: Rep[String], handler: Rep[() => Record]): Rep[Record] =
     Provides(key, handler)
 
   def registerType(key: Rep[String], mime: Rep[String], mimes: Rep[String]*): Rep[Unit] =
@@ -87,7 +91,7 @@ trait JSDesign extends JSCouchExp with JSFunctionsExp {
   def send(chunk: Rep[String]): Rep[Unit] =
     Send(chunk)
 
-  def start(resp: Rep[Response]): Rep[Unit] =
+  def start(resp: Rep[Record]): Rep[Unit] =
     Start(resp)
 
   /** Add a new view with the given name */
@@ -99,7 +103,7 @@ trait JSDesign extends JSCouchExp with JSFunctionsExp {
     view_libs(name) = lib
 
   /** Add a show function */
-  def show(name: String)(show: Exp[((Doc, Request)) => Response]): Unit =
+  def show(name: String)(show: Exp[((Doc, Request)) => Record]): Unit =
     shows(name) = show
 
   /** Add a list function */
@@ -111,7 +115,7 @@ trait JSDesign extends JSCouchExp with JSFunctionsExp {
     filters(name) = filter
 
   /** Add an update function */
-  def udpate(name: String)(update: Exp[((Doc, Request)) => (Doc, Response)]): Unit =
+  def update(name: String)(update: Exp[((Doc, Request)) => (Doc, Record)]): Unit =
     updates(name) = update
 
   /** Add a library */

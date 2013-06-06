@@ -16,9 +16,14 @@
 package gnieh.sohva
 package dsl
 
-import scala.js._
 import scala.virtualization.lms.common._
 import scala.virtualization.lms.internal.GenerationFailedException
+
+import scala.js._
+import language._
+import gen.QuoteGen
+import gen.js._
+import exp._
 
 import java.io.PrintWriter
 
@@ -26,7 +31,7 @@ import java.io.PrintWriter
  *
  *  @author Lucas Satabin
  */
-trait JSCouchView[Key, Mapped] extends JSCouch with JSFunctions {
+trait JSCouchView[Key, Mapped] extends JSCouch {
 
   abstract class Stats[T: Numeric] {
     var sum: T
@@ -58,7 +63,7 @@ trait JSCouchView[Key, Mapped] extends JSCouch with JSFunctions {
  *
  *  @author Lucas Satabin
  */
-trait JSView[Key, Mapped] extends JSCouchView[Key, Mapped] with JSCouchExp with JSFunctionsExp {
+trait JSView[Key, Mapped] extends JSCouchView[Key, Mapped] with JSCouchExp {
 
   type K = Key
   type M = Mapped

@@ -17,14 +17,16 @@ package gnieh.sohva
 package dsl
 
 import scala.js._
-
-import net.liftweb.json._
+import language._
+import gen.QuoteGen
+import gen.js._
+import exp._
 
 /** `JSON2` object access
  *
  *  @author Lucas Satabin
  */
-trait JSJson extends JSProxyBase {
+trait JSJson extends Proxy {
 
   /** the special `undefined` javascript value */
   val undefined: Rep[Nothing]
@@ -43,7 +45,7 @@ trait JSJson extends JSProxyBase {
 
 }
 
-trait JSJsonExp extends JSJson with JSProxyExp {
+trait JSJsonExp extends JSJson with ProxyExp {
 
   object undefined extends Rep[Nothing]
 
@@ -51,7 +53,7 @@ trait JSJsonExp extends JSJson with JSProxyExp {
 
 }
 
-trait JSGenJson extends JSGenProxy with QuoteGen {
+trait JSGenJson extends GenProxy with QuoteGen {
   val IR: JSJsonExp
   import IR._
 

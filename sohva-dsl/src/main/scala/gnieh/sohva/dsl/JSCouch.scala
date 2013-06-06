@@ -16,15 +16,19 @@
 package gnieh.sohva
 package dsl
 
-import scala.js._
-import scala.js.{ NumericOpsExpOpt => JSNumericOpsExpOpt }
 import scala.virtualization.lms.common._
+
+import scala.js._
+import language._
+import gen.QuoteGen
+import gen.js._
+import exp._
 
 /** CouchDB methods that are available everywhere on the CouchDB server
  *
  *  @author Lucas Satabin
  */
-trait JSCouch extends JS with JSJson with JSMaps with Casts {
+trait JSCouch extends JS with JSJson with Structs with JSMaps with Casts {
 
   /** A CouchDB document is a Json object with at least an `_id` and a `_rev` field
    *
@@ -123,29 +127,6 @@ trait JSCouch extends JS with JSJson with JSMaps with Casts {
   implicit def repToRequest(x: Rep[Request]): Request =
     repProxy[Request](x)
 
-  /** The response data
-   *
-   *  @author Lucas Satabin
-   */
-  trait Response {
-    var code: Rep[Int]
-    var json: Rep[Any]
-    var body: Rep[String]
-    var base64: Rep[String]
-    var headers: Rep[Map[String, String]]
-    var stop: Rep[Boolean]
-  }
-  implicit def repToResponse(x: Rep[Response]): Response =
-    repProxy[Response](x)
-  implicit def response(str: String): Response = new Response {
-    var code: Rep[Int] = 200
-    var json: Rep[Any] = undefined
-    var body: Rep[String] = str
-    var base64: Rep[String] = null
-    var headers: Rep[Map[String, String]] = JSMap[String, String]()
-    var stop: Rep[Boolean] = false
-  }
-
   def doFunction[A:Manifest,B:Manifest](fun: Rep[A] => Rep[B]): Rep[A => B]
   def function[A:Manifest,B:Manifest](f: Rep[A] => Rep[B]): Rep[A=>B] = doFunction(f)
   def function[A1:Manifest,A2:Manifest,B:Manifest](f: (Rep[A1], Rep[A2]) => Rep[B]): Rep[((A1,A2))=>B] =
@@ -170,7 +151,7 @@ trait JSCouch extends JS with JSJson with JSMaps with Casts {
 
 }
 
-trait JSCouchExp extends JSExp with JSCouch with JSJsonExp with JSMapsExp with CastsCheckedExp {
+trait JSCouchExp extends JSExp with JSCouch with JSJsonExp with StructExp with JSMapsExp with CastsCheckedExp {
   case class IsArray(obj: Rep[Any]) extends Def[Boolean]
   case class Log[A](s: Rep[A]) extends Def[Unit]
   case class Sum[A](array: Rep[Array[A]]) extends Def[A]
@@ -180,7 +161,7 @@ trait JSCouchExp extends JSExp with JSCouch with JSJsonExp with JSMapsExp with C
 
   def doFunction[A:Manifest,B:Manifest](f: Exp[A] => Exp[B]) : Exp[A => B] = {
     val x = unboxedFresh[A]
-    val y = reifyEffects(f(x)) // unfold completely at the definition site. 
+    val y = reifyEffects(f(x)) // unfold completely at the definition site.
     AnonFunction(x, y)
   }
 
@@ -192,17 +173,21 @@ trait JSCouchExp extends JSExp with JSCouch with JSJsonExp with JSMapsExp with C
 
 }
 
-trait JSGenCouch extends JSGen with JSGenJson with JSGenMaps with JSGenStruct with JSGenProxy with QuoteGen {
+trait JSGenCouch extends GenJS with JSGenJson with GenStruct with GenJSMaps with QuoteGen {
   val IR: JSCouchExp
   import IR._
 
   import java.io._
 
-  def funBody[B: Manifest](b: Block[B]): String = {
+  override def tupleAsArrays = true
+
+  val substs = scala.collection.mutable.Map.empty[Sym[_], Sym[_]]
+
+  def funBody[B: Manifest](body: Block[B]): String = {
     val block = new StringWriter
     withStream(new PrintWriter(block)) {
-      emitBlock(b)
-      val result = getBlockResult((b))
+      emitBlock(body)
+      val result = getBlockResult((body))
       if (!(result.tp <:< manifest[Unit]))
         stream.print(q"return $result\n")
     }
@@ -210,14 +195,17 @@ trait JSGenCouch extends JSGen with JSGenJson with JSGenMaps with JSGenStruct wi
   }
 
   override def quote(x: Exp[Any]): String = x match {
+    case sym: Sym[_] if substs.contains(sym) =>
+      quote(substs(sym))
     case AnonFunction(UnboxedTuple(ps), b) =>
       val p = ps.map(quote).mkString(",")
       q"function($p) {\n${funBody(b)}}"
-    case AnonFunction(p, b) => q"function($p) {\n${funBody(b)}}"
-    case _                  => super.quote(x)
+    case AnonFunction(p, b)  => q"function($p) {\n${funBody(b)}}"
+    case _                   => super.quote(x)
   }
 
   override def emitNode(sym: Sym[Any], rhs: Def[Any]) = rhs match {
+    case Reify(alias: Sym[_], _, _) => substs(sym) = alias
     case Cast(x, m)    => emitValDef(sym, quote(x))
     case IsArray(obj)  => emitValDef(sym, q"isArray($obj)")
     case Log(s)        => emitValDef(sym, q"log($s)")
