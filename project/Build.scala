@@ -20,7 +20,7 @@ object SohvaBuild extends Build {
     parallelExecution in ThisBuild := false,
     compileOptions)
     settings(publishSettings: _*)
-  ) aggregate(client, dsl, testing, server)
+  ) aggregate(client, dsl, testing)
 
   lazy val globalDependencies = Seq(
     "org.scalatest" %% "scalatest" % "2.0.M5b" % "test" cross CrossVersion.binaryMapped {
@@ -143,15 +143,4 @@ object SohvaBuild extends Build {
   lazy val testing = Project(id = "sohva-testing",
     base = file("sohva-testing")) dependsOn(client)
 
-  lazy val server = Project(id = "sohva-server",
-    base = file("sohva-server")) settings (
-    libraryDependencies ++= serverDependencies
-  )
-
-  lazy val serverDependencies = Seq(
-    "net.liftweb" %% "lift-json" % "2.5" cross CrossVersion.binaryMapped {
-      case "2.9.3" => "2.9.2"
-      case v => "2.10"
-    }
-  )
 }
