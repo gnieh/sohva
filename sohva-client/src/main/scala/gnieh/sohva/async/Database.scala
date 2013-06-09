@@ -5,7 +5,7 @@
 * you may not use this file except in compliance with the License.
 * You may obtain a copy of the License at
 *
-*couch.http://www.apache.org/licenses/LICENSE-2.0
+* http://www.apache.org/licenses/LICENSE-2.0
 *
 * Unless required by applicable law or agreed to in writing, software
 * distributed under the License is distributed on an "AS IS" BASIS,
@@ -54,7 +54,7 @@ import net.liftweb.json._
  *  @author Lucas Satabin
  */
 class Database private[sohva](val name: String,
-                              protected[sohva] val couch: CouchDB,
+                              val couch: CouchDB,
                               val credit: Int,
                               val strategy: Strategy) extends gnieh.sohva.Database {
 

@@ -5,7 +5,7 @@
 * you may not use this file except in compliance with the License.
 * You may obtain a copy of the License at
 *
-*couch.http://www.apache.org/licenses/LICENSE-2.0
+* http://www.apache.org/licenses/LICENSE-2.0
 *
 * Unless required by applicable law or agreed to in writing, software
 * distributed under the License is distributed on an "AS IS" BASIS,
@@ -89,7 +89,7 @@ class Users(couch: CouchDB) extends gnieh.sohva.Users {
             if(new Date().before(validity) && savedToken == saltedToken) {
               // save the user with the new password
               val newUser = new CouchUser(user.name, password, roles = user.roles, _rev = user._rev)
-              http((request / dbName / user._id << serializer.toJson(newUser)).PUT).right.map(ok _)
+             couch.http((request / dbName / user._id << serializer.toJson(newUser)).PUT).right.map(ok _)
             } else {
               Future.successful(Right(false))
             }

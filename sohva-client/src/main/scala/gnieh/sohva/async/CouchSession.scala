@@ -53,7 +53,7 @@ class CouchSession protected[sohva] (val couch: CouchClient) extends CouchDB wit
 
   def currentUser: Result[Option[UserInfo]] = userContext.right.flatMap {
     case UserCtx(name, _) if name != null =>
-      http(request / "_users" / ("org.couchdb.user:" + name)).right.map(user)
+     couch.http(request / "_users" / ("org.couchdb.user:" + name)).right.map(user)
     case _ => Future.successful(Right(None))
   }
 
@@ -71,7 +71,7 @@ class CouchSession protected[sohva] (val couch: CouchClient) extends CouchDB wit
   def isServerAdmin: Result[Boolean] = hasRole("_admin")
 
   def userContext: Result[UserCtx] =
-    http((request / "_session")).right.map(userCtx)
+   couch.http((request / "_session")).right.map(userCtx)
 
   // helper methods
 
