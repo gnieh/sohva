@@ -50,6 +50,9 @@ trait CouchDB {
   /** Returns the names of all databases in this couch instance. */
   def _all_dbs: Result[List[String]]
 
+  /** Returns one UUID */
+  def _uuid: Result[String]
+
   /** Returns the requested number of UUIDS (by default 1). */
   def _uuids(count: Int = 1): Result[List[String]]
 

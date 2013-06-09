@@ -51,15 +51,14 @@ class Users(couch: CouchDB) extends gnieh.sohva.Users {
 
   def generateResetToken(name: String, until: Date): Result[Option[String]] =
     for {
-      tokens <- _uuids().right
+      tok <- _uuid.right
       user <- userDb.getDocById[PasswordResetUser]("org.couchdb.user:" + name).right
-      token <- generate(user, tokens, until)
+      token <- generate(user, tok, until)
     } yield token
 
-  private[this] def generate(user: Option[PasswordResetUser], tokens: List[String], until: Date) =
+  private[this] def generate(user: Option[PasswordResetUser], token: String, until: Date) =
     user match {
       case Some(user) =>
-        val List(token) = tokens
         // enrich the user document with password reset information
         val (token_salt, token_sha) = passwordSha(token)
         val u =

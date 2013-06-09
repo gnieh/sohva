@@ -56,6 +56,10 @@ abstract class CouchDB extends gnieh.sohva.CouchDB {
     for(dbs <- http(request / "_all_dbs").right)
       yield asStringList(dbs)
 
+  def _uuid: Result[String] =
+    for(uuid <- _uuids(1).right)
+      yield uuid.head
+
   def _uuids(count: Int = 1): Result[List[String]] =
     for(uuids <- http(request / "_uuids" <<? Map("count" -> count.toString)).right)
       yield asUuidsList(uuids)

@@ -36,7 +36,7 @@ import duration._
  *
  *  @author Lucas Satabin
  */
-case class Database(wrapped: ADatabase) extends gnieh.sohva.Database {
+class Database private[sohva](wrapped: ADatabase) extends gnieh.sohva.Database {
 
   type Result[T] = T
 

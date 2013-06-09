@@ -53,12 +53,10 @@ import net.liftweb.json._
  *
  *  @author Lucas Satabin
  */
-class Database(val name: String,
-               protected[sohva] val couch: CouchDB,
-               val credit: Int,
-               val strategy: Strategy) extends gnieh.sohva.Database {
-
-  self =>
+class Database private[sohva](val name: String,
+                              protected[sohva] val couch: CouchDB,
+                              val credit: Int,
+                              val strategy: Strategy) extends gnieh.sohva.Database {
 
   type Result[T] = Future[Either[(Int, Option[ErrorResult]), T]]
 
