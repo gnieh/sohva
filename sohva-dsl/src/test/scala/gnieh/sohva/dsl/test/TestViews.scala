@@ -55,7 +55,7 @@ class TestViews extends FlatSpec with ShouldMatchers {
         emit(doc._id, 1)
       }
 
-      override val reduce = function { (keys: Rep[Array[(String, String)]], values: Rep[Array[Int]], rereduce: Rep[Boolean]) =>
+      override val reduce = function { (keys: Rep[List[(String, String)]], values: Rep[List[Int]], rereduce: Rep[Boolean]) =>
         sum(values)
       }
 
@@ -137,7 +137,7 @@ class TestViews extends FlatSpec with ShouldMatchers {
         }
 
         override val reduce = function {
-          (keys: Rep[Array[(String, String)]], values: Rep[Array[Int]], rereduce: Rep[Boolean]) =>
+          (keys: Rep[List[(String, String)]], values: Rep[List[Int]], rereduce: Rep[Boolean]) =>
             _sum(manifest[String], manifest[Int], implicitly[Numeric[Int]])((keys, values, rereduce))
         }
       })
@@ -151,7 +151,7 @@ class TestViews extends FlatSpec with ShouldMatchers {
         }
 
         override val reduce = function {
-          (keys: Rep[Array[(String, String)]], values: Rep[Array[Int]], rereduce: Rep[Boolean]) =>
+          (keys: Rep[List[(String, String)]], values: Rep[List[Int]], rereduce: Rep[Boolean]) =>
             _count(manifest[String], manifest[Int])((keys, values, rereduce))
         }
       })
@@ -165,7 +165,7 @@ class TestViews extends FlatSpec with ShouldMatchers {
         }
 
         override val reduce = function {
-          (keys: Rep[Array[(String, String)]], values: Rep[Array[Int]], rereduce: Rep[Boolean]) =>
+          (keys: Rep[List[(String, String)]], values: Rep[List[Int]], rereduce: Rep[Boolean]) =>
             _stats(manifest[String], manifest[Int], implicitly[Numeric[Int]])((keys, values, rereduce))
         }
       })

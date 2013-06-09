@@ -49,7 +49,7 @@ trait JSCouch extends JS with JSJson with Structs with JSMaps with Casts {
   trait UserCtx {
     var db: Rep[String]
     var name: Rep[String]
-    var roles: Rep[Array[String]]
+    var roles: Rep[List[String]]
   }
   implicit def repToUserCtx(x: Rep[UserCtx]): UserCtx =
     repProxy[UserCtx](x)
@@ -66,8 +66,8 @@ trait JSCouch extends JS with JSJson with Structs with JSMaps with Casts {
     repProxy[SecObject](x)
 
   trait UsersRoles {
-    var names: Rep[Array[String]]
-    var roles: Rep[Array[String]]
+    var names: Rep[List[String]]
+    var roles: Rep[List[String]]
   }
   implicit def repToUsersRoles(x: Rep[UsersRoles]): UsersRoles =
     repProxy[UsersRoles](x)
@@ -115,10 +115,10 @@ trait JSCouch extends JS with JSJson with Structs with JSMaps with Casts {
     var id: Rep[String]
     var info: Rep[DbInfo]
     var method: Rep[String]
-    var path: Rep[Array[String]]
+    var path: Rep[List[String]]
     var peer: Rep[String]
     var query: Rep[Map[String, String]]
-    var requested_path: Rep[Array[String]]
+    var requested_path: Rep[List[String]]
     var raw_path: Rep[String]
     var secObj: Rep[SecObject]
     var userCtx: Rep[UserCtx]
@@ -141,7 +141,7 @@ trait JSCouch extends JS with JSJson with Structs with JSMaps with Casts {
   def log[A](msg: Rep[A]): Rep[Unit]
 
   /** Sums the numeric values in the array */
-  def sum[A: Numeric: Manifest](array: Rep[Array[A]]): Rep[A]
+  def sum[A: Numeric: Manifest](array: Rep[List[A]]): Rep[A]
 
   /** Converts the object to its Json representation (alias for `JSON.stringify(obj)` */
   def toJSON(obj: Rep[Any]): Rep[String]
@@ -154,7 +154,7 @@ trait JSCouch extends JS with JSJson with Structs with JSMaps with Casts {
 trait JSCouchExp extends JSExp with JSCouch with JSJsonExp with StructExp with JSMapsExp with CastsCheckedExp {
   case class IsArray(obj: Rep[Any]) extends Def[Boolean]
   case class Log[A](s: Rep[A]) extends Def[Unit]
-  case class Sum[A](array: Rep[Array[A]]) extends Def[A]
+  case class Sum[A](array: Rep[List[A]]) extends Def[A]
   case class ToJSON(obj: Rep[Any]) extends Def[String]
   case class Require[A](path: Rep[String]) extends Def[A]
   case class AnonFunction[A: Manifest,B: Manifest](param: Exp[A], body: Block[B]) extends Exp[A => B]
@@ -167,7 +167,7 @@ trait JSCouchExp extends JSExp with JSCouch with JSJsonExp with StructExp with J
 
   def isArray(obj: Rep[Any]): Rep[Boolean] = reflectEffect(IsArray(obj))
   def log[A](s: Rep[A]): Rep[Unit] = reflectEffect(Log(s))
-  def sum[A: Numeric: Manifest](a: Rep[Array[A]]): Rep[A] = reflectEffect(Sum(a))
+  def sum[A: Numeric: Manifest](a: Rep[List[A]]): Rep[A] = reflectEffect(Sum(a))
   def toJSON(obj: Rep[Any]): Rep[String] = reflectEffect(ToJSON(obj))
   def require[A](path: Rep[String]): Rep[A] = reflectEffect(Require(path))
 
