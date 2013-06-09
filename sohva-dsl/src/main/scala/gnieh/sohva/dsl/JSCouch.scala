@@ -28,7 +28,7 @@ import exp._
  *
  *  @author Lucas Satabin
  */
-trait JSCouch extends JS with JSJson with Structs with JSMaps with Casts {
+trait JSCouch extends JS with JSJson with Structs with Dynamics with JSMaps with Casts {
 
   /** A CouchDB document is a Json object with at least an `_id` and a `_rev` field
    *
@@ -151,7 +151,7 @@ trait JSCouch extends JS with JSJson with Structs with JSMaps with Casts {
 
 }
 
-trait JSCouchExp extends JSExp with JSCouch with JSJsonExp with StructExp with JSMapsExp with CastsCheckedExp {
+trait JSCouchExp extends JSExp with JSCouch with JSJsonExp with StructExp with Dynamics with JSMapsExp with CastsCheckedExp {
   case class IsArray(obj: Rep[Any]) extends Def[Boolean]
   case class Log[A](s: Rep[A]) extends Def[Unit]
   case class Sum[A](array: Rep[List[A]]) extends Def[A]
@@ -173,7 +173,7 @@ trait JSCouchExp extends JSExp with JSCouch with JSJsonExp with StructExp with J
 
 }
 
-trait JSGenCouch extends GenJS with JSGenJson with GenStruct with GenJSMaps with QuoteGen {
+trait JSGenCouch extends GenJS with JSGenJson with GenStruct with GenDynamics with GenJSMaps with QuoteGen {
   val IR: JSCouchExp
   import IR._
 

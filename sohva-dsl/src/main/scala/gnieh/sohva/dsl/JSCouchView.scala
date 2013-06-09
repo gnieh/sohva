@@ -46,15 +46,15 @@ trait JSCouchView[Key, Mapped] extends JSCouch {
 
   /** Built-in `_sum` reduce function (mapped values must be numbers) */
   def _sum(implicit mk: Manifest[Key], mm: Manifest[Mapped], num: Numeric[Mapped]):
-    Rep[((List[(String, Key)], List[Mapped], Boolean)) => Mapped]
+    Rep[((List[(Key, String)], List[Mapped], Boolean)) => Mapped]
 
   /** Built-in `_count` reduce function */
   def _count(implicit mk: Manifest[Key], mm: Manifest[Mapped]):
-    Rep[((List[(String, Key)], List[Mapped], Boolean)) => Int]
+    Rep[((List[(Key, String)], List[Mapped], Boolean)) => Int]
 
   /** Built-in `_stats` reduce function (mapped values must be numbers) */
   def _stats(implicit mk: Manifest[Key], mm: Manifest[Mapped], num: Numeric[Mapped]):
-    Rep[((List[(String, Key)], List[Mapped], Boolean)) => Stats[Mapped]]
+    Rep[((List[(Key, String)], List[Mapped], Boolean)) => Stats[Mapped]]
 
 }
 
@@ -69,9 +69,9 @@ trait JSView[Key, Mapped] extends JSCouchView[Key, Mapped] with JSCouchExp {
   type M = Mapped
 
   case class Emit(key: Rep[Key], value: Rep[Mapped]) extends Def[Unit]
-  case class BuiltinSum[K: Manifest, M: Manifest: Numeric]() extends Exp[((List[(String, K)], List[M], Boolean)) => M]
-  case class BuiltinCount[K: Manifest, M: Manifest]() extends Exp[((List[(String, K)], List[M], Boolean)) => Int]
-  case class BuiltinStats[K: Manifest, M: Manifest: Numeric]() extends Exp[((List[(String, K)], List[M], Boolean)) => Stats[M]]
+  case class BuiltinSum[K: Manifest, M: Manifest: Numeric]() extends Exp[((List[(K, String)], List[M], Boolean)) => M]
+  case class BuiltinCount[K: Manifest, M: Manifest]() extends Exp[((List[(K, String)], List[M], Boolean)) => Int]
+  case class BuiltinStats[K: Manifest, M: Manifest: Numeric]() extends Exp[((List[(K, String)], List[M], Boolean)) => Stats[M]]
   object Builtin {
     def unapply(x: Exp[Any]): Option[String] = x match {
       case BuiltinSum()   => Some("_sum")
@@ -85,22 +85,22 @@ trait JSView[Key, Mapped] extends JSCouchView[Key, Mapped] with JSCouchExp {
     reflectEffect(Emit(key, value))
 
   def _sum(implicit mk: Manifest[Key], mm: Manifest[Mapped], num: Numeric[Mapped]):
-    Rep[((List[(String, Key)], List[Mapped], Boolean)) => Mapped] =
+    Rep[((List[(Key, String)], List[Mapped], Boolean)) => Mapped] =
       BuiltinSum[Key,Mapped]()
 
   def _count(implicit mk: Manifest[Key], mm: Manifest[Mapped]):
-    Rep[((List[(String, Key)], List[Mapped], Boolean)) => Int] =
+    Rep[((List[(Key, String)], List[Mapped], Boolean)) => Int] =
       BuiltinCount[Key,Mapped]()
 
   def _stats(implicit mk: Manifest[Key], mm: Manifest[Mapped], num: Numeric[Mapped]):
-    Rep[((List[(String, Key)], List[Mapped], Boolean)) => Stats[Mapped]] =
+    Rep[((List[(Key, String)], List[Mapped], Boolean)) => Stats[Mapped]] =
       BuiltinStats[Key,Mapped]()
 
   /** The map function of this view */
   val map: Exp[Doc => Unit]
 
   /** The reduce function of this view. Override this if you need it */
-  val reduce: Exp[((List[(String, Key)], List[Mapped], Boolean)) => Any] =
+  val reduce: Exp[((List[(Key, String)], List[Mapped], Boolean)) => Any] =
     undefined
 }
 
