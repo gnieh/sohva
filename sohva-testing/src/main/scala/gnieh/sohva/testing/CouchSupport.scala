@@ -18,29 +18,24 @@ package testing
 
 import org.scalatest._
 
-import scala.collection.mutable.ListBuffer
-
 /** Trait that can be mixed into suites that need to interact with some CouchDB
  *  and query it with a client.
- *  All databases and sessions that are created from the fixture CouchDB client
- *  are cleaned up after each test, so you don't need to do it explicitely and
- *  can focus on the test itself.
  *
  *  @author Lucas Satabin
  */
-trait CouchClientSupport {
+trait CouchClientSupport[Client <: CouchClient] {
   this: fixture.Suite =>
 
-  type FixtureParam = CouchClient
+  type FixtureParam = Client
 
   /** Build the couch client used in the tests. Each call to this method must return a new instance */
-  def makeCouch(config: Map[String, Any]): CouchClient
+  def makeCouch(config: Map[String, Any]): Client
 
   /** Called before any test. Override it to populate any data you want */
-  def setup(couch: CouchClient): Unit = ()
+  def setup(couch: Client): Unit = ()
 
   def withFixture(test: OneArgTest) {
-    val couch = new InstrumentedClient(ListBuffer.empty[Database], makeCouch(test.configMap))
+    val couch = makeCouch(test.configMap)
     try {
       setup(couch) // initialize data if needed
       withFixture(test.toNoArgTest(couch))
