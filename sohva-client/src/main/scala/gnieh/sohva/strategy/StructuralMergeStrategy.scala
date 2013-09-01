@@ -18,7 +18,7 @@ package strategy
 
 import scala.annotation.tailrec
 
-import conflict._
+import gnieh.diffson._
 
 import net.liftweb.json._
 
@@ -158,7 +158,7 @@ object StructuralMergeStrategy extends Strategy {
       }
 
       // compute db2current by merging operations
-      val db2current = Patch(loop(base2db.ops, base2current.ops, Nil))
+      val db2current = JsonPatch(loop(base2db.ops, base2current.ops, Nil))
 
       // println("DC: " + db2current)
 

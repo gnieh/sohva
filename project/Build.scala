@@ -103,6 +103,7 @@ object SohvaBuild extends Build {
 
   lazy val clientDependencies = Seq(
     "net.databinder.dispatch" %% "dispatch-core" % "0.10.0" exclude("commons-logging", "commons-logging"),
+    "org.gnieh" %% "diffson" % "0.1",
     "com.jsuereth" %% "scala-arm" % "1.3" cross CrossVersion.binaryMapped {
       case "2.9.3" => "2.9.2"
       case v => "2.10"
