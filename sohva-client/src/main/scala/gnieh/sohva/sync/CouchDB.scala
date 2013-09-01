@@ -142,10 +142,6 @@ abstract class CouchDB private[sync] (wrapped: ACouchDB) extends gnieh.sohva.Cou
 
   }
 
-  @inline
-  protected[sohva] def passwordSha(password: String): (String, String) =
-    wrapped.passwordSha(password)
-
 }
 
 

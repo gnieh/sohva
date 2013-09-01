@@ -26,10 +26,6 @@ import com.ning.http.client.{
   Response
 }
 
-import java.security.MessageDigest
-
-import scala.util.Random
-
 import net.liftweb.json._
 
 /** A CouchDB instance.
@@ -102,29 +98,6 @@ abstract class CouchDB extends gnieh.sohva.CouchDB {
   protected[sohva] def request: RequestBuilder
 
   protected[sohva] def _http: Http
-
-  protected[sohva] def bytes2string(bytes: Array[Byte]) =
-    bytes.foldLeft(new StringBuilder) {
-      (res, byte) =>
-        res.append(Integer.toHexString(byte & 0xff))
-    }.toString
-
-  protected[sohva] def hash(s: String) = {
-    val md = MessageDigest.getInstance("SHA-1")
-    bytes2string(md.digest(s.getBytes("UTF-8")))
-  }
-
-  protected[sohva] def passwordSha(password: String) = {
-
-    // compute the password hash
-    // the password string is concatenated with the generated salt
-    // and the result is hashed using SHA-1
-    val saltArray = new Array[Byte](16)
-    Random.nextBytes(saltArray)
-    val salt = bytes2string(saltArray)
-
-    (salt, hash(password + salt))
-  }
 
   protected[sohva] def http(request: RequestBuilder): Result[String] =
     _http(request > handleCouchResponse _)

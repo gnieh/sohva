@@ -29,18 +29,18 @@ case class SohvaJsonException(msg: String, inner: Exception) extends Exception(m
  *  @author Lucas Satabin
  *
  */
-class JsonSerializer(couch: CouchDB, custom: List[SohvaSerializer[_]]) {
+class JsonSerializer(version: String, custom: List[SohvaSerializer[_]]) {
 
   implicit val formats = new DefaultFormats {
     override def dateFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SS")
   } +
   DbResultSerializer +
-  new UserSerializer(couch) +
-  new SecurityDocSerializer(couch.version) +
+  new UserSerializer(version) +
+  new SecurityDocSerializer(version) +
   ChangeSerializer +
   ConfigurationSerializer +
   DbRefSerializer ++
-  custom.map(_.serializer(couch.version))
+  custom.map(_.serializer(version))
 
   import Implicits._
 
@@ -94,7 +94,7 @@ private object DbResultSerializer extends Serializer[DbResult] {
  *  one had to compute the password salt and SHA himself
  *
  *  @author Lucas Satabin */
-private class UserSerializer(couch: CouchDB) extends Serializer[CouchUser] {
+private class UserSerializer(version: String) extends Serializer[CouchUser] {
   private val CouchUserClass = classOf[CouchUser]
 
   def deserialize(implicit format: Formats): PartialFunction[(TypeInfo, JValue), CouchUser] = {
@@ -102,8 +102,8 @@ private class UserSerializer(couch: CouchDB) extends Serializer[CouchUser] {
   }
 
   def serialize(implicit format: Formats): PartialFunction[Any, JValue] = {
-    case user: CouchUser if couch.version < "1.2" =>
-      val (salt, password_sha) = couch.passwordSha(user.password)
+    case user: CouchUser if version < "1.2" =>
+      val (salt, password_sha) = passwordSha(user.password)
       JObject(List(
         JField("_id", JString(user._id)),
         JField("_rev", user._rev.map(r => JString(r)).getOrElse(JNothing)),

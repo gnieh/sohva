@@ -20,6 +20,10 @@ import Defaults._
 
 import scala.concurrent.Future
 
+import java.security.MessageDigest
+
+import scala.util.Random
+
 /** Contains all the classes needed to interact with a couchdb server.
  *  Classes in this package allows the user to:
  *  - create/delete new databases into a couchdb instance,
@@ -39,6 +43,29 @@ package object sohva {
   type Doc = {
     val _id: String
     val _rev: Option[String]
+  }
+
+  protected[sohva] def bytes2string(bytes: Array[Byte]) =
+    bytes.foldLeft(new StringBuilder) {
+      (res, byte) =>
+        res.append(Integer.toHexString(byte & 0xff))
+    }.toString
+
+  protected[sohva] def hash(s: String) = {
+    val md = MessageDigest.getInstance("SHA-1")
+    bytes2string(md.digest(s.getBytes("UTF-8")))
+  }
+
+  protected[sohva] def passwordSha(password: String) = {
+
+    // compute the password hash
+    // the password string is concatenated with the generated salt
+    // and the result is hashed using SHA-1
+    val saltArray = new Array[Byte](16)
+    Random.nextBytes(saltArray)
+    val salt = bytes2string(saltArray)
+
+    (salt, hash(password + salt))
   }
 
 }

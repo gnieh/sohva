@@ -86,8 +86,6 @@ trait CouchDB {
   /** Exposes the interface for managing couchdb users. */
   val users: Users
 
-  protected[sohva] def passwordSha(password: String): (String, String)
-
 }
 
 // the different object that may be returned by the couchdb server

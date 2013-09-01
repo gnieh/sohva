@@ -38,7 +38,7 @@ class CouchClient(val host: String = "localhost",
                   val version: String = "1.2",
                   val custom: List[SohvaSerializer[_]] = Nil) extends CouchDB with gnieh.sohva.CouchClient {
 
-  val serializer = new JsonSerializer(this, custom)
+  val serializer = new JsonSerializer(this.version, custom)
 
   // check that the version matches the one of the server
   for {
