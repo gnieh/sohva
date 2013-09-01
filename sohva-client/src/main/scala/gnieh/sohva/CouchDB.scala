@@ -41,6 +41,9 @@ trait CouchDB {
   /** The Json (de)serializer */
   val serializer: JsonSerializer
 
+  /** Returns the couchdb instance information */
+  def info: Result[CouchInfo]
+
   /** Returns the database on the given couch instance. */
   def database(name: String, credit: Int = 0, strategy: Strategy = BarneyStinsonStrategy): Database
 
@@ -94,5 +97,7 @@ sealed trait DbResult
 final case class OkResult(ok: Boolean, id: Option[String], rev: Option[String]) extends DbResult
 
 final case class ErrorResult(id: Option[String], error: String, reason: String) extends DbResult
+
+final case class CouchInfo(couchdb: String, version: String)
 
 private[sohva] final case class Uuids(uuids: List[String])

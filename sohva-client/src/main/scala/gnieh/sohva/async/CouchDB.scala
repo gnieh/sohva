@@ -46,6 +46,10 @@ abstract class CouchDB extends gnieh.sohva.CouchDB {
 
   type Result[T] = Future[Either[(Int, Option[ErrorResult]), T]]
 
+  def info: Result[CouchInfo] =
+    for(json <- http(request).right)
+      yield asCouchInfo(json)
+
   def database(name: String, credit: Int = 0, strategy: Strategy = BarneyStinsonStrategy): Database =
     new Database(name, this, credit, strategy)
 
@@ -147,15 +151,23 @@ abstract class CouchDB extends gnieh.sohva.CouchDB {
       case Left(err) => Left(err)
     }
 
+  @inline
   protected[sohva] def ok(json: String) =
     serializer.fromJson[OkResult](json).ok
 
+  @inline
+  private def asCouchInfo(json: String) =
+    serializer.fromJson[CouchInfo](json)
+
+  @inline
   private def asStringList(json: String) =
     serializer.fromJson[List[String]](json)
 
+  @inline
   private def asUuidsList(json: String) =
     serializer.fromJson[Uuids](json).uuids
 
+  @inline
   private def asConfiguration(json: String) =
     serializer.fromJson[Configuration](json)
 

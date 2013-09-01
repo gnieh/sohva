@@ -61,6 +61,10 @@ abstract class CouchDB private[sync] (wrapped: ACouchDB) extends gnieh.sohva.Cou
   val serializer = wrapped.serializer
 
   @inline
+  def info: CouchInfo =
+    synced(wrapped.info)
+
+  @inline
   def database(name: String, credit: Int = 0, strategy: Strategy = BarneyStinsonStrategy): Database =
     new Database(wrapped.database(name, credit, strategy))
 

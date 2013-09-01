@@ -40,6 +40,14 @@ class CouchClient(val host: String = "localhost",
 
   val serializer = new JsonSerializer(this, custom)
 
+  // check that the version matches the one of the server
+  for {
+    Right(i) <- info
+    if i.version != version
+  } {
+    println("Warning Expected version is "  + version + " but actual server version is " + i.version)
+  }
+
   def startSession =
     new CouchSession(this)
 
@@ -48,7 +56,7 @@ class CouchClient(val host: String = "localhost",
 
   // ========== internals ==========
 
-  protected[sohva] val _http = Http.configure { builder =>
+  protected[sohva] lazy val _http = Http.configure { builder =>
     builder.setFollowRedirects(true)
   }
 
