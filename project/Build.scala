@@ -4,7 +4,7 @@ import sbt._
 import Keys._
 import com.typesafe.sbt.osgi.SbtOsgi._
 import com.typesafe.sbt.osgi.OsgiKeys
-import Unidoc.{ settings => sunidocSettings }
+import sbtunidoc.Plugin._
 
 import java.io.File
 
@@ -24,7 +24,7 @@ object SohvaBuild extends Build {
     parallelExecution in ThisBuild := false,
     compileOptions)
     settings(publishSettings: _*)
-    settings(sunidocSettings: _*)
+    settings(unidocSettings: _*)
   ) aggregate(client, dsl, testing)
 
   lazy val globalDependencies = Seq(
