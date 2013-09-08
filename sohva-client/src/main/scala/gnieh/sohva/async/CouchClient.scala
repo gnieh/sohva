@@ -35,7 +35,7 @@ import net.liftweb.json._
 class CouchClient(val host: String = "localhost",
                   val port: Int = 5984,
                   val ssl: Boolean = false,
-                  val version: String = "1.2",
+                  val version: String = "1.4",
                   val custom: List[SohvaSerializer[_]] = Nil) extends CouchDB with gnieh.sohva.CouchClient {
 
   val serializer = new JsonSerializer(this.version, custom)

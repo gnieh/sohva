@@ -15,6 +15,10 @@
 */
 package gnieh.sohva
 
+import net.liftweb.json.JObject
+
+import java.util.Date
+
 /** An instance of a Couch session, that allows the user to login and
  *  send request identified with the login credentials.
  *  This performs a cookie based authentication against the couchdb server.
@@ -89,3 +93,4 @@ private[sohva] case class PasswordResetUser(val name: String,
                                      val reset_validity: Option[java.util.Date] = None) {
   val _id = "org.couchdb.user:" + name
 }
+

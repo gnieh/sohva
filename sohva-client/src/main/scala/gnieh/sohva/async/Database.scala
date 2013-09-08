@@ -196,9 +196,26 @@ class Database private[sohva](val name: String,
       res <- update(docUpdateResult(upd))
     } yield res
 
+  def saveRawDoc(doc: String): Result[Option[String]] = serializer.fromCouchJson(doc) match {
+    case Some((id, rev)) =>
+      for {
+        upd <- resolver(credit, id, rev, doc).right
+        res <- updateRaw(docUpdateResult(upd))
+      } yield res
+    case None =>
+      Future.successful(Right(None))
+  }
+
   private[this] def update[T: Manifest](res: DocUpdate) = res match {
     case DocUpdate(true, id, _) =>
       getDocById[T](id)
+    case DocUpdate(false, _, _) =>
+      Future.successful(Right(None))
+  }
+
+  private[this] def updateRaw(res: DocUpdate) = res match {
+    case DocUpdate(true, id, _) =>
+      getRawDocById(id)
     case DocUpdate(false, _, _) =>
       Future.successful(Right(None))
   }

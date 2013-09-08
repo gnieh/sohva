@@ -34,7 +34,7 @@ class CouchClient private[sync] (wrapped: ACouchClient) extends CouchDB(wrapped)
   def this(host: String = "localhost",
            port: Int = 5984,
            ssl: Boolean = false,
-           version: String = "1.2") =
+           version: String = "1.4") =
     this(new ACouchClient(host, port, ssl, version))
 
   def startSession =

@@ -68,11 +68,28 @@ class JsonSerializer(version: String, custom: List[SohvaSerializer[_]]) {
         throw SohvaJsonException("Unable to extract from the json string \"" + json + "\"", e)
     }
 
+  def fromCouchJson(json: String) = fromJsonOpt[JObject](json) match {
+    case Some(obj) =>
+      (obj \ "_id", obj \ "_rev") match {
+        case (JString(_id), JString(_rev)) =>
+          Some(_id -> Some(_rev))
+        case (JString(_id), JNothing) =>
+          Some(_id -> None)
+        case (_, _) =>
+          None
+      }
+    case None =>
+      None
+  }
+
   /** Deserializes from the given json string to the object if possible or returns
    *  `None` otherwise
    */
-  def fromJsonOpt[T: Manifest](json: String) =
-    Extraction.extractOpt(JsonParser.parse(json))
+  def fromJsonOpt[T: Manifest](json: String): Option[T] =
+    fromJsonOpt(JsonParser.parse(json))
+
+  def fromJsonOpt[T: Manifest](json: JValue): Option[T] =
+    Extraction.extractOpt(json)
 
 }
 

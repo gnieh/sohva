@@ -22,6 +22,8 @@ import java.io.{
   InputStream
 }
 
+import net.liftweb.json._
+
 /** Gives the user access to the different operations available on a database.
  *  Among other operations this is the key class to get access to the documents
  *  of this database.
@@ -68,6 +70,9 @@ trait Database {
 
   /** Returns the document identified by the given id if it exists */
   def getDocById[T: Manifest](id: String, revision: Option[String] = None): Result[Option[T]]
+
+  /** Returns the raw repsentation of the document identified by the given id if it exists */
+  def getRawDocById(id: String, revision: Option[String] = None): Result[Option[String]]
 
   /** Returns all the documents with given identifiers and of the given type.
    *  If the document with an identifier exists in the database but has not the

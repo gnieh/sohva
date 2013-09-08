@@ -40,7 +40,7 @@ abstract class CouchDB extends gnieh.sohva.CouchDB {
 
   self =>
 
-  type Result[T] = Future[Either[(Int, Option[ErrorResult]), T]]
+  type Result[T] = AsyncResult[T]
 
   def info: Result[CouchInfo] =
     for(json <- http(request).right)

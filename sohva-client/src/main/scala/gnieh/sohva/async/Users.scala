@@ -21,6 +21,8 @@ import Defaults._
 
 import java.util.Date
 
+import net.liftweb.json._
+
 /** The users database, exposing the interface for managing couchdb users.
  *
  *  @author Lucas Satabin
@@ -52,22 +54,22 @@ class Users(couch: CouchDB) extends gnieh.sohva.Users {
   def generateResetToken(name: String, until: Date): Result[Option[String]] =
     for {
       tok <- _uuid.right
-      user <- userDb.getDocById[PasswordResetUser]("org.couchdb.user:" + name).right
+      user <- userDb.getDocById[JObject]("org.couchdb.user:" + name).right
       token <- generate(user, tok, until)
     } yield token
 
-  private[this] def generate(user: Option[PasswordResetUser], token: String, until: Date) =
+  private[this] def generate(user: Option[JObject], token: String, until: Date) =
     user match {
       case Some(user) =>
         // enrich the user document with password reset information
         val (token_salt, token_sha) = passwordSha(token)
-        val u =
-          user.copy(
-            reset_token_sha = Some(token_sha),
-            reset_token_salt = Some(token_salt),
-            reset_validity = Some(until))
+        val u = user ++
+          JField("reset_token_sha", JString(token_sha)) ++
+          JField("reset_token_salt", JString(token_salt)) ++
+          JField("reset_validity", JsonParser.parse(serializer.toJson(until)))
+        val doc = pretty(render(u))
         // save back the enriched user document
-        for (user <- userDb.saveDoc(u).right)
+        for (user <- userDb.saveRawDoc(doc).right)
           yield user.map(_ => token)
       case None =>
         Future.successful(Right(None))
@@ -75,21 +77,21 @@ class Users(couch: CouchDB) extends gnieh.sohva.Users {
 
   def resetPassword(name: String, token: String, password: String): Result[Boolean] =
     for {
-      user <- userDb.getDocById[PasswordResetUser]("org.couchdb.user:" + name).right
+      user <- userDb.getDocById[JObject]("org.couchdb.user:" + name).right
       ok <- reset(user, token, password)
     } yield ok
 
-  private[this] def reset(user: Option[PasswordResetUser], token: String, password: String) =
+  private[this] def reset(user: Option[JObject], token: String, password: String) =
     user match {
       case Some(user) =>
         // check the token with the one in the database (if still valid)
-        (user.reset_token_sha, user.reset_token_salt, user.reset_validity) match {
-          case (Some(savedToken), Some(savedSalt), Some(validity)) =>
+        user match {
+          case PasswordResetUser(_id, _rev, name, roles, savedToken, savedSalt, validity) =>
             val saltedToken = hash(token + savedSalt)
             if(new Date().before(validity) && savedToken == saltedToken) {
               // save the user with the new password
-              val newUser = new CouchUser(user.name, password, roles = user.roles, _rev = user._rev)
-             couch.http((request / dbName / user._id << serializer.toJson(newUser)).PUT).right.map(ok _)
+              val newUser = new CouchUser(name, password, roles = roles, _rev = _rev)
+              couch.http((request / dbName / _id << serializer.toJson(newUser)).PUT).right.map(ok _)
             } else {
               Future.successful(Right(false))
             }
@@ -99,5 +101,18 @@ class Users(couch: CouchDB) extends gnieh.sohva.Users {
       case None =>
         Future.successful(Right(false))
     }
+
+  private[sohva] object PasswordResetUser {
+    def unapply(obj: JObject): Option[(String, Option[String], String, List[String], String, String, Date)] =
+      for {
+        JString(_id) <- (obj \ "_id").toOpt
+        JString(name) <- (obj \ "name").toOpt
+        roles <- (obj \ "roles").toOpt.flatMap(serializer.fromJsonOpt[List[String]])
+        JString(reset_token_sha) <- (obj \ "reset_token_sha").toOpt
+        JString(reset_token_salt) <- (obj \ "reset_token_salt").toOpt
+        reset_validity <- (obj \ "reset_validity").toOpt.flatMap(serializer.fromJsonOpt[Date])
+      } yield (_id, (obj \ "_rev").toOpt.collect { case JString(_rev) => _rev }, name, roles, reset_token_sha, reset_token_salt, reset_validity)
+
+  }
 
 }
