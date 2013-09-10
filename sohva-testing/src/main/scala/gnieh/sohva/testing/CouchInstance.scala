@@ -94,10 +94,10 @@ class CouchInstance(val basedir: File,
       } else {
         val p = Process(
           couchdb + " -b -p " + pidfile.getCanonicalPath +
-          " -n -a " + defaultfile.getCanonicalPath +
+          " -a " + defaultfile.getCanonicalPath +
           " -a " + localfile.getCanonicalPath,
           basedir).run(new ProcessIO(_ => (), _ => (), _ => ()))
-       process = Some(p)
+        process = Some(p)
       }
     }
     process.isDefined

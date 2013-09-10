@@ -27,7 +27,6 @@ class DefaultConfiguration(datadir: File, logdir: File, rundir: File) extends Co
     "couchdb" -> Map(
       "database_dir" -> datadir.getCanonicalPath,
       "view_index_dir" -> datadir.getCanonicalPath,
-      "util_driver_dir" -> "/usr/lib/couchdb/erlang/lib/couch-1.2.0/priv/lib",
       "max_document_size" -> "4294967296",
       "os_process_timeout" -> "5000",
       "max_dbs_open" -> "100",
@@ -70,10 +69,6 @@ class DefaultConfiguration(datadir: File, logdir: File, rundir: File) extends Co
     ),
     "couch_httpd_oauth" -> Map(
       "use_users_db" -> "false"
-    ),
-    "query_servers" -> Map(
-      "javascript" -> "/usr/bin/couchjs /usr/share/couchdb/server/main.js",
-      "coffeescript" -> "/usr/bin/couchjs /usr/share/couchdb/server/main-coffee.js"
     ),
     "query_server_config" -> Map(
       "reduce_limit" -> "true",
