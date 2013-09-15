@@ -52,14 +52,54 @@ final case class ViewResult[Key, Value, Doc](total_rows: Int,
                                              offset: Int,
                                              rows: List[Row[Key, Value, Doc]]) {
 
-  def values =
-    rows.map(row => (row.key, row.value))
+  self =>
 
-  def docs =
-    rows.map(row => row.doc.map(_ => (row.key, row.doc))).flatten.toMap
+  def values: List[(Key, Value)] =
+    for(row <- rows)
+      yield (row.key, row.value)
 
-  def foreach(f: Row[Key, Value, Doc] => Unit) =
+  def docs: List[(Key, Doc)] =
+    for {
+      row <- rows
+      doc <- row.doc
+    } yield (row.key, doc)
+
+  def foreach(f: Row[Key, Value, Doc] => Unit): Unit =
     rows.foreach(f)
+
+  def map[Key1, Value1, Doc1](f: Row[Key, Value, Doc] => Row[Key1, Value1, Doc1]): ViewResult[Key1, Value1, Doc1] =
+    ViewResult(total_rows, offset, rows.map(f))
+
+  def flatMap[Key1, Value1, Doc1](f: Row[Key, Value, Doc] => ViewResult[Key1, Value1, Doc1]): ViewResult[Key1, Value1, Doc1] = {
+    val results = rows.map(f)
+    ViewResult(results.map(_.total_rows).sum, offset, results.flatMap(_.rows))
+  }
+
+  def withFilter(p: Row[Key, Value, Doc] => Boolean): WithFilter =
+    new WithFilter(p)
+
+  class WithFilter(p: Row[Key, Value, Doc] => Boolean) {
+    def foreach(f: Row[Key, Value, Doc] => Unit): Unit =
+      for {
+        row <- rows
+        if p(row)
+      } f(row)
+    def map[Key1, Value1, Doc1](f: Row[Key, Value, Doc] => Row[Key1, Value1, Doc1]): ViewResult[Key1, Value1, Doc1] =
+      ViewResult(rows.size, offset, for {
+        row <- rows
+        if p(row)
+      } yield f(row))
+    def flatMap[Key1, Value1, Doc1](f: Row[Key, Value, Doc] => ViewResult[Key1, Value1, Doc1]): ViewResult[Key1, Value1, Doc1] = {
+      val rows1 = for {
+        row <- rows
+        if p(row)
+        row1 <- f(row).rows
+      } yield row1
+      ViewResult(rows1.size, offset, rows1)
+    }
+    def withFilter(q: Row[Key, Value, Doc] => Boolean): WithFilter =
+      new WithFilter(row => p(row) && q(row))
+  }
 
 }
 
