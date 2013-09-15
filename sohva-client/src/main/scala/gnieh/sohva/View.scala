@@ -53,7 +53,7 @@ final case class ViewResult[Key, Value, Doc](total_rows: Int,
                                              rows: List[Row[Key, Value, Doc]]) {
 
   def values =
-    rows.map(row => (row.key, row.value)).toMap
+    rows.map(row => (row.key, row.value))
 
   def docs =
     rows.map(row => row.doc.map(_ => (row.key, row.doc))).flatten.toMap
