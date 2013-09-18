@@ -156,7 +156,6 @@ class Database private[sohva](val name: String,
       raw <- couch.http(request / "_all_docs"
         <<? Map("include_docs" -> include_docs.toString)
         << serializer.toJson(Map("keys" -> ids))
-        <:< Map("Content-Type" -> "application/json")
       ).right
     } yield {
       import couch.serializer.formats
@@ -229,7 +228,6 @@ class Database private[sohva](val name: String,
             "docs" -> docs
           )
         )
-        <:< Map("Content-Type" -> "application/json")
       ).right
     } yield bulkSaveResult(raw)
 
@@ -268,7 +266,6 @@ class Database private[sohva](val name: String,
               }
             )
           )
-          <:< Map("Content-Type" -> "application/json")
       ).right
     } yield bulkSaveResult(raw)
 
@@ -285,7 +282,7 @@ class Database private[sohva](val name: String,
       // first get the last revision of the document (if it exists)
       for {
         rev <- getDocRevision(docId).right
-        res <- couch.http(request / docId / file.getName <<? attachParams(rev) <<< file <:< Map("Content-Type" -> mime)).right
+        res <- couch.http(request / docId / file.getName <<? attachParams(rev) <<< file, mime).right
       } yield couch.ok(res)
     }
   }

@@ -99,11 +99,11 @@ abstract class CouchDB extends gnieh.sohva.CouchDB {
 
   protected[sohva] def _http: Http
 
-  protected[sohva] def http(request: RequestBuilder): Result[String] =
-    _http(request > handleCouchResponse _)
+  protected[sohva] def http(request: RequestBuilder, contentType: String = "application/json; charset=utf-8"): Result[String] =
+    _http(request <:< Map("Content-Type" -> contentType) > handleCouchResponse _)
 
-  protected[sohva] def optHttp(request: RequestBuilder): Result[Option[String]] =
-    _http(request > handleOptionalCouchResponse _)
+  protected[sohva] def optHttp(request: RequestBuilder, contentType: String = "application/json; charset=utf-8"): Result[Option[String]] =
+    _http(request <:< Map("Content-Type" -> contentType) > handleOptionalCouchResponse _)
 
   private def handleCouchResponse(response: Response): Either[(Int, Option[ErrorResult]), String] = {
     val json = as.String(response)
