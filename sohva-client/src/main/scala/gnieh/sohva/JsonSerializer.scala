@@ -34,6 +34,7 @@ class JsonSerializer(version: String, custom: List[SohvaSerializer[_]]) {
   implicit val formats = new DefaultFormats {
     override def dateFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SS")
   } +
+  FieldSerializer[IdRev]() +
   DbResultSerializer +
   new UserSerializer(version) +
   new SecurityDocSerializer(version) +

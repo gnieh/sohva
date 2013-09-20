@@ -29,27 +29,27 @@ object TestBasic extends SohvaTestSpec with ShouldMatchers {
   }
 
   it should "be added correctly and can then be retrieved" in {
-    val doc = TestDoc("new-doc", 4)()
+    val doc = TestDoc2("new-doc", 4)
     val saved = db.saveDoc(doc)
 
     saved.value should have(
       '_id("new-doc"),
       'toto(4))
-    db.getDocById[TestDoc]("new-doc") should be(saved)
+    db.getDocById[TestDoc2]("new-doc") should be(saved)
   }
 
   "an existing document" should "have a revision" in {
-    db.getDocById[TestDoc]("new-doc") match {
+    db.getDocById[TestDoc2]("new-doc") match {
       case Some(doc) => doc._rev should not be (None)
       case None      => fail("The document with id `new-doc` should exist")
     }
   }
 
   it should "not be saved if we have an outdated version" in {
-    db.getDocById[TestDoc]("new-doc") match {
+    db.getDocById[TestDoc2]("new-doc") match {
       case Some(doc) =>
         evaluating {
-          db.saveDoc(doc.copy(toto = 1)(Some("0-0")))
+          db.saveDoc(doc.copy(toto = 1).withRev(Some("0-0")))
         } should produce[ConflictException]
       case None =>
         fail("The document with id `new-doc` should exist")
@@ -57,9 +57,9 @@ object TestBasic extends SohvaTestSpec with ShouldMatchers {
   }
 
   it should "be saved if we have the last version and then get a new revision" in {
-    db.getDocById[TestDoc]("new-doc") match {
+    db.getDocById[TestDoc2]("new-doc") match {
       case Some(doc) =>
-        val newest = db.saveDoc(doc.copy(toto = 1)(doc._rev))
+        val newest = db.saveDoc(doc.copy(toto = 1).withRev(doc._rev))
         newest should be('defined)
         newest.map(_.toto).value should be(1)
         newest.map(_._rev).value should not be (doc._rev)

@@ -189,6 +189,12 @@ class Database private[sohva](val name: String,
       rows <- _all_docs(ids, false).right
     } yield rows.map(row => (row.id, row.rev))
 
+  def saveDoc[T <: IdRev: Manifest](doc: T): Result[Option[T]] =
+    for {
+      upd <- resolver(credit, doc._id, doc._rev, serializer.toJson(doc)).right
+      res <- update(docUpdateResult(upd))
+    } yield res
+
   def saveDoc[T: Manifest](doc: T with Doc): Result[Option[T]] =
     for {
       upd <- resolver(credit, doc._id, doc._rev, serializer.toJson(doc)).right

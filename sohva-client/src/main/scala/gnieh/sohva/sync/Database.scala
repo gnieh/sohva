@@ -97,6 +97,10 @@ class Database private[sohva](wrapped: ADatabase) extends gnieh.sohva.Database {
     synced(wrapped.getDocRevisions(ids))
 
   @inline
+  def saveDoc[T <: IdRev: Manifest](doc: T): Option[T] =
+    synced(wrapped.saveDoc(doc))
+
+  @inline
   def saveDoc[T: Manifest](doc: T with Doc): Option[T] =
     synced(wrapped.saveDoc(doc))
 

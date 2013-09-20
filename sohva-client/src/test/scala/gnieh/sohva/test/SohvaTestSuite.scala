@@ -63,3 +63,4 @@ class SohvaTestSuite extends Suites(TestBasic,
 }
 
 case class TestDoc(_id: String, toto: Int)(val _rev: Option[String] = None)
+case class TestDoc2(_id: String, toto: Int) extends IdRev

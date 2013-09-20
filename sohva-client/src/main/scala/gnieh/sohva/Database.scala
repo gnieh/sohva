@@ -90,6 +90,13 @@ trait Database {
    *  The given object must have an `_id` and an optional `_rev` fields
    *  to conform to the couchdb document structure.
    */
+  def saveDoc[T <: IdRev: Manifest](doc: T): Result[Option[T]]
+
+
+  /** Creates or updates the given object as a document into this database
+   *  The given object must have an `_id` and an optional `_rev` fields
+   *  to conform to the couchdb document structure.
+   */
   def saveDoc[T: Manifest](doc: T with Doc): Result[Option[T]]
 
   /** Creates or updates a bunch of documents at once returning the results
