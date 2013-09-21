@@ -22,7 +22,7 @@ import java.io.File
  *
  *  @author Lucas Satabin
  */
-class DefaultConfiguration(datadir: File, logdir: File, rundir: File) extends Configuration(
+class DefaultConfiguration12(datadir: File, logdir: File, rundir: File) extends Configuration(
   Map(
     "couchdb" -> Map(
       "database_dir" -> datadir.getCanonicalPath,
@@ -43,7 +43,7 @@ class DefaultConfiguration(datadir: File, logdir: File, rundir: File) extends Co
     ),
     "httpd" -> Map(
       "port" -> "15984",
-      "bind_address" -> "0.0.0.0",
+      "bind_address" -> "127.0.0.1",
       "authentication_handlers" -> "{couch_httpd_oauth, oauth_authentication_handler}, {couch_httpd_auth, cookie_authentication_handler}, {couch_httpd_auth, default_authentication_handler}",
       "default_handler" -> "{couch_httpd_db, handle_request}",
       "secure_rewrites" -> "true",
@@ -56,7 +56,7 @@ class DefaultConfiguration(datadir: File, logdir: File, rundir: File) extends Co
     ),
     "log" -> Map(
       "file" -> new File(logdir, "couch.log").getCanonicalPath,
-      "level" -> "info",
+      "level" -> "debug",
       "include_sasl" -> "true"
     ),
     "couch_httpd_auth" -> Map(
@@ -90,8 +90,6 @@ class DefaultConfiguration(datadir: File, logdir: File, rundir: File) extends Co
     ),
     "httpd_global_handlers" -> Map(
       "/" -> "{couch_httpd_misc_handlers, handle_welcome_req, <<\"Welcome\">>}",
-      "favicon.ico" -> "{couch_httpd_misc_handlers, handle_favicon_req, \"/usr/share/couchdb/www\"}",
-      "_utils" -> "{couch_httpd_misc_handlers, handle_utils_dir_req, \"/usr/share/couchdb/www\"}",
       "_all_dbs" -> "{couch_httpd_misc_handlers, handle_all_dbs_req}",
       "_active_tasks" -> "{couch_httpd_misc_handlers, handle_task_status_req}",
       "_config" -> "{couch_httpd_misc_handlers, handle_config_req}",

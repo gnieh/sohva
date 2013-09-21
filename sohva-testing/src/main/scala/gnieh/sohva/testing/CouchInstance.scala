@@ -37,6 +37,7 @@ import scala.sys.process._
 class CouchInstance(val basedir: File,
                     val persist: Boolean,
                     val overwrite: Boolean,
+                    val version: String = "1.4",
                     val local_ini: Configuration = Configuration(Map())) {
 
   /** The couchdb command that is run. By default it is `couchdb`.
@@ -49,7 +50,11 @@ class CouchInstance(val basedir: File,
   private val datadir: File = new File(new File(vardir, "lib"), "couchdb")
   private val logdir: File = new File(new File(vardir, "log"), "couchdb")
   private val rundir: File = new File(new File(vardir, "run"), "couchdb")
-  private val default_ini: Configuration = new DefaultConfiguration(datadir, logdir, rundir)
+  private val default_ini: Configuration =
+    if(version.startsWith("1.4"))
+      new DefaultConfiguration14(datadir, logdir, rundir)
+    else
+      new DefaultConfiguration12(datadir, logdir, rundir)
   private val defaultfile = new File(confdir, "default.ini")
   private val localfile = new File(confdir, "local.ini")
   private val pidfile = new File(rundir, "couchdb.pid")
@@ -97,6 +102,7 @@ class CouchInstance(val basedir: File,
           " -a " + defaultfile.getCanonicalPath +
           " -a " + localfile.getCanonicalPath,
           basedir).run(new ProcessIO(_ => (), _ => (), _ => ()))
+        println(p)
         process = Some(p)
       }
     }
@@ -140,3 +146,4 @@ class CouchInstance(val basedir: File,
       ar
 
 }
+
