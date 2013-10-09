@@ -61,6 +61,8 @@ class CouchInstance(val basedir: File,
   private val logfile =
     new File(local_ini.sections.get("log").flatMap(_.get("file")).orElse(default_ini.log.get("file")).get)
 
+  val configuration = default_ini.merge(local_ini)
+
   private var process: Option[Process] = None
 
   /** Starts this CouchDB instance */

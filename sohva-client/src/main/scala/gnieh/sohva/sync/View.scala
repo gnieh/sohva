@@ -31,14 +31,6 @@ case class View[Key: Manifest, Value: Manifest, Doc: Manifest](wrapped: AView[Ke
 
   type Result[T] = T
 
-  def synced[T](result: wrapped.Result[T]): T = Await.result(result, Duration.Inf) match {
-    case Right(t) => t
-    case Left((409, error)) =>
-      throw new ConflictException(error)
-    case Left((code, error)) =>
-      throw new CouchException(code, error)
-  }
-
   @inline
   def query(key: Option[Key] = None,
             keys: List[Key] = Nil,

@@ -40,14 +40,6 @@ abstract class CouchDB private[sync] (wrapped: ACouchDB) extends gnieh.sohva.Cou
 
   type Result[T] = T
 
-  def synced[T](result: wrapped.Result[T]): T = Await.result(result, Duration.Inf) match {
-    case Right(t) => t
-    case Left((409, error)) =>
-      throw new ConflictException(error)
-    case Left((code, error)) =>
-      throw new CouchException(code, error)
-  }
-
   @inline
   val host = wrapped.host
 
