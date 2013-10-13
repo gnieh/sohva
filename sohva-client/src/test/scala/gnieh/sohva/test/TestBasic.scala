@@ -22,6 +22,8 @@ import org.scalatest.OptionValues._
 
 import sync._
 
+import gnieh.diffson._
+
 object TestBasic extends SohvaTestSpec with ShouldMatchers {
 
   "an unknown document" should "not be retrieved" in {
@@ -62,10 +64,24 @@ object TestBasic extends SohvaTestSpec with ShouldMatchers {
         val newest = db.saveDoc(doc.copy(toto = 1).withRev(doc._rev))
         newest should be('defined)
         newest.map(_.toto).value should be(1)
-        newest.map(_._rev).value should not be (doc._rev)
+        newest.map(_._rev).value should not be (doc._rev.get)
+      case None =>
+        fail("The document with id `new-doc` should exist")
+    }
+  }
+
+  it should "be patchable" in {
+    db.getDocRevision("new-doc") match {
+      case Some(rev) =>
+        val patch = JsonPatch.parse("""[{ "op": "replace", "path": "/toto", "value": 453 }]""")
+        val newest = db.patchDoc[TestDoc2]("new-doc", rev, patch)
+        newest should be('defined)
+        newest.map(_.toto).value should be(453)
+        newest.map(_._rev).value should not be (rev)
       case None =>
         fail("The document with id `new-doc` should exist")
     }
   }
 
 }
+

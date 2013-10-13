@@ -41,6 +41,8 @@ import eu.medsea.util.MimeUtil
 
 import net.liftweb.json._
 
+import gnieh.diffson.JsonPatch
+
 /** Gives the user access to the different operations available on a database.
  *  Among other operations this is the key class to get access to the documents
  *  of this database.
@@ -239,6 +241,17 @@ class Database private[sohva](val name: String,
 
   private[this] def bulkSaveResult(json: String) =
     serializer.fromJson[List[DbResult]](json)
+
+  def patchDoc[T <: IdRev: Manifest](id: String, rev: String, patch: JsonPatch): Result[Option[T]] =
+    for {
+      doc <- getDocById[T](id,Some(rev)).right
+      res <- patchDoc(doc, patch).right
+    } yield res
+
+  private[this] def patchDoc[T <: IdRev: Manifest](doc: Option[T], patch: JsonPatch) = doc match {
+    case Some(doc) => saveDoc(patch(doc).withRev(doc._rev))
+    case None      => Future.successful(Right(None))
+  }
 
   def deleteDoc[T](doc: T with Doc): Result[Boolean] =
     for(res <- couch.http((request / doc._id).DELETE <<? Map("rev" -> doc._rev.getOrElse(""))).right)

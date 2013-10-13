@@ -24,6 +24,8 @@ import java.io.{
 
 import net.liftweb.json._
 
+import gnieh.diffson.JsonPatch
+
 /** Gives the user access to the different operations available on a database.
  *  Among other operations this is the key class to get access to the documents
  *  of this database.
@@ -105,6 +107,12 @@ trait Database {
    *  **The retry strategy is not used in such case.**
    */
   def saveDocs[T](docs: List[T with Doc], all_or_nothing: Boolean = false): Result[List[DbResult]]
+
+  /** Patches the document identified by the given identifier in the given revision.
+   *  This will work if the revision is the last one, or if it is not but the automatic
+   *  conflict manager manages to solve the potential conflicts
+   */
+  def patchDoc[T <: IdRev: Manifest](id: String, rev: String, patch: JsonPatch): Result[Option[T]]
 
   /** Deletes the document from the database.
    *  The document will only be deleted if the caller provided the last revision

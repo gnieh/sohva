@@ -30,6 +30,8 @@ import net.liftweb.json.JObject
 import scala.concurrent._
 import duration._
 
+import gnieh.diffson.JsonPatch
+
 /** Gives the user access to the different operations available on a database.
  *  Among other operation this is the key class to get access to the documents
  *  of this database.
@@ -99,6 +101,10 @@ class Database private[sohva](wrapped: ADatabase) extends gnieh.sohva.Database {
   @inline
   def saveDocs[T](docs: List[T with Doc], all_or_nothing: Boolean = false): List[DbResult] =
     synced(wrapped.saveDocs(docs, all_or_nothing))
+
+  @inline
+  def patchDoc[T <: IdRev: Manifest](id: String, rev: String, patch: JsonPatch): Option[T] =
+    synced(wrapped.patchDoc(id, rev, patch))
 
   @inline
   def deleteDoc[T](doc: T with Doc): Boolean =
