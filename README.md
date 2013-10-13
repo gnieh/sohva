@@ -1,4 +1,4 @@
-Gnieh Sohva
+Gnieh Sohva [![Build Status](https://travis-ci.org/gnieh/sohva.png?branch=master)](https://travis-ci.org/gnieh/sohva)
 ===========
 
 Gnieh Sohva is a simple scala library allowing users to simply work with a couchdb instance.
