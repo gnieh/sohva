@@ -101,7 +101,11 @@ class Database private[sohva](wrapped: ADatabase) extends gnieh.sohva.Database {
     synced(wrapped.saveDocs(docs, all_or_nothing))
 
   @inline
-  def deleteDoc[T: Manifest](doc: T with Doc): Boolean =
+  def deleteDoc[T](doc: T with Doc): Boolean =
+    synced(wrapped.deleteDoc(doc))
+
+  @inline
+  def deleteDoc(doc: IdRev): Boolean =
     synced(wrapped.deleteDoc(doc))
 
   @inline

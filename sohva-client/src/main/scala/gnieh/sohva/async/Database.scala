@@ -240,7 +240,11 @@ class Database private[sohva](val name: String,
   private[this] def bulkSaveResult(json: String) =
     serializer.fromJson[List[DbResult]](json)
 
-  def deleteDoc[T: Manifest](doc: T with Doc): Result[Boolean] =
+  def deleteDoc[T](doc: T with Doc): Result[Boolean] =
+    for(res <- couch.http((request / doc._id).DELETE <<? Map("rev" -> doc._rev.getOrElse(""))).right)
+      yield couch.ok(res)
+
+  def deleteDoc(doc: IdRev): Result[Boolean] =
     for(res <- couch.http((request / doc._id).DELETE <<? Map("rev" -> doc._rev.getOrElse(""))).right)
       yield couch.ok(res)
 

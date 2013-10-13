@@ -109,7 +109,12 @@ trait Database {
   /** Deletes the document from the database.
    *  The document will only be deleted if the caller provided the last revision
    */
-  def deleteDoc[T: Manifest](doc: T with Doc): Result[Boolean]
+  def deleteDoc[T](doc: T with Doc): Result[Boolean]
+
+  /** Deletes the document from the database.
+   *  The document will only be deleted if the caller provided the last revision
+   */
+  def deleteDoc(doc: IdRev): Result[Boolean]
 
   /** Deletes the document identified by the given id from the database.
    *  If the document exists it is deleted and the method returns `true`,
