@@ -197,12 +197,6 @@ final case class DocUpdate(ok: Boolean,
                            id: String,
                            rev: String)
 
-final case class Attachment(content_type: String,
-                            revpos: Int,
-                            digest: String,
-                            length: Int,
-                            stub: Boolean)
-
 private[sohva] final case class BulkDocs[T](rows: List[BulkDocRow[T]])
 
 private[sohva] final case class BulkDocRow[T](id: String, rev: String, doc: Option[T])
