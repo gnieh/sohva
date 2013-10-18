@@ -23,6 +23,8 @@ import com.ning.http.client._
 
 import net.liftweb.json._
 
+import org.slf4j.LoggerFactory
+
 /** A CouchDB instance.
  *  Allows users to access the different databases and instance information.
  *  This is the key class to start with when one wants to work with couchdb.
@@ -43,9 +45,9 @@ class CouchClient(val host: String = "localhost",
   // check that the version matches the one of the server
   for {
     Right(i) <- info
-    if i.version != version
+    if CouchVersion(i.version) != CouchVersion(version)
   } {
-    println("Warning Expected version is "  + version + " but actual server version is " + i.version)
+    LoggerFactory.getLogger(classOf[gnieh.sohva.CouchClient]).warn("Warning Expected version is "  + version + " but actual server version is " + i.version)
   }
 
   def startSession =
@@ -68,3 +70,17 @@ class CouchClient(val host: String = "localhost",
       :/(host, port)
 
 }
+
+private case class CouchVersion(raw: String) {
+
+  val Array(major, minor, rest) = raw.split("\\.", 3)
+
+  override def equals(other: Any): Boolean = other match {
+    case that: CouchVersion =>
+      this.major == that.major && this.minor == that.minor
+    case _ =>
+      false
+  }
+
+}
+
