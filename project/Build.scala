@@ -110,12 +110,7 @@ object SohvaBuild extends Build {
       case "2.9.3" => "2.9.2"
       case v => "2.10"
     },
-    "net.sf.mime-util" % "mime-util" % "1.2" excludeAll(
-      ExclusionRule(organization = "log4j", name = "log4j"),
-      ExclusionRule(organization = "commons-logging", name = "commons-logging")
-    ),
-    "org.slf4j" % "slf4j-api" % "1.7.2",
-    "org.slf4j" % "jcl-over-slf4j" % "1.7.2"
+    "org.slf4j" % "slf4j-api" % "1.7.2"
   )
 
   lazy val dsl = Project(id = "sohva-dsl",

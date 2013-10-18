@@ -143,12 +143,9 @@ trait Database {
   def deleteDocs(ids: List[String], all_or_nothing: Boolean = false): Result[List[DbResult]]
 
   /** Attaches the given file to the given document id.
-   *  If no mime type is given, sohva tries to guess the mime type of the file
-   *  itself. It it does not manage to identify the mime type, the file won't be
-   *  attached...
    *  This method returns `true` iff the file was attached to the document.
    */
-  def attachTo(docId: String, file: File, contentType: Option[String]): Result[Boolean]
+  def attachTo(docId: String, file: File, contentType: String): Result[Boolean]
 
   /** Attaches the given file (given as an input stream) to the given document id.
    *  If no mime type is given, sohva tries to guess the mime type of the file
@@ -159,7 +156,7 @@ trait Database {
   def attachTo(docId: String,
                attachment: String,
                stream: InputStream,
-               contentType: Option[String]): Result[Boolean]
+               contentType: String): Result[Boolean]
 
   /** Returns the given attachment for the given docId.
    *  It returns the mime type if any given in the response and the input stream

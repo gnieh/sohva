@@ -37,8 +37,6 @@ import java.io.{
   BufferedInputStream
 }
 
-import eu.medsea.util.MimeUtil
-
 import net.liftweb.json._
 
 import gnieh.diffson.JsonPatch
@@ -301,22 +299,12 @@ class Database private[sohva](val name: String,
     } yield bulkSaveResult(raw)
 
 
-  def attachTo(docId: String, file: File, contentType: Option[String]): Result[Boolean] = {
-    val mime = contentType match {
-      case Some(mime) => mime
-      case None       => MimeUtil.getMimeType(file)
-    }
-
-    if (mime == MimeUtil.UNKNOWN_MIME_TYPE) {
-      Future.successful(Right(false)) // unknown mime type, cannot attach the file
-    } else {
-      // first get the last revision of the document (if it exists)
-      for {
-        rev <- getDocRevision(docId).right
-        res <- couch.http(request / docId / file.getName <<? attachParams(rev) <<< file, mime).right
-      } yield couch.ok(res)
-    }
-  }
+  def attachTo(docId: String, file: File, contentType: String): Result[Boolean] =
+    // first get the last revision of the document (if it exists)
+    for {
+      rev <- getDocRevision(docId).right
+      res <- couch.http(request / docId / file.getName <<? attachParams(rev) <<< file, contentType).right
+    } yield couch.ok(res)
 
   private[this] def attachParams(rev: Option[String]) =
     rev match {
@@ -331,7 +319,7 @@ class Database private[sohva](val name: String,
   def attachTo(docId: String,
                attachment: String,
                stream: InputStream,
-               contentType: Option[String]): Result[Boolean] = {
+               contentType: String): Result[Boolean] = {
     // create a temporary file with the content of the input stream
     val file = File.createTempFile(attachment, null)
     for(fos <- managed(new FileOutputStream(file))) {

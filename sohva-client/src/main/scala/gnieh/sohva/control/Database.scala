@@ -126,14 +126,11 @@ class Database private[sohva](wrapped: ADatabase) extends gnieh.sohva.Database {
     synced(wrapped.deleteDoc(id))
 
   @inline
-  def attachTo(docId: String, file: File, contentType: Option[String]): Try[Boolean] =
+  def attachTo(docId: String, file: File, contentType: String): Try[Boolean] =
     synced(wrapped.attachTo(docId, file, contentType))
 
   @inline
-  def attachTo(docId: String,
-               attachment: String,
-               stream: InputStream,
-               contentType: Option[String]): Try[Boolean] =
+  def attachTo(docId: String, attachment: String, stream: InputStream, contentType: String): Try[Boolean] =
     synced(wrapped.attachTo(docId, attachment, stream, contentType))
 
   @inline
