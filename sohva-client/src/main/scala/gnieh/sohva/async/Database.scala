@@ -242,6 +242,14 @@ class Database private[sohva](val name: String,
   private[this] def bulkSaveResult(json: String) =
     serializer.fromJson[List[DbResult]](json)
 
+  def copy(origin: String, target: String, originRev: Option[String] = None, targetRev: Option[String] = None): Result[Boolean] =
+    for(
+         res <- couch.http((request / origin).subject.setMethod("COPY")
+           <:< Map("Destination" -> (target + targetRev.map("?rev=" + _).getOrElse("")))
+           <<? originRev.map("rev" -> _).toList
+         ).right)
+      yield couch.ok(res)
+
   def patchDoc[T <: IdRev: Manifest](id: String, rev: String, patch: JsonPatch): Result[Option[T]] =
     for {
       doc <- getDocById[T](id,Some(rev)).right

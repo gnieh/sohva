@@ -108,6 +108,12 @@ trait Database {
    */
   def saveDocs[T](docs: List[T with Doc], all_or_nothing: Boolean = false): Result[List[DbResult]]
 
+  /** Copies the origin document to the target document.
+   *  If the target does not exist, it is created, otherwise it is updated and the target
+   *  revision must be provided
+   */
+  def copy(origin: String, target: String, originRev: Option[String] = None, targetRev: Option[String] = None): Result[Boolean]
+
   /** Patches the document identified by the given identifier in the given revision.
    *  This will work if the revision is the last one, or if it is not but the automatic
    *  conflict manager manages to solve the potential conflicts

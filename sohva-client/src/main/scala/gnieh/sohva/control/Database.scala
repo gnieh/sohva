@@ -102,6 +102,10 @@ class Database private[sohva](wrapped: ADatabase) extends gnieh.sohva.Database {
     synced(wrapped.saveDocs(docs, all_or_nothing))
 
   @inline
+  def copy(origin: String, target: String, originRev: Option[String] = None, targetRev: Option[String] = None): Try[Boolean] =
+    synced(wrapped.copy(origin, target, originRev, targetRev))
+
+  @inline
   def patchDoc[T <: IdRev: Manifest](id: String, rev: String, patch: JsonPatch): Try[Option[T]] =
     synced(wrapped.patchDoc(id, rev, patch))
 
