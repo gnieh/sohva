@@ -39,6 +39,7 @@ abstract class SohvaTestSpec extends FlatSpec {
 
 class SohvaTestSuite extends Suites(TestBasic,
   TestCopy,
+  TestAttachments,
   TestBulkDocs,
   TestSecurity,
   TestSerializer,

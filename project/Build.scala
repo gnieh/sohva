@@ -29,7 +29,8 @@ object SohvaBuild extends Build {
   ) aggregate(client, dsl, testing)
 
   lazy val globalDependencies = Seq(
-    "org.scalatest" %% "scalatest" % "2.0.M5b" % "test"
+    "org.scalatest" %% "scalatest" % "2.0.M5b" % "test",
+    "com.jsuereth" %% "scala-arm" % "1.3" % "test"
   )
 
   lazy val compileOptions = scalacOptions in ThisBuild <++= scalaVersion map { v =>

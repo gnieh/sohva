@@ -21,7 +21,7 @@ package gnieh.sohva
  */
 trait Attachments {
 
-  var _attachments: Map[String, Attachment]
+  var _attachments: Map[String, Attachment] = Map.empty
 
   /** Sets the attachments and returns this (modified) instance */
   def withAttachments(atts: Map[String, Attachment]): this.type = {
