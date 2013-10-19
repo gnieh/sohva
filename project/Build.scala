@@ -15,6 +15,7 @@ object SohvaBuild extends Build {
   lazy val sohva = (Project(id = "sohva",
     base = file(".")) settings (
     resolvers in ThisBuild += "Sonatype Snapshots" at "http://oss.sonatype.org/content/repositories/snapshots/",
+    resolvers in ThisBuild += "Sonatype Releases" at "http://oss.sonatype.org/content/repositories/releases/",
     organization in ThisBuild := "org.gnieh",
     licenses in ThisBuild += ("The Apache Software License, Version 2.0" -> url("http://www.apache.org/licenses/LICENSE-2.0.txt")),
     homepage in ThisBuild := Some(url("https://github.com/gnieh/sohva")),
