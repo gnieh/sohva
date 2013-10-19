@@ -83,5 +83,19 @@ object TestBasic extends SohvaTestSpec with ShouldMatchers {
     }
   }
 
+  case class StringDoc(_id: String, value: String) extends IdRev
+
+  "a document" should "be sent encoded in UTF-8" in {
+
+    val doc = StringDoc("utf8-doc", "éßèüäöàç€ẞÐẞŁª€ªÐŁ")
+
+    val saved = db.saveDoc(doc)
+
+    saved should be('defined)
+    saved.value._rev should be('defined)
+    saved.value.value should be(doc.value)
+
+  }
+
 }
 
