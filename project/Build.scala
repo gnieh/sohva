@@ -21,14 +21,13 @@ object SohvaBuild extends Build {
     name := "sohva",
     version in ThisBuild := sohvaVersion,
     scalaVersion in ThisBuild := "2.10.2",
-    scalaOrganization := "org.scala-lang.virtualized",
     crossScalaVersions in ThisBuild := Seq("2.9.3", "2.10.2"),
     libraryDependencies in ThisBuild ++= globalDependencies,
     parallelExecution in ThisBuild := false,
     compileOptions)
     settings(publishSettings: _*)
     settings(unidocSettings: _*)
-  ) aggregate(client, dsl, testing)
+  ) aggregate(client, testing)
 
   lazy val globalDependencies = Seq(
     "org.scalatest" %% "scalatest" % "2.0.M5b" % "test",
@@ -107,32 +106,6 @@ object SohvaBuild extends Build {
       case v => "2.10"
     },
     "org.slf4j" % "slf4j-api" % "1.7.2"
-  )
-
-  lazy val dsl = Project(id = "sohva-dsl",
-    base = file("sohva-dsl")) settings (
-      scalaVersion := "2.10.1",
-      crossScalaVersions := Seq("2.10.1"),
-      scalaOrganization := "org.scala-lang.virtualized",
-      scalacOptions ++= Seq("-deprecation", "-unchecked", "-feature", "-Yvirtualize"),
-      unmanagedBase <<= baseDirectory(_ / "lib"),
-      libraryDependencies ++= dslDependencies,
-      resourceDirectories in Compile := List()
-    ) settings(osgiSettings: _*) settings (
-      OsgiKeys.exportPackage := Seq(
-        "gnieh.sohva.dsl",
-        "scala.js",
-        "scala.virtualization.lms.*"
-      ),
-      OsgiKeys.importPackage += "javax.swing;resolution:=optional",
-      OsgiKeys.additionalHeaders := Map (
-        "Bundle-Name" -> "Sohva CouchDB DSL"
-      ),
-      OsgiKeys.bundleSymbolicName := "org.gnieh.sohva-dsl",
-      OsgiKeys.privatePackage := Seq()
-    ) dependsOn(client)
-
-  lazy val dslDependencies = Seq(
   )
 
   lazy val testing = Project(id = "sohva-testing",
