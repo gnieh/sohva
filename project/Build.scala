@@ -10,12 +10,14 @@ import java.io.File
 
 object SohvaBuild extends Build {
 
-  val sohvaVersion = "0.4-SNAPSHOT"
+  val sohvaVersion = "0.4"
 
   lazy val sohva = (Project(id = "sohva",
     base = file(".")) settings (
     resolvers in ThisBuild += "Sonatype Snapshots" at "http://oss.sonatype.org/content/repositories/snapshots/",
     organization in ThisBuild := "org.gnieh",
+    licenses in ThisBuild += ("The Apache Software License, Version 2.0" -> url("http://www.apache.org/licenses/LICENSE-2.0.txt")),
+    homepage in ThisBuild := Some(url("https://github.com/gnieh/sohva")),
     name := "sohva",
     version in ThisBuild := sohvaVersion,
     scalaVersion in ThisBuild := "2.10.2",
@@ -51,14 +53,6 @@ object SohvaBuild extends Build {
     },
     pomIncludeRepository in ThisBuild := { x => false },
     pomExtra in ThisBuild := (
-      <url>https://github.com/gnieh/sohva</url>
-      <licenses>
-        <license>
-          <name>The Apache Software License, Version 2.0</name>
-          <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
-          <distribution>repo</distribution>
-        </license>
-      </licenses>
       <scm>
         <url>https://github.com/gnieh/sohva</url>
         <connection>scm:git:git://github.com/gnieh/sohva.git</connection>
@@ -85,6 +79,7 @@ object SohvaBuild extends Build {
 
   lazy val client = Project(id = "sohva-client",
     base = file("sohva-client")) settings (
+      description := "Couchdb client library",
       libraryDependencies ++= clientDependencies,
       fork in test := true,
       resourceDirectories in Compile := List()
@@ -102,7 +97,7 @@ object SohvaBuild extends Build {
 
   lazy val clientDependencies = Seq(
     "net.databinder.dispatch" %% "dispatch-core" % "0.10.0" exclude("commons-logging", "commons-logging"),
-    "org.gnieh" %% "diffson" % "0.2-SNAPSHOT",
+    "org.gnieh" %% "diffson" % "0.2",
     "com.jsuereth" %% "scala-arm" % "1.3" cross CrossVersion.binaryMapped {
       case "2.9.3" => "2.9.2"
       case v => "2.10"
@@ -142,6 +137,7 @@ object SohvaBuild extends Build {
 
   lazy val testing = Project(id = "sohva-testing",
     base = file("sohva-testing")) settings(
+      description := "Couchdb testing library",
       libraryDependencies ++= testingDependencies
     ) dependsOn(client)
 

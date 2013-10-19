@@ -1,16 +1,20 @@
 {
   "organization" : "org.gnieh",
   "name" : "sohva-client",
-  "version" : "0.2",
-  "description" : "sohva-client",
-  "site" : "",
+  "version" : "0.4",
+  "description" : "Couchdb client library",
+  "site" : "https://github.com/gnieh/sohva",
   "tags" : [ ],
   "docs" : "",
   "resolvers" : [ "https://oss.sonatype.org/content/repositories/releases" ],
   "dependencies" : [ {
     "organization" : "net.databinder.dispatch",
     "name" : "dispatch-core",
-    "version" : "0.9.5"
+    "version" : "0.10.0"
+  }, {
+    "organization" : "org.gnieh",
+    "name" : "diffson",
+    "version" : "0.2"
   }, {
     "organization" : "com.jsuereth",
     "name" : "scala-arm",
@@ -18,21 +22,16 @@
   }, {
     "organization" : "net.liftweb",
     "name" : "lift-json",
-    "version" : "2.5-RC2"
-  }, {
-    "organization" : "net.sf.mime-util",
-    "name" : "mime-util",
-    "version" : "1.2"
+    "version" : "2.5"
   }, {
     "organization" : "org.slf4j",
     "name" : "slf4j-api",
     "version" : "1.7.2"
-  }, {
-    "organization" : "org.slf4j",
-    "name" : "jcl-over-slf4j",
-    "version" : "1.7.2"
   } ],
-  "scalas" : [ "2.9.2", "2.10.0" ],
-  "licenses" : [ ],
+  "scalas" : [ "2.9.3", "2.10.2" ],
+  "licenses" : [ {
+    "name" : "The Apache Software License, Version 2.0",
+    "url" : "http://www.apache.org/licenses/LICENSE-2.0.txt"
+  } ],
   "sbt" : false
 }
