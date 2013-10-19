@@ -31,7 +31,10 @@ object SohvaBuild extends Build {
 
   lazy val globalDependencies = Seq(
     "org.scalatest" %% "scalatest" % "2.0.M5b" % "test",
-    "com.jsuereth" %% "scala-arm" % "1.3" % "test"
+    "com.jsuereth" %% "scala-arm" % "1.3" % "test" cross CrossVersion.binaryMapped {
+      case "2.9.3" => "2.9.2"
+      case v       => v
+    }
   )
 
   lazy val compileOptions = scalacOptions in ThisBuild <++= scalaVersion map { v =>
