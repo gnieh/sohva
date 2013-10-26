@@ -45,6 +45,12 @@ package object sohva {
     val _rev: Option[String]
   }
 
+  implicit def doc2idrev(d: Doc): IdRev =
+    new IdRev {
+      val _id = d._id
+      _rev = d._rev
+    }
+
   protected[sohva] def bytes2string(bytes: Array[Byte]) =
     bytes.foldLeft(new StringBuilder) {
       (res, byte) =>

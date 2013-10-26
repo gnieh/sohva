@@ -90,15 +90,11 @@ class Database private[sohva](wrapped: ADatabase) extends gnieh.sohva.Database {
     synced(wrapped.getDocRevisions(ids))
 
   @inline
-  def saveDoc[T <: IdRev: Manifest](doc: T): Try[Option[T]] =
+  def saveDoc[T <% IdRev: Manifest](doc: T): Try[Option[T]] =
     synced(wrapped.saveDoc(doc))
 
   @inline
-  def saveDoc[T: Manifest](doc: T with Doc): Try[Option[T]] =
-    synced(wrapped.saveDoc(doc))
-
-  @inline
-  def saveDocs[T](docs: List[T with Doc], all_or_nothing: Boolean = false): Try[List[DbResult]] =
+  def saveDocs[T <% IdRev](docs: List[T], all_or_nothing: Boolean = false): Try[List[DbResult]] =
     synced(wrapped.saveDocs(docs, all_or_nothing))
 
   @inline
@@ -110,11 +106,7 @@ class Database private[sohva](wrapped: ADatabase) extends gnieh.sohva.Database {
     synced(wrapped.patchDoc(id, rev, patch))
 
   @inline
-  def deleteDoc[T](doc: T with Doc): Try[Boolean] =
-    synced(wrapped.deleteDoc(doc))
-
-  @inline
-  def deleteDoc(doc: IdRev): Try[Boolean] =
+  def deleteDoc[T <% IdRev](doc: T): Try[Boolean] =
     synced(wrapped.deleteDoc(doc))
 
   @inline

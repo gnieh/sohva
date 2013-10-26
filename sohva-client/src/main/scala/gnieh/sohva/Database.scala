@@ -92,21 +92,7 @@ trait Database {
    *  The given object must have an `_id` and an optional `_rev` fields
    *  to conform to the couchdb document structure.
    */
-  def saveDoc[T <: IdRev: Manifest](doc: T): Result[Option[T]]
-
-
-  /** Creates or updates the given object as a document into this database
-   *  The given object must have an `_id` and an optional `_rev` fields
-   *  to conform to the couchdb document structure.
-   */
-  def saveDoc[T: Manifest](doc: T with Doc): Result[Option[T]]
-
-  /** Creates or updates a bunch of documents at once returning the results
-   *  for each identifier in the document list. One can choose the update strategy
-   *  by setting the parameter `all_or_nothing` to `true` or `false`.
-   *  **The retry strategy is not used in such case.**
-   */
-  def saveDocs[T](docs: List[T with Doc], all_or_nothing: Boolean = false): Result[List[DbResult]]
+  def saveDoc[T <% IdRev: Manifest](doc: T): Result[Option[T]]
 
   /** Copies the origin document to the target document.
    *  If the target does not exist, it is created, otherwise it is updated and the target
@@ -123,12 +109,7 @@ trait Database {
   /** Deletes the document from the database.
    *  The document will only be deleted if the caller provided the last revision
    */
-  def deleteDoc[T](doc: T with Doc): Result[Boolean]
-
-  /** Deletes the document from the database.
-   *  The document will only be deleted if the caller provided the last revision
-   */
-  def deleteDoc(doc: IdRev): Result[Boolean]
+  def deleteDoc[T <% IdRev](doc: T): Result[Boolean]
 
   /** Deletes the document identified by the given id from the database.
    *  If the document exists it is deleted and the method returns `true`,

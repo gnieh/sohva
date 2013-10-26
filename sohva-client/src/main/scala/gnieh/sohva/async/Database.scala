@@ -189,13 +189,7 @@ class Database private[sohva](val name: String,
       rows <- _all_docs(ids, false).right
     } yield rows.map(row => (row.id, row.rev))
 
-  def saveDoc[T <: IdRev: Manifest](doc: T): Result[Option[T]] =
-    for {
-      upd <- resolver(credit, doc._id, doc._rev, serializer.toJson(doc)).right
-      res <- update(docUpdateResult(upd))
-    } yield res
-
-  def saveDoc[T: Manifest](doc: T with Doc): Result[Option[T]] =
+  def saveDoc[T <% IdRev: Manifest](doc: T): Result[Option[T]] =
     for {
       upd <- resolver(credit, doc._id, doc._rev, serializer.toJson(doc)).right
       res <- update(docUpdateResult(upd))
@@ -225,7 +219,7 @@ class Database private[sohva](val name: String,
       Future.successful(Right(None))
   }
 
-  def saveDocs[T](docs: List[T with Doc], all_or_nothing: Boolean = false): Result[List[DbResult]] =
+  def saveDocs[T <% IdRev](docs: List[T], all_or_nothing: Boolean = false): Result[List[DbResult]] =
     for {
       raw <- couch.http(
         request / "_bulk_docs" << serializer.toJson(
@@ -259,11 +253,7 @@ class Database private[sohva](val name: String,
     case None      => Future.successful(Right(None))
   }
 
-  def deleteDoc[T](doc: T with Doc): Result[Boolean] =
-    for(res <- couch.http((request / doc._id).DELETE <<? Map("rev" -> doc._rev.getOrElse(""))).right)
-      yield couch.ok(res)
-
-  def deleteDoc(doc: IdRev): Result[Boolean] =
+  def deleteDoc[T <% IdRev](doc: T): Result[Boolean] =
     for(res <- couch.http((request / doc._id).DELETE <<? Map("rev" -> doc._rev.getOrElse(""))).right)
       yield couch.ok(res)
 
