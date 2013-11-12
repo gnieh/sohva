@@ -84,6 +84,5 @@ case class DesignDoc(_id: String,
                      updates: Map[String, String] = Map(),
                      filters: Map[String, String] = Map(),
                      shows: Map[String, String] = Map(),
-                     lists: Map[String, String] = Map(),
-                     val _rev: Option[String] = None)
+                     lists: Map[String, String] = Map()) extends IdRev
 

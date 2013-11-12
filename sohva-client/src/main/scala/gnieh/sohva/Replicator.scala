@@ -76,5 +76,4 @@ case class Replication(_id: String,
                        _replication_state: Option[String] = None,
                        _replication_state_time: Option[String] = None,
                        doc_ids: List[String] = Nil,
-                       user_ctx: Option[UserCtx] = None,
-                       _rev: Option[String] = None)
+                       user_ctx: Option[UserCtx] = None) extends IdRev

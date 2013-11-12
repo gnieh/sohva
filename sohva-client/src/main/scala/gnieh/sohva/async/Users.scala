@@ -90,7 +90,7 @@ class Users(couch: CouchDB) extends gnieh.sohva.Users {
             val saltedToken = hash(token + savedSalt)
             if(new Date().before(validity) && savedToken == saltedToken) {
               // save the user with the new password
-              val newUser = new CouchUser(name, password, roles = roles, _rev = _rev)
+              val newUser = new CouchUser(name, password, roles = roles).withRev(_rev)
               couch.http((request / dbName / _id << serializer.toJson(newUser)).PUT).right.map(ok _)
             } else {
               Future.successful(Right(false))
