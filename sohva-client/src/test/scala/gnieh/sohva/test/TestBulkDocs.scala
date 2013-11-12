@@ -42,6 +42,31 @@ object TestBulkDocs extends SohvaTestSpec with ShouldMatchers {
 
   }
 
+  "saving several document with lists at once" should "result in all the documents being saved in the db and the list elements serialized correctly" in {
+
+    case class DocWithList(_id: String, list: List[String]) extends IdRev
+
+    def strings(id: Int) =
+      (for(i <- 1 to 3)
+        yield "element:" + id + ":" + i).toList
+
+    val docsString =
+      (for(i <- 1 to 5)
+        yield DocWithList("doc_string_list:" + i, strings(i))).toList
+
+    val result1 = db.saveDocs(docsString)
+
+    result1.filter {
+      case OkResult(_, _, _) => false
+      case ErrorResult(_, _, _) => true
+    }.size should be(0)
+
+    val saved1 = db.getDocsById[DocWithList](docsString.map(_._id))
+
+    saved1 should be(docsString)
+
+  }
+
   "deleting several documents at once" should "result in all documents being deleted in the db" in {
 
     db.saveDocs(docs)
