@@ -101,3 +101,4 @@ case class View[Key: Manifest, Value: Manifest, Doc: Manifest](design: Design,
   }
 
 }
+

@@ -70,6 +70,9 @@ trait Database {
    */
   def delete: Result[Boolean]
 
+  /** Returns the list of identifiers of the documents in this database */
+  def _all_docs: Result[List[String]]
+
   /** Returns the document identified by the given id if it exists */
   def getDocById[T: Manifest](id: String, revision: Option[String] = None): Result[Option[T]]
 

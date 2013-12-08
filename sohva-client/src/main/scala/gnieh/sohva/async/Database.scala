@@ -142,6 +142,12 @@ class Database private[sohva](val name: String,
       Future.successful(Right(false))
     }
 
+  def _all_docs: Result[List[String]] =
+    for(raw <- _all_docs(Nil, false).right)
+      yield for {
+        row <- raw
+      } yield row.id
+
   def getDocById[T: Manifest](id: String, revision: Option[String] = None): Result[Option[T]] =
     for(raw <- getRawDocById(id, revision).right)
       yield raw.map(docResult[T])
@@ -219,7 +225,7 @@ class Database private[sohva](val name: String,
       Future.successful(Right(None))
   }
 
-  def saveDocs[T <% IdRev](docs: List[T], all_or_nothing: Boolean = false): Result[List[DbResult]] =
+  def saveDocs[T](docs: List[T], all_or_nothing: Boolean = false): Result[List[DbResult]] =
     for {
       raw <- couch.http(request / "_bulk_docs" << serializer.toJson(BulkSave(all_or_nothing, docs))).right
     } yield bulkSaveResult(raw)

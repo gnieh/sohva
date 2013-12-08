@@ -132,6 +132,15 @@ private class UserSerializer(version: String) extends Serializer[CouchUser] {
         JField("password_sha", JString(password_sha)),
         JField("salt", JString(salt))
       ))
+    case user: CouchUser =>
+      JObject(List(
+        JField("_id", JString(user._id)),
+        JField("_rev", user._rev.map(r => JString(r)).getOrElse(JNothing)),
+        JField("name", JString(user.name)),
+        JField("type", JString("user")),
+        JField("roles", JArray(user.roles map JString)),
+        JField("password", JString(user.password))
+      ))
   }
 
 }

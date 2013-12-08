@@ -71,6 +71,10 @@ class Database private[sohva](wrapped: ADatabase) extends gnieh.sohva.Database {
     synced(wrapped.delete)
 
   @inline
+  def _all_docs: List[String] =
+    synced(wrapped._all_docs)
+
+  @inline
   def getDocById[T: Manifest](id: String, revision: Option[String] = None): Option[T] =
     synced(wrapped.getDocById(id, revision))
 
