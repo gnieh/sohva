@@ -22,6 +22,9 @@ package object sync {
 
   type Identity[T] = T
 
+  @deprecated(message = "This type has been deprecated and will be removed in the next version. Please use type CookieSession instead", since = "0.5")
+  type CouchSession = CookieSession
+
   private[sync] def synced[T](result: async.AsyncResult[T]): T = Await.result(result, Duration.Inf) match {
     case Right(t) => t
     case Left((409, error)) =>

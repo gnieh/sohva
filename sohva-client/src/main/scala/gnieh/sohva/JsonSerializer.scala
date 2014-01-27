@@ -117,7 +117,16 @@ private class UserSerializer(version: String) extends Serializer[CouchUser] {
   private val CouchUserClass = classOf[CouchUser]
 
   def deserialize(implicit format: Formats): PartialFunction[(TypeInfo, JValue), CouchUser] = {
-    case (TypeInfo(CouchUserClass, _), _) => throw new MappingException("CouchUser should never be deserialized")
+    case (TypeInfo(CouchUserClass, _), json) =>
+      val user = for {
+        _id <- (json \ "_id").extractOpt[String]
+        _rev <- (json \ "_rev").extractOpt[String]
+        name <- (json \ "name").extractOpt[String]
+        roles <- (json \ "roles").extractOpt[List[String]]
+        oauth = (json \ "oauth").extractOpt[OAuthData]
+      } yield CouchUser(name, "???", roles, oauth)
+
+      user.getOrElse(throw new MappingException("Malformed user object: " + json))
   }
 
   def serialize(implicit format: Formats): PartialFunction[Any, JValue] = {
@@ -139,7 +148,8 @@ private class UserSerializer(version: String) extends Serializer[CouchUser] {
         JField("name", JString(user.name)),
         JField("type", JString("user")),
         JField("roles", JArray(user.roles map JString)),
-        JField("password", JString(user.password))
+        JField("password", JString(user.password)),
+        JField("oauth", Extraction.decompose(user.oauth))
       ))
   }
 

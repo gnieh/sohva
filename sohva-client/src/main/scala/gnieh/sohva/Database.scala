@@ -105,6 +105,10 @@ trait Database[Result[_]] {
    */
   def saveDoc[T <% IdRev: Manifest](doc: T): Result[Option[T]]
 
+  /** Creates or updates a bunch of documents into the database.
+   */
+  def saveDocs[T <% IdRev](docs: List[T], all_or_nothing: Boolean = false): Result[List[DbResult]]
+
   /** Copies the origin document to the target document.
    *  If the target does not exist, it is created, otherwise it is updated and the target
    *  revision must be provided

@@ -50,17 +50,27 @@ class CouchClient(val host: String = "localhost",
     LoggerFactory.getLogger(classOf[CouchClient]).warn("Warning Expected version is " + version + " but actual server version is " + i.version)
   }
 
+  def startCookieSession =
+    new CookieSession(this)
+
+  @deprecated(message = "This method has been deprecated and will be removed in the next version. Please use startCookieSession instead", since = "0.5")
   def startSession =
-    new CouchSession(this)
+    startCookieSession
+
+  def startOAuthSession(consumerKey: String, consumerSecret: String, token: String, secret: String) =
+    new OAuthSession(consumerKey, consumerSecret, token, secret, this)
 
   def shutdown =
-    _http.shutdown
+    sohvaHttp.shutdown
 
   // ========== internals ==========
 
-  protected[sohva] lazy val _http = Http.configure { builder =>
+  private lazy val sohvaHttp = Http.configure { builder =>
     builder.setFollowRedirects(true)
   }
+
+  protected[sohva] def _http[T](req: Req, handler: AsyncHandler[T]) =
+    sohvaHttp(req > handler)
 
   // the base request to this couch instance
   protected[sohva] def request =

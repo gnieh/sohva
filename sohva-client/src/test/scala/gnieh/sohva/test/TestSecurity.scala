@@ -77,7 +77,7 @@ object TestSecurity extends SohvaTestSpec with ShouldMatchers with BeforeAndAfte
   "database admin" should "be able to update the security document" in {
     adminSecDb.saveSecurityDoc(secDoc1) should be(true)
 
-    val session2 = couch.startSession
+    val session2 = couch.startCookieSession
     session2.login("secUser2", "secUser2")
 
     session2.database("sohva_test_security").saveSecurityDoc(secDoc2) should be(true)

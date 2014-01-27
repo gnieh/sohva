@@ -14,13 +14,11 @@
 * limitations under the License.
 */
 package gnieh.sohva
-package control
+package sync
 
 import gnieh.sohva.async.{
-  CouchSession => ACouchSession
+  CookieSession => ACouchSession
 }
-
-import scala.util.Try
 
 /** An instance of a Couch session, that allows the user to login and
  *  send request identified with the login credentials.
@@ -31,34 +29,39 @@ import scala.util.Try
  *  @author Lucas Satabin
  *
  */
-class CouchSession private[control] (wrapped: ACouchSession) extends CouchDB(wrapped) with gnieh.sohva.CouchSession[Try] {
+class CookieSession private[sync] (wrapped: ACouchSession) extends CouchDB(wrapped) with gnieh.sohva.CookieSession[Identity] {
 
   @inline
-  def login(name: String, password: String): Try[Boolean] =
+  def login(name: String, password: String): Boolean =
     synced(wrapped.login(name, password))
 
   @inline
-  def logout: Try[Boolean] =
+  def logout: Boolean =
     synced(wrapped.logout)
 
   @inline
-  def currentUser: Try[Option[UserInfo]] =
+  def currentUser: Option[UserInfo] =
     synced(wrapped.currentUser)
 
   @inline
-  def isLoggedIn: Try[Boolean] =
-    synced(wrapped.isLoggedIn)
+  @deprecated(message = "This method has been deprecated and will be removed in the next version. Please user isAuthenticated instead", since = "0.5")
+  def isLoggedIn: Boolean =
+    isAuthenticated
 
   @inline
-  def hasRole(role: String): Try[Boolean] =
+  def isAuthenticated: Boolean =
+    synced(wrapped.isAuthenticated)
+
+  @inline
+  def hasRole(role: String): Boolean =
     synced(wrapped.hasRole(role))
 
   @inline
-  def isServerAdmin: Try[Boolean] =
+  def isServerAdmin: Boolean =
     synced(wrapped.isServerAdmin)
 
   @inline
-  def userContext: Try[UserCtx] =
+  def userContext: UserCtx =
     synced(wrapped.userContext)
 
 }

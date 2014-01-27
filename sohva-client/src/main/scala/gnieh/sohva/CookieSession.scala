@@ -15,11 +15,7 @@
 */
 package gnieh.sohva
 
-import net.liftweb.json.JObject
-
-import java.util.Date
-
-/** An instance of a Couch session, that allows the user to login and
+/** An instance of a Couch session that allows the user to login and
  *  send request identified with the login credentials.
  *  This performs a cookie based authentication against the couchdb server.
  *  The couchdb client instance retrieved for this session will send request
@@ -28,7 +24,7 @@ import java.util.Date
  *  @author Lucas Satabin
  *
  */
-trait CouchSession[Result[_]] extends CouchDB[Result] {
+trait CookieSession[Result[_]] extends CouchDB[Result] with Session[Result] {
 
   /** Performs a login and returns true if login succeeded.
    *  from now on, if login succeeded the couch instance is identified and
@@ -44,16 +40,8 @@ trait CouchSession[Result[_]] extends CouchDB[Result] {
   def currentUser: Result[Option[UserInfo]]
 
   /** Indicates whether the current session is logged in to the couch server */
+  @deprecated(message = "This method has been deprecated and will be removed in the next version. Please user isAuthenticated instead", since = "0.5")
   def isLoggedIn: Result[Boolean]
-
-  /** Indicates whether the current session gives the given role to the user */
-  def hasRole(role: String): Result[Boolean]
-
-  /** Indicates whether the current session is a server admin session */
-  def isServerAdmin: Result[Boolean]
-
-  /** Returns the current user context */
-  def userContext: Result[UserCtx]
 
 }
 
@@ -78,9 +66,12 @@ case class CouchUser(
     val name: String,
     val password: String,
     val roles: List[String],
+    val oauth: Option[OAuthData] = None,
     val `type`: String = "user") extends IdRev {
 
   val _id = "org.couchdb.user:" + name
 
 }
+
+case class OAuthData(val consumer_keys: Map[String, String], val tokens: Map[String, String])
 

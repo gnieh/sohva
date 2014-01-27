@@ -21,9 +21,12 @@ import strategy._
 import dispatch._
 import Defaults._
 
+import scala.concurrent.Future
+
 import com.ning.http.client.{
   RequestBuilder,
-  Response
+  Response,
+  AsyncHandler
 }
 
 import net.liftweb.json._
@@ -95,15 +98,16 @@ abstract class CouchDB extends gnieh.sohva.CouchDB[AsyncResult] {
 
   protected[sohva] def request: RequestBuilder
 
-  protected[sohva] def _http: Http
+  protected[sohva] def _http[T](req: Req, handler: AsyncHandler[T]): Future[T]
 
   protected[sohva] def http(request: RequestBuilder, contentType: String = "application/json", contentEncoding: String = "UTF-8"): AsyncResult[String] =
-    _http(request.setBodyEncoding(contentEncoding) <:< Map("Content-Type" -> contentType) > handleCouchResponse _)
+    _http(request.setBodyEncoding(contentEncoding) <:< Map("Content-Type" -> contentType), new FunctionHandler(handleCouchResponse _))
 
   protected[sohva] def optHttp(request: RequestBuilder, contentType: String = "application/json", contentEncoding: String = "UTF-8"): AsyncResult[Option[String]] =
-    _http(request.setBodyEncoding(contentEncoding) <:< Map("Content-Type" -> contentType) > handleOptionalCouchResponse _)
+    _http(
+      request.setBodyEncoding(contentEncoding) <:< Map("Content-Type" -> contentType), new FunctionHandler(handleOptionalCouchResponse _))
 
-  private def handleCouchResponse(response: Response): Either[(Int, Option[ErrorResult]), String] = {
+  private def handleCouchResponse(response: Response): RawResult[String] = {
     val json = as.String(response)
     val code = response.getStatusCode
     if (code / 100 != 2) {
@@ -115,7 +119,7 @@ abstract class CouchDB extends gnieh.sohva.CouchDB[AsyncResult] {
     }
   }
 
-  private def handleOptionalCouchResponse(response: Response): Either[(Int, Option[ErrorResult]), Option[String]] =
+  private def handleOptionalCouchResponse(response: Response): RawResult[Option[String]] =
     handleCouchResponse(response) match {
       case Right(v)       => Right(Some(v))
       case Left((404, _)) => Right(None)

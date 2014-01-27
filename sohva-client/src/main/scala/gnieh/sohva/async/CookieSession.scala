@@ -19,7 +19,7 @@ package async
 import dispatch._
 import Defaults._
 
-import com.ning.http.client.Response
+import com.ning.http.client._
 
 /** An instance of a Couch session, that allows the user to login and
  *  send request identified with the login credentials.
@@ -30,7 +30,7 @@ import com.ning.http.client.Response
  *  @author Lucas Satabin
  *
  */
-class CouchSession protected[sohva] (val couch: CouchClient) extends CouchDB with gnieh.sohva.CouchSession[AsyncResult] {
+class CookieSession protected[sohva] (val couch: CouchClient) extends CouchDB with Session with gnieh.sohva.CookieSession[AsyncResult] {
 
   val host = couch.host
 
@@ -44,42 +44,22 @@ class CouchSession protected[sohva] (val couch: CouchClient) extends CouchDB wit
     for (
       res <- _http(request / "_session" <<
         Map("name" -> name, "password" -> password) <:<
-        Map("Accept" -> "application/json, text/javascript, */*",
-          "Cookie" -> "AuthSession=") > setCookie _)
+        Map("Accept" -> "application/json, text/javascript, */*"), noError)
     ) yield Right(res)
 
   def logout: AsyncResult[Boolean] =
-    for (res <- _http((request / "_session").DELETE > setCookie _))
+    for (res <- _http((request / "_session").DELETE, noError))
       yield Right(res)
 
-  def currentUser: AsyncResult[Option[UserInfo]] = userContext.right.flatMap {
-    case UserCtx(name, _) if name != null =>
-      couch.http(request / "_users" / ("org.couchdb.user:" + name)).right.map(user)
-    case _ => Future.successful(Right(None))
-  }
-
-  def isLoggedIn: AsyncResult[Boolean] = userContext.right.map {
-    case UserCtx(name, _) if name != null =>
-      true
-    case _ => false
-  }
-
-  def hasRole(role: String): AsyncResult[Boolean] = userContext.right.map {
-    case UserCtx(_, roles) => roles.contains(role)
-    case _                 => false
-  }
-
-  def isServerAdmin: AsyncResult[Boolean] = hasRole("_admin")
-
-  def userContext: AsyncResult[UserCtx] =
-    couch.http((request / "_session")).right.map(userCtx)
+  def isLoggedIn: AsyncResult[Boolean] =
+    isAuthenticated
 
   // helper methods
 
-  protected[sohva] val _http =
-    couch._http
+  protected[sohva] def _http[T](req: Req, handler: AsyncHandler[T]) =
+    couch._http(req <:< Map("Cookie" -> cookie), new CookieProxyHandler(handler))
 
-  private var _cookie = ""
+  private var _cookie = "AuthSession="
 
   private def cookie = _cookie.synchronized {
     _cookie
@@ -90,23 +70,32 @@ class CouchSession protected[sohva] (val couch: CouchClient) extends CouchDB wit
   }
 
   protected[sohva] def request =
-    couch.request <:< Map("Cookie" -> cookie)
+    couch.request
 
-  private def userCtx(json: String) =
-    serializer.fromJson[AuthResult](json).userCtx
+  private val noError = new FunctionHandler(r => r.getStatusCode / 100 == 2)
 
-  private def setCookie(response: Response) = {
-    response.getHeader("Set-Cookie") match {
-      case null | "" =>
-        // no cookie to set
-        false
-      case c =>
-        cookie = c
-        response.getStatusCode / 100 == 2
-    }
+  private class CookieProxyHandler[T](underlying: AsyncHandler[T]) extends AsyncHandler[T] {
+
+    def onBodyPartReceived(bodyPart: HttpResponseBodyPart) =
+      underlying.onBodyPartReceived(bodyPart)
+
+    def onCompleted() =
+      underlying.onCompleted()
+
+    def onHeadersReceived(headers: HttpResponseHeaders) =
+      if (headers.getHeaders.containsKey("Set-Cookie")) {
+        cookie = headers.getHeaders.getFirstValue("Set-Cookie")
+        underlying.onHeadersReceived(headers)
+      } else {
+        underlying.onHeadersReceived(headers)
+      }
+
+    def onStatusReceived(status: HttpResponseStatus) =
+      underlying.onStatusReceived(status)
+
+    def onThrowable(t: Throwable) =
+      underlying.onThrowable(t)
+
   }
-
-  private def user(json: String) =
-    serializer.fromJsonOpt[UserInfo](json)
 
 }

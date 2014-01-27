@@ -26,7 +26,7 @@ object TestCreateUser extends App {
   val couch = new CouchClient
 
   val name = "grumpf"
-  val session = couch.startSession
+  val session = couch.startCookieSession
 
   println("plop")
 
@@ -41,20 +41,20 @@ object TestCreateUser extends App {
     case true =>
       println("truie")
       println(session.login(name, name))
-      println(session.isLoggedIn)
+      println(session.isAuthenticated)
       println("context: " + (session.userContext))
       println("user: " + session.currentUser.map(_.name))
       println("role1: " + session.hasRole("role1"))
       println("role2: " + session.hasRole("role2"))
       println("_admin: " + session.isServerAdmin)
       println(session.logout)
-      println(session.isLoggedIn)
+      println(session.isAuthenticated)
       println("user: " + session.currentUser.map(_.name))
       println("role1: " + session.hasRole("role1"))
       println("role2: " + session.hasRole("role2"))
       println("_admin: " + session.isServerAdmin)
       println(session.login(name, name + "_wrong"))
-      println(session.isLoggedIn)
+      println(session.isAuthenticated)
       println(session.login("admin", "admin"))
       println(session.users.delete(name))
     case false =>
