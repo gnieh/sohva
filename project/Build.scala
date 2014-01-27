@@ -21,8 +21,8 @@ object SohvaBuild extends Build {
     homepage in ThisBuild := Some(url("https://github.com/gnieh/sohva")),
     name := "sohva",
     version in ThisBuild := sohvaVersion,
-    scalaVersion in ThisBuild := "2.10.2",
-    crossScalaVersions in ThisBuild := Seq("2.9.3", "2.10.2"),
+    scalaVersion in ThisBuild := "2.10.3",
+    crossScalaVersions in ThisBuild := Seq("2.9.3", "2.10.3"),
     libraryDependencies in ThisBuild ++= globalDependencies,
     parallelExecution in ThisBuild := false,
     compileOptions)
