@@ -28,7 +28,7 @@ import duration._
  *
  *  @author Lucas Satabin
  */
-case class Design(wrapped: ADesign) extends gnieh.sohva.Design {
+class Design(wrapped: ADesign) extends gnieh.sohva.Design {
 
   type Result[T] = T
 
@@ -59,7 +59,7 @@ case class Design(wrapped: ADesign) extends gnieh.sohva.Design {
     synced(wrapped.deleteView(viewName))
 
   def view[Key: Manifest, Value: Manifest, Doc: Manifest](viewName: String): View[Key, Value, Doc] =
-    View[Key, Value, Doc](wrapped.view(viewName))
+    new View[Key, Value, Doc](wrapped.view(viewName))
 
   @inline
   def saveValidateFunction(validateFun: String): Boolean =

@@ -24,9 +24,9 @@ import Defaults._
  *
  *  @author Lucas Satabin
  */
-case class Design(db: Database,
-                  name: String,
-                  language: String) extends gnieh.sohva.Design {
+class Design(val db: Database,
+             val name: String,
+             val language: String) extends gnieh.sohva.Design {
 
   type Result[T] = Future[Either[(Int, Option[ErrorResult]), T]]
 
@@ -76,7 +76,7 @@ case class Design(db: Database,
     }
 
   def view[Key: Manifest, Value: Manifest, Doc: Manifest](viewName: String): View[Key, Value, Doc] =
-    View[Key, Value, Doc](this, viewName)
+    new View[Key, Value, Doc](this.name, db, viewName)
 
   def saveValidateFunction(validateFun: String): Result[Boolean] =
     for {
@@ -145,3 +145,4 @@ case class Design(db: Database,
     serializer.fromJson[DesignDoc](json)
 
 }
+

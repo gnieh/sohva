@@ -107,3 +107,4 @@ case class Row[Key, Value, Doc](id: String,
                                 key: Key,
                                 value: Value,
                                 doc: Option[Doc] = None)
+

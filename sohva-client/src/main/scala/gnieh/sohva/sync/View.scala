@@ -27,7 +27,8 @@ import duration._
  *
  *  @author Lucas Satabin
  */
-case class View[Key: Manifest, Value: Manifest, Doc: Manifest](wrapped: AView[Key, Value, Doc]) extends gnieh.sohva.View[Key, Value, Doc] {
+class View[Key: Manifest, Value: Manifest, Doc: Manifest](wrapped: AView[Key, Value, Doc])
+extends gnieh.sohva.View[Key, Value, Doc] {
 
   type Result[T] = T
 
@@ -67,3 +68,4 @@ case class View[Key: Manifest, Value: Manifest, Doc: Manifest](wrapped: AView[Ke
       update_seq = update_seq))
 
 }
+

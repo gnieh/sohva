@@ -25,15 +25,18 @@ import net.liftweb.json._
  *
  *  @author Lucas Satabin
  */
-case class View[Key: Manifest, Value: Manifest, Doc: Manifest](design: Design,
-                                                               view: String) extends gnieh.sohva.View[Key, Value, Doc] {
+class View[Key: Manifest, Value: Manifest, Doc: Manifest](
+  val design: String,
+  val db: Database,
+  val view: String)
+extends gnieh.sohva.View[Key, Value, Doc] {
 
   type Result[T] = Future[Either[(Int, Option[ErrorResult]), T]]
 
-  import design.db.couch.serializer
+  import db.couch.serializer
   import serializer.formats
 
-  private def request = design.request / "_view" / view
+  protected[this] def request = db.request / "_design" / design / "_view" / view
 
   def query(key: Option[Key] = None,
             keys: List[Key] = Nil,
@@ -69,14 +72,13 @@ case class View[Key: Manifest, Value: Manifest, Doc: Manifest](design: Design,
       if (reduce) None else Some("reduce" -> false),
       if (include_docs) Some("include_docs" -> true) else None,
       if (inclusive_end) None else Some("inclusive_end" -> false),
-      if (update_seq) Some("update_seq" -> true) else None)
+      if (update_seq) Some("update_seq" -> true) else None
+    )
       .flatten
       .filter(_ != null) // just in case somebody gave Some(null)...
-      .map {
-        case (name, value) => (name, value.toString)
-      }
+      .map { case (name, value) => (name, value.toString) }
 
-    for(res <- design.db.couch.http(request <<? options).right)
+    for(res <- db.couch.http(request <<? options).right)
       yield viewResult[Key,Value,Doc](res)
 
   }
@@ -99,6 +101,20 @@ case class View[Key: Manifest, Value: Manifest, Doc: Manifest](design: Design,
     })
     res.getOrElse(ViewResult(0, 0, Nil))
   }
+
+}
+
+/** Used to query built-in view such as `_all_docs`.
+ *
+ *  @author Lucas Satabin
+ */
+private class BuiltInView[Key: Manifest, Value: Manifest, Doc: Manifest](
+  db: Database,
+  view: String
+)
+extends View[Key, Value, Doc]("", db, view) {
+
+  override protected[this] def request = db.request / view
 
 }
 

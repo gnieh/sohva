@@ -70,8 +70,32 @@ class Database private[sohva](wrapped: ADatabase) extends gnieh.sohva.Database {
     synced(wrapped.delete)
 
   @inline
-  def _all_docs: Try[List[String]] =
-    synced(wrapped._all_docs)
+  def _all_docs(key: Option[String] = None,
+                keys: List[String] = Nil,
+                startkey: Option[String] = None,
+                startkey_docid: Option[String] = None,
+                endkey: Option[String] = None,
+                endkey_docid: Option[String] = None,
+                limit: Int = -1,
+                stale: Option[String] = None,
+                descending: Boolean = false,
+                skip: Int = 0,
+                inclusive_end: Boolean = true): Try[List[String]] =
+    synced(
+      wrapped._all_docs(
+        key = key,
+        keys = keys,
+        startkey = startkey,
+        startkey_docid = startkey_docid,
+        endkey = endkey,
+        endkey_docid = endkey_docid,
+        limit = limit,
+        stale = stale,
+        descending = descending,
+        skip = skip,
+        inclusive_end = inclusive_end
+      )
+    )
 
   @inline
   def getDocById[T: Manifest](id: String, revision: Option[String] = None): Try[Option[T]] =
@@ -146,7 +170,10 @@ class Database private[sohva](wrapped: ADatabase) extends gnieh.sohva.Database {
     synced(wrapped.saveSecurityDoc(doc))
 
   def design(designName: String, language: String = "javascript"): Design =
-    Design(wrapped.design(designName, language))
+    new Design(wrapped.design(designName, language))
+
+  def builtInView[Key: Manifest, Value: Manifest, Doc: Manifest](view: String): View[Key, Value, Doc] =
+    new View(wrapped.builtInView(name))
 
 }
 

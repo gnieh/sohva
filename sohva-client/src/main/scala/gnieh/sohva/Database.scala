@@ -71,7 +71,17 @@ trait Database {
   def delete: Result[Boolean]
 
   /** Returns the list of identifiers of the documents in this database */
-  def _all_docs: Result[List[String]]
+  def _all_docs(key: Option[String] = None,
+                keys: List[String] = Nil,
+                startkey: Option[String] = None,
+                startkey_docid: Option[String] = None,
+                endkey: Option[String] = None,
+                endkey_docid: Option[String] = None,
+                limit: Int = -1,
+                stale: Option[String] = None,
+                descending: Boolean = false,
+                skip: Int = 0,
+                inclusive_end: Boolean = true): Result[List[String]]
 
   /** Returns the document identified by the given id if it exists */
   def getDocById[T: Manifest](id: String, revision: Option[String] = None): Result[Option[T]]
@@ -161,6 +171,11 @@ trait Database {
 
   /** Returns a design object that allows user to work with views */
   def design(designName: String, language: String = "javascript"): Design
+
+  /** Returns a built-in view of this database, identified by its name.
+   *  E.g. `_all_docs`.
+   */
+  def builtInView[Key: Manifest, Value: Manifest, Doc: Manifest](view: String): View[Key, Value, Doc]
 
 }
 

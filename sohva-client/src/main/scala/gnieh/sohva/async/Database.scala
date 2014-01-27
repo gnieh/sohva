@@ -142,11 +142,32 @@ class Database private[sohva](val name: String,
       Future.successful(Right(false))
     }
 
-  def _all_docs: Result[List[String]] =
-    for(raw <- _all_docs(Nil, false).right)
-      yield for {
-        row <- raw
-      } yield row.id
+  def _all_docs(key: Option[String] = None,
+                keys: List[String] = Nil,
+                startkey: Option[String] = None,
+                startkey_docid: Option[String] = None,
+                endkey: Option[String] = None,
+                endkey_docid: Option[String] = None,
+                limit: Int = -1,
+                stale: Option[String] = None,
+                descending: Boolean = false,
+                skip: Int = 0,
+                inclusive_end: Boolean = true): Result[List[String]] =
+    for {
+      res <- builtInView[String, Map[String, String], Any]("_all_docs").query(
+        key = key,
+        keys = keys,
+        startkey = startkey,
+        startkey_docid = startkey_docid,
+        endkey = endkey,
+        endkey_docid = endkey_docid,
+        limit = limit,
+        stale = stale,
+        descending = descending,
+        skip = skip,
+        inclusive_end = inclusive_end
+      ).right
+    } yield for(Row(id, _, _, _) <- res.rows) yield id
 
   def getDocById[T: Manifest](id: String, revision: Option[String] = None): Result[Option[T]] =
     for(raw <- getRawDocById(id, revision).right)
@@ -154,35 +175,8 @@ class Database private[sohva](val name: String,
 
   def getDocsById[T: Manifest](ids: List[String]): Result[List[T]] =
     for {
-      rows <- _all_docs(ids, true).right
-    } yield bulkDocs[T](rows)
-
-  private[this] def _all_docs[T: Manifest](ids: List[String], include_docs: Boolean): Result[List[BulkDocRow[T]]] =
-    for {
-      raw <- couch.http(request / "_all_docs"
-        <<? Map("include_docs" -> include_docs.toString)
-        << serializer.toJson(Map("keys" -> ids))
-      ).right
-    } yield {
-      import couch.serializer.formats
-      parse(raw) \ "rows" match {
-        case JArray(rows) =>
-          for {
-            row <- rows
-            id <- (row \ "id").extractOpt[String]
-            value <- (row \ "value").extractOpt[Map[String, String]]
-            doc = (row \ "doc").extractOpt[T]
-          } yield BulkDocRow(id, value("rev"), doc)
-        case _ =>
-          Nil
-      }
-    }
-
-  private[this] def bulkDocs[T: Manifest](bulkDocs: List[BulkDocRow[T]]) =
-    for {
-      row <- bulkDocs
-      doc <- row.doc
-    } yield doc
+      res <- builtInView[String, Map[String, String], T]("_all_docs").query(keys = ids, include_docs = true).right
+      } yield res.rows.flatMap { case Row(_, _, _, doc) => doc }
 
   def getRawDocById(id: String, revision: Option[String] = None): Result[Option[String]] =
     couch.optHttp(request / id <<? revision.map("rev" -> _).toList)
@@ -192,8 +186,8 @@ class Database private[sohva](val name: String,
 
   def getDocRevisions(ids: List[String]): Result[List[(String, String)]] =
     for {
-      rows <- _all_docs(ids, false).right
-    } yield rows.map(row => (row.id, row.rev))
+      res <- builtInView[String, Map[String, String], Any]("_all_docs").query(keys = ids).right
+    } yield res.rows.map(row => (row.id, row.value("rev")))
 
   def saveDoc[T <% IdRev: Manifest](doc: T): Result[Option[T]] =
     for {
@@ -351,7 +345,10 @@ class Database private[sohva](val name: String,
       yield couch.ok(res)
 
   def design(designName: String, language: String = "javascript"): Design =
-    Design(this, designName, language)
+    new Design(this, designName, language)
+
+  def builtInView[Key: Manifest, Value: Manifest, Doc: Manifest](view: String): View[Key, Value, Doc] =
+    new BuiltInView[Key, Value, Doc](this, view)
 
   // helper methods
 
@@ -407,8 +404,6 @@ class Database private[sohva](val name: String,
     serializer.fromJson[SecurityDoc](json)
 
 }
-
-protected[sohva] final case class BulkDocs[T](rows: List[BulkDocRow[T]])
 
 protected[sohva] final case class BulkDocRow[T](id: String, rev: String, doc: Option[T])
 

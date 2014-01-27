@@ -40,6 +40,11 @@ object TestBulkDocs extends SohvaTestSpec with ShouldMatchers {
 
     saved should be(docs)
 
+    val revisions = db.getDocRevisions(docs.map(_._id))
+
+    revisions should have size(saved.size)
+    revisions.map(_._2) should not contain("")
+
   }
 
   "saving several document with lists at once" should "result in all the documents being saved in the db and the list elements serialized correctly" in {
