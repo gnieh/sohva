@@ -56,7 +56,7 @@ class Design(val db: Database,
     design match {
       case Some(design) =>
         // the updated design
-        design.copy(views = design.views + (viewName -> view))
+        design.copy(views = design.views + (viewName -> view)).withRev(design._rev)
       case None =>
         // the design does not exist...
         DesignDoc("_design/" + name, language, Map(viewName -> view), None)
