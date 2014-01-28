@@ -94,3 +94,4 @@ object TestBulkDocs extends SohvaTestSpec with ShouldMatchers {
   }
 
 }
+

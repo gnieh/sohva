@@ -45,6 +45,7 @@ class SohvaTestSuite extends Suites(TestBasic,
   TestSerializer,
   TestPasswordReset,
   TestBarneyStinsonStrategy,
+  TestViews,
   TestChanges) with BeforeAndAfterAll {
 
   override def beforeAll() {
