@@ -24,9 +24,7 @@ import java.util.Date
  *
  *  @author Lucas Satabin
  */
-trait Users {
-
-  type Result[T]
+trait Users[Result[_]] {
 
   var dbName: String
 

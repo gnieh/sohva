@@ -27,9 +27,7 @@ import scala.util.Try
  *
  *  @author Lucas Satabin
  */
-class Design(wrapped: ADesign) extends gnieh.sohva.Design {
-
-  type Result[T] = Try[T]
+class Design(wrapped: ADesign) extends gnieh.sohva.Design[Try] {
 
   val name = wrapped.name
 

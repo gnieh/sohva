@@ -31,12 +31,12 @@ import java.net.URL
  *  @author Lucas Satabin
  */
 class Replicator(name: String, couch: CouchDB, credit: Int, strategy: Strategy)
-  extends Database(name, couch, credit, strategy) with gnieh.sohva.Replicator {
+  extends Database(name, couch, credit, strategy) with gnieh.sohva.Replicator[AsyncResult] {
 
-  def start(replication: Replication): Result[Option[Replication]] =
+  def start(replication: Replication): AsyncResult[Option[Replication]] =
     saveDoc(replication)
 
-  def stop(id: String): Result[Boolean] =
+  def stop(id: String): AsyncResult[Boolean] =
     for {
       repl <- getDocById[Replication](id).right
       ok <- deleteReplication(repl).right

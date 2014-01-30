@@ -27,9 +27,7 @@ import net.liftweb.json._
  *
  *  @author Lucas Satabin
  */
-class Users(couch: CouchDB) extends gnieh.sohva.Users {
-
-  type Result[T] = Future[Either[(Int, Option[ErrorResult]), T]]
+class Users(couch: CouchDB) extends gnieh.sohva.Users[AsyncResult] {
 
   import couch._
 
@@ -39,7 +37,7 @@ class Users(couch: CouchDB) extends gnieh.sohva.Users {
 
   def add(name: String,
           password: String,
-          roles: List[String] = Nil): Result[Boolean] = {
+          roles: List[String] = Nil): AsyncResult[Boolean] = {
 
     val user = CouchUser(name, password, roles)
 
@@ -48,10 +46,10 @@ class Users(couch: CouchDB) extends gnieh.sohva.Users {
 
   }
 
-  def delete(name: String): Result[Boolean] =
+  def delete(name: String): AsyncResult[Boolean] =
     database(dbName).deleteDoc("org.couchdb.user:" + name)
 
-  def generateResetToken(name: String, until: Date): Result[Option[String]] =
+  def generateResetToken(name: String, until: Date): AsyncResult[Option[String]] =
     for {
       tok <- _uuid.right
       user <- userDb.getDocById[JObject]("org.couchdb.user:" + name).right
@@ -75,7 +73,7 @@ class Users(couch: CouchDB) extends gnieh.sohva.Users {
         Future.successful(Right(None))
     }
 
-  def resetPassword(name: String, token: String, password: String): Result[Boolean] =
+  def resetPassword(name: String, token: String, password: String): AsyncResult[Boolean] =
     for {
       user <- userDb.getDocById[JObject]("org.couchdb.user:" + name).right
       ok <- reset(user, token, password)

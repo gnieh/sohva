@@ -30,7 +30,7 @@ import com.ning.http.client.Response
  *  @author Lucas Satabin
  *
  */
-class CouchSession protected[sohva] (val couch: CouchClient) extends CouchDB with gnieh.sohva.CouchSession {
+class CouchSession protected[sohva] (val couch: CouchClient) extends CouchDB with gnieh.sohva.CouchSession[AsyncResult] {
 
   val host = couch.host
 
@@ -40,37 +40,37 @@ class CouchSession protected[sohva] (val couch: CouchClient) extends CouchDB wit
 
   val serializer = couch.serializer
 
-  def login(name: String, password: String): Result[Boolean] =
+  def login(name: String, password: String): AsyncResult[Boolean] =
     for(res <- _http(request / "_session" <<
          Map("name" -> name, "password" -> password) <:<
          Map("Accept" -> "application/json, text/javascript, */*",
            "Cookie" -> "AuthSession=") > setCookie _))
              yield Right(res)
 
-  def logout: Result[Boolean] =
+  def logout: AsyncResult[Boolean] =
     for(res <- _http((request / "_session").DELETE > setCookie _))
       yield Right(res)
 
-  def currentUser: Result[Option[UserInfo]] = userContext.right.flatMap {
+  def currentUser: AsyncResult[Option[UserInfo]] = userContext.right.flatMap {
     case UserCtx(name, _) if name != null =>
      couch.http(request / "_users" / ("org.couchdb.user:" + name)).right.map(user)
     case _ => Future.successful(Right(None))
   }
 
-  def isLoggedIn: Result[Boolean] = userContext.right.map {
+  def isLoggedIn: AsyncResult[Boolean] = userContext.right.map {
     case UserCtx(name, _) if name != null =>
       true
     case _ => false
   }
 
-  def hasRole(role: String): Result[Boolean] = userContext.right.map {
+  def hasRole(role: String): AsyncResult[Boolean] = userContext.right.map {
     case UserCtx(_, roles) => roles.contains(role)
     case _                 => false
   }
 
-  def isServerAdmin: Result[Boolean] = hasRole("_admin")
+  def isServerAdmin: AsyncResult[Boolean] = hasRole("_admin")
 
-  def userContext: Result[UserCtx] =
+  def userContext: AsyncResult[UserCtx] =
    couch.http((request / "_session")).right.map(userCtx)
 
   // helper methods

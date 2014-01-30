@@ -20,6 +20,8 @@ import gnieh.sohva.async.{
   CouchClient => ACouchClient
 }
 
+import scala.util.Try
+
 /** A CouchDB instance.
  *  Allows users to access the different databases and instance information.
  *  This is the key class to start with when one wants to work with couchdb.
@@ -29,7 +31,7 @@ import gnieh.sohva.async.{
  *  @author Lucas Satabin
  *
  */
-class CouchClient private[control] (wrapped: ACouchClient) extends CouchDB(wrapped) with gnieh.sohva.CouchClient {
+class CouchClient private[control] (wrapped: ACouchClient) extends CouchDB(wrapped) with gnieh.sohva.CouchClient[Try] {
 
   def this(host: String = "localhost",
            port: Int = 5984,

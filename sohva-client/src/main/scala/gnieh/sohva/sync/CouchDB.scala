@@ -36,9 +36,7 @@ import duration._
  *  @author Lucas Satabin
  *
  */
-abstract class CouchDB private[sync] (wrapped: ACouchDB) extends gnieh.sohva.CouchDB {
-
-  type Result[T] = T
+abstract class CouchDB private[sync] (wrapped: ACouchDB) extends gnieh.sohva.CouchDB[Identity] {
 
   @inline
   val host = wrapped.host
@@ -102,9 +100,7 @@ abstract class CouchDB private[sync] (wrapped: ACouchDB) extends gnieh.sohva.Cou
 
   // user management section
 
-  object users extends Users {
-
-    type Result[T] = T
+  object users extends Users[Identity] {
 
     @inline
     def dbName: String =

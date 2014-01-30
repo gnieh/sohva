@@ -34,7 +34,7 @@ import java.net.URL
  *  @author Lucas Satabin
  */
 class Replicator(wrapped: AReplicator)
-  extends Database(wrapped) with gnieh.sohva.Replicator {
+  extends Database(wrapped) with gnieh.sohva.Replicator[Try] {
 
   def start(replication: Replication): Try[Option[Replication]] =
     synced(wrapped.start(replication))

@@ -35,9 +35,7 @@ import scala.util.Try
  *  @author Lucas Satabin
  *
  */
-abstract class CouchDB private[control] (wrapped: ACouchDB) extends gnieh.sohva.CouchDB {
-
-  type Result[T] = Try[T]
+abstract class CouchDB private[control] (wrapped: ACouchDB) extends gnieh.sohva.CouchDB[Try] {
 
   @inline
   val host = wrapped.host
@@ -101,9 +99,7 @@ abstract class CouchDB private[control] (wrapped: ACouchDB) extends gnieh.sohva.
 
   // user management section
 
-  object users extends Users {
-
-    type Result[T] = Try[T]
+  object users extends Users[Try] {
 
     @inline
     def dbName: String =

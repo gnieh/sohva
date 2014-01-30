@@ -28,7 +28,7 @@ import java.util.Date
  *  @author Lucas Satabin
  *
  */
-trait CouchSession extends CouchDB {
+trait CouchSession[Result[_]] extends CouchDB[Result] {
 
   /** Performs a login and returns true if login succeeded.
    *  from now on, if login succeeded the couch instance is identified and

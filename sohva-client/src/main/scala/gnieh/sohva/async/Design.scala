@@ -26,27 +26,25 @@ import Defaults._
  */
 class Design(val db: Database,
              val name: String,
-             val language: String) extends gnieh.sohva.Design {
-
-  type Result[T] = Future[Either[(Int, Option[ErrorResult]), T]]
+             val language: String) extends gnieh.sohva.Design[AsyncResult] {
 
   import db.couch.serializer
 
   protected[sohva] def request = db.request / "_design" / name.trim
 
-  def getDesignDocument: Result[Option[DesignDoc]] =
+  def getDesignDocument: AsyncResult[Option[DesignDoc]] =
     for(design <- db.couch.optHttp(request).right)
       yield design.map(designDoc)
 
-  def delete: Result[Boolean] =
+  def delete: AsyncResult[Boolean] =
     db.deleteDoc("_design/" + name.trim)
 
   def saveView(viewName: String,
                mapFun: String,
-               reduceFun: Option[String] = None): Result[Boolean] =
+               reduceFun: Option[String] = None): AsyncResult[Boolean] =
     saveView(viewName, ViewDoc(mapFun, reduceFun))
 
-  def saveView(viewName: String, view: ViewDoc): Result[Boolean] =
+  def saveView(viewName: String, view: ViewDoc): AsyncResult[Boolean] =
     for {
       design <- getDesignDocument.right
       doc <- db.saveDoc(newDoc(design, viewName, view)).right
@@ -62,7 +60,7 @@ class Design(val db: Database,
         DesignDoc("_design/" + name, language, Map(viewName -> view), None)
     }
 
-  def deleteView(viewName: String): Result[Boolean] =
+  def deleteView(viewName: String): AsyncResult[Boolean] =
    for {
      design <- getDesignDocument.right
      res <- deleteView(design, viewName)
@@ -78,7 +76,7 @@ class Design(val db: Database,
   def view[Key: Manifest, Value: Manifest, Doc: Manifest](viewName: String): View[Key, Value, Doc] =
     new View[Key, Value, Doc](this.name, db, viewName)
 
-  def saveValidateFunction(validateFun: String): Result[Boolean] =
+  def saveValidateFunction(validateFun: String): AsyncResult[Boolean] =
     for {
       design <- getDesignDocument.right
       res <- db.saveDoc(newDoc(design, validateFun)).right
@@ -94,7 +92,7 @@ class Design(val db: Database,
         DesignDoc("_design/" + name, language, Map(), Some(validateFun))
     }
 
-  def deleteValidateFunction: Result[Boolean] =
+  def deleteValidateFunction: AsyncResult[Boolean] =
     for {
       design <- getDesignDocument.right
       res <- deleteValidateFunction(design)
@@ -108,7 +106,7 @@ class Design(val db: Database,
       case None => Future.successful(Right(false))
     }
 
-  def saveFilter(name: String, filterFun: String): Result[Boolean] =
+  def saveFilter(name: String, filterFun: String): AsyncResult[Boolean] =
     for {
       design <- getDesignDocument.right
       res <- db.saveDoc(withFilterDoc(design, name, filterFun)).right
@@ -124,7 +122,7 @@ class Design(val db: Database,
         DesignDoc("_design/" + name, language, Map(), None, filters = Map(filterName -> filterFun))
     }
 
-  def deleteFilter(name: String): Result[Boolean] =
+  def deleteFilter(name: String): AsyncResult[Boolean] =
     for {
       design <- getDesignDocument.right
       res <- deleteFilter(design, name)

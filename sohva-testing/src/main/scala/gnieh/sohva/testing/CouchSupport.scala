@@ -23,7 +23,7 @@ import org.scalatest._
  *
  *  @author Lucas Satabin
  */
-trait CouchClientSupport[Client <: CouchClient] {
+trait CouchClientSupport[Result[_], Client <: CouchClient[Result]] {
   this: fixture.Suite =>
 
   type FixtureParam = Client

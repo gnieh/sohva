@@ -38,9 +38,7 @@ import gnieh.diffson.JsonPatch
  *
  *  @author Lucas Satabin
  */
-class Database private[sohva](wrapped: ADatabase) extends gnieh.sohva.Database {
-
-  type Result[T] = T
+class Database private[sohva](wrapped: ADatabase) extends gnieh.sohva.Database[Identity] {
 
   @inline
   val name = wrapped.name
@@ -103,7 +101,7 @@ class Database private[sohva](wrapped: ADatabase) extends gnieh.sohva.Database {
     synced(wrapped.getDocById(id, revision))
 
   @inline
-  def getRawDocById(id: String, revision: Option[String] = None): Result[Option[String]] =
+  def getRawDocById(id: String, revision: Option[String] = None): Option[String] =
     synced(wrapped.getRawDocById(id, revision))
 
   @inline

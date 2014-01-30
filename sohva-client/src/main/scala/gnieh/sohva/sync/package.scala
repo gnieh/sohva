@@ -20,6 +20,8 @@ import duration._
 
 package object sync {
 
+  type Identity[T] = T
+
   private[sync] def synced[T](result: async.AsyncResult[T]): T = Await.result(result, Duration.Inf) match {
     case Right(t) => t
     case Left((409, error)) =>

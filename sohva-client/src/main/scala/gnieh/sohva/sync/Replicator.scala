@@ -32,12 +32,12 @@ import java.net.URL
  *  @author Lucas Satabin
  */
 class Replicator(wrapped: AReplicator)
-  extends Database(wrapped) with gnieh.sohva.Replicator {
+  extends Database(wrapped) with gnieh.sohva.Replicator[Identity] {
 
   def start(replication: Replication): Option[Replication] =
     synced(wrapped.start(replication))
 
-  def stop(id: String): Result[Boolean] =
+  def stop(id: String): Boolean =
     synced(wrapped.stop(id))
 
 }

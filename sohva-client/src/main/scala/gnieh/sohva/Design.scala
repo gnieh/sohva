@@ -20,12 +20,10 @@ package gnieh.sohva
  *
  *  @author Lucas Satabin
  */
-trait Design {
+trait Design[Result[_]] {
 
   val name: String
   val language: String
-
-  type Result[T]
 
   /** Returns the design document from the couchdb instance.
    *  Returns `None` if the design document does not exist.
@@ -57,7 +55,7 @@ trait Design {
    *  - Value: Type of the value returned in the result
    *  - Doc: Type of the full document in the case where the view is queried with `include_docs` set to `true`
    */
-  def view[Key: Manifest, Value: Manifest, Doc: Manifest](viewName: String): View[Key, Value, Doc]
+  def view[Key: Manifest, Value: Manifest, Doc: Manifest](viewName: String): View[Result, Key, Value, Doc]
 
   /** Creates or updates the document validation function.
    *  If the design does not exist yet, it is created.

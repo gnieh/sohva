@@ -31,7 +31,7 @@ import scala.util.Try
  *  @author Lucas Satabin
  *
  */
-class CouchSession private[control] (wrapped: ACouchSession) extends CouchDB(wrapped) with gnieh.sohva.CouchSession {
+class CouchSession private[control] (wrapped: ACouchSession) extends CouchDB(wrapped) with gnieh.sohva.CouchSession[Try] {
 
   @inline
   def login(name: String, password: String): Try[Boolean] =

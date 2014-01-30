@@ -24,10 +24,10 @@ package gnieh.sohva
  *  @author Lucas Satabin
  *
  */
-trait CouchClient extends CouchDB {
+trait CouchClient[Result[_]] extends CouchDB[Result] {
 
   /** Starts a new session to with this client */
-  def startSession: CouchSession
+  def startSession: CouchSession[Result]
 
   /** Shuts down this instance of couchdb client. */
   def shutdown

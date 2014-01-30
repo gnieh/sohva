@@ -25,9 +25,7 @@ import strategy._
  *  @author Lucas Satabin
  *
  */
-trait CouchDB {
-
-  type Result[T]
+trait CouchDB[Result[_]] {
 
   /** The couchdb instance host name. */
   val host: String
@@ -45,10 +43,10 @@ trait CouchDB {
   def info: Result[CouchInfo]
 
   /** Returns the database on the given couch instance. */
-  def database(name: String, credit: Int = 0, strategy: Strategy = BarneyStinsonStrategy): Database
+  def database(name: String, credit: Int = 0, strategy: Strategy = BarneyStinsonStrategy): Database[Result]
 
   /** Returns the replicator database */
-  def replicator(name: String = "_replicator", credit: Int = 0, strategy: Strategy = BarneyStinsonStrategy): Replicator
+  def replicator(name: String = "_replicator", credit: Int = 0, strategy: Strategy = BarneyStinsonStrategy): Replicator[Result]
 
   /** Returns the names of all databases in this couch instance. */
   def _all_dbs: Result[List[String]]
@@ -84,7 +82,7 @@ trait CouchDB {
   def contains(dbName: String): Result[Boolean]
 
   /** Exposes the interface for managing couchdb users. */
-  val users: Users
+  val users: Users[Result]
 
 }
 

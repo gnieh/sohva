@@ -36,13 +36,11 @@ import net.liftweb.json._
  *  @author Lucas Satabin
  *
  */
-abstract class CouchDB extends gnieh.sohva.CouchDB {
+abstract class CouchDB extends gnieh.sohva.CouchDB[AsyncResult] {
 
   self =>
 
-  type Result[T] = AsyncResult[T]
-
-  def info: Result[CouchInfo] =
+  def info: AsyncResult[CouchInfo] =
     for(json <- http(request).right)
       yield asCouchInfo(json)
 
@@ -52,39 +50,39 @@ abstract class CouchDB extends gnieh.sohva.CouchDB {
   def replicator(name: String = "_replicator", credit: Int = 0, strategy: Strategy = BarneyStinsonStrategy): Replicator =
     new Replicator(name, this, credit, strategy)
 
-  def _all_dbs: Result[List[String]] =
+  def _all_dbs: AsyncResult[List[String]] =
     for(dbs <- http(request / "_all_dbs").right)
       yield asStringList(dbs)
 
-  def _uuid: Result[String] =
+  def _uuid: AsyncResult[String] =
     for(uuid <- _uuids(1).right)
       yield uuid.head
 
-  def _uuids(count: Int = 1): Result[List[String]] =
+  def _uuids(count: Int = 1): AsyncResult[List[String]] =
     for(uuids <- http(request / "_uuids" <<? Map("count" -> count.toString)).right)
       yield asUuidsList(uuids)
 
-  def _config: Result[Configuration] =
+  def _config: AsyncResult[Configuration] =
     for(config <- http(request / "_config").right)
       yield serializer.fromJson[Configuration](config)
 
-  def _config(section: String): Result[Map[String, String]] =
+  def _config(section: String): AsyncResult[Map[String, String]] =
     for(section <- http(request / "_config" / section).right)
       yield serializer.fromJson[Map[String, String]](section)
 
-  def _config(section: String, key: String): Result[Option[String]] =
+  def _config(section: String, key: String): AsyncResult[Option[String]] =
     for(section <- _config(section).right)
       yield section.get(key)
 
-  def saveConfigValue(section: String, key: String, value: String): Result[Boolean] =
+  def saveConfigValue(section: String, key: String, value: String): AsyncResult[Boolean] =
     for(res <- http((request / "_config" / section / key << serializer.toJson(value)).PUT).right)
       yield ok(res)
 
-  def deleteConfigValue(section: String, key: String): Result[Boolean] =
+  def deleteConfigValue(section: String, key: String): AsyncResult[Boolean] =
     for(res <- http((request / "_config" / section / key).DELETE).right)
       yield ok(res)
 
-  def contains(dbName: String): Result[Boolean] =
+  def contains(dbName: String): AsyncResult[Boolean] =
     for(dbs <- _all_dbs.right)
       yield dbs.contains(dbName)
 
@@ -99,10 +97,10 @@ abstract class CouchDB extends gnieh.sohva.CouchDB {
 
   protected[sohva] def _http: Http
 
-  protected[sohva] def http(request: RequestBuilder, contentType: String = "application/json", contentEncoding: String = "UTF-8"): Result[String] =
+  protected[sohva] def http(request: RequestBuilder, contentType: String = "application/json", contentEncoding: String = "UTF-8"): AsyncResult[String] =
     _http(request.setBodyEncoding(contentEncoding) <:< Map("Content-Type" -> contentType) > handleCouchResponse _)
 
-  protected[sohva] def optHttp(request: RequestBuilder, contentType: String = "application/json", contentEncoding: String = "UTF-8"): Result[Option[String]] =
+  protected[sohva] def optHttp(request: RequestBuilder, contentType: String = "application/json", contentEncoding: String = "UTF-8"): AsyncResult[Option[String]] =
     _http(request.setBodyEncoding(contentEncoding) <:< Map("Content-Type" -> contentType) > handleOptionalCouchResponse _)
 
   private def handleCouchResponse(response: Response): Either[(Int, Option[ErrorResult]), String] = {

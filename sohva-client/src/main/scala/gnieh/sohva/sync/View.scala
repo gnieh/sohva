@@ -28,9 +28,7 @@ import duration._
  *  @author Lucas Satabin
  */
 class View[Key: Manifest, Value: Manifest, Doc: Manifest](wrapped: AView[Key, Value, Doc])
-extends gnieh.sohva.View[Key, Value, Doc] {
-
-  type Result[T] = T
+extends gnieh.sohva.View[Identity, Key, Value, Doc] {
 
   @inline
   def query(key: Option[Key] = None,

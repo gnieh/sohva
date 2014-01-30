@@ -38,7 +38,7 @@ import gnieh.diffson.JsonPatch
  *
  *  @author Lucas Satabin
  */
-trait Database {
+trait Database[Result[_]] {
 
   /** The database name */
   val name: String
@@ -48,8 +48,6 @@ trait Database {
 
   /** The merge strategy */
   val strategy: Strategy
-
-  type Result[T]
 
   /** Returns the information about this database */
   def info: Result[Option[InfoResult]]
@@ -170,12 +168,12 @@ trait Database {
   def saveSecurityDoc(doc: SecurityDoc): Result[Boolean]
 
   /** Returns a design object that allows user to work with views */
-  def design(designName: String, language: String = "javascript"): Design
+  def design(designName: String, language: String = "javascript"): Design[Result]
 
   /** Returns a built-in view of this database, identified by its name.
    *  E.g. `_all_docs`.
    */
-  def builtInView[Key: Manifest, Value: Manifest, Doc: Manifest](view: String): View[Key, Value, Doc]
+  def builtInView[Key: Manifest, Value: Manifest, Doc: Manifest](view: String): View[Result, Key, Value, Doc]
 
 }
 

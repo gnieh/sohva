@@ -19,9 +19,7 @@ package gnieh.sohva
  *
  *  @author Lucas Satabin
  */
-trait View[Key, Value, Doc] {
-
-  type Result[T]
+trait View[Result[_], Key, Value, Doc] {
 
   /** Queries the view on the server and returned the typed result.
    *  BE CAREFUL: If the types given to the constructor are not correct,

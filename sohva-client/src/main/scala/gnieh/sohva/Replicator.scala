@@ -26,7 +26,7 @@ import java.net.URL
  *
  *  @author Lucas Satabin
  */
-trait Replicator extends Database {
+trait Replicator[Result[_]] extends Database[Result] {
 
   /** Starts a new replication from `source` to `target`. if a replication
    *  task already exists for the same source and target, the document is added
@@ -77,3 +77,4 @@ case class Replication(_id: String,
                        _replication_state_time: Option[String] = None,
                        doc_ids: List[String] = Nil,
                        user_ctx: Option[UserCtx] = None) extends IdRev
+

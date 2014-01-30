@@ -29,9 +29,7 @@ class View[Key: Manifest, Value: Manifest, Doc: Manifest](
   val design: String,
   val db: Database,
   val view: String)
-extends gnieh.sohva.View[Key, Value, Doc] {
-
-  type Result[T] = Future[Either[(Int, Option[ErrorResult]), T]]
+extends gnieh.sohva.View[AsyncResult, Key, Value, Doc] {
 
   import db.couch.serializer
   import serializer.formats
@@ -53,7 +51,7 @@ extends gnieh.sohva.View[Key, Value, Doc] {
             reduce: Boolean = true,
             include_docs: Boolean = false,
             inclusive_end: Boolean = true,
-            update_seq: Boolean = false): Result[ViewResult[Key, Value, Doc]] = {
+            update_seq: Boolean = false): AsyncResult[ViewResult[Key, Value, Doc]] = {
 
     // build options
     val options = List(

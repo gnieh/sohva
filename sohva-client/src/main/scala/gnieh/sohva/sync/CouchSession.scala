@@ -29,7 +29,7 @@ import gnieh.sohva.async.{
  *  @author Lucas Satabin
  *
  */
-class CouchSession private[sync] (wrapped: ACouchSession) extends CouchDB(wrapped) with gnieh.sohva.CouchSession {
+class CouchSession private[sync] (wrapped: ACouchSession) extends CouchDB(wrapped) with gnieh.sohva.CouchSession[Identity] {
 
   @inline
   def login(name: String, password: String): Boolean =
