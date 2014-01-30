@@ -93,5 +93,26 @@ object TestBulkDocs extends SohvaTestSpec with ShouldMatchers {
 
   }
 
+  "deleting several documents at once" should "delete only documents for which an id was provided" in {
+
+    db.saveDocs(docs)
+
+    val ids = docs.map(_._id)
+
+    val saved = db.getDocsById[TestDoc](ids)
+
+    saved should be(docs)
+
+    val deleted = db.deleteDocs(ids.take(5))
+
+    deleted.filter {
+      case OkResult(_, _, _) => false
+      case ErrorResult(_, _, _) => true
+    }.size should be(0)
+
+    db.getDocsById[TestDoc](docs.map(_._id)) should be(docs.drop(5))
+
+  }
+
 }
 
