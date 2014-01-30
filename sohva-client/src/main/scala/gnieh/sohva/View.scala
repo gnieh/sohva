@@ -25,35 +25,37 @@ trait View[Result[_], Key, Value, Doc] {
    *  BE CAREFUL: If the types given to the constructor are not correct,
    *  strange things may happen! By 'strange', I mean exceptions
    */
-  def query(key: Option[Key] = None,
-            keys: List[Key] = Nil,
-            startkey: Option[Key] = None,
-            startkey_docid: Option[String] = None,
-            endkey: Option[Key] = None,
-            endkey_docid: Option[String] = None,
-            limit: Int = -1,
-            stale: Option[String] = None,
-            descending: Boolean = false,
-            skip: Int = 0,
-            group: Boolean = false,
-            group_level: Int = -1,
-            reduce: Boolean = true,
-            include_docs: Boolean = false,
-            inclusive_end: Boolean = true,
-            update_seq: Boolean = false): Result[ViewResult[Key, Value, Doc]]
+  def query(
+    key: Option[Key] = None,
+    keys: List[Key] = Nil,
+    startkey: Option[Key] = None,
+    startkey_docid: Option[String] = None,
+    endkey: Option[Key] = None,
+    endkey_docid: Option[String] = None,
+    limit: Int = -1,
+    stale: Option[String] = None,
+    descending: Boolean = false,
+    skip: Int = 0,
+    group: Boolean = false,
+    group_level: Int = -1,
+    reduce: Boolean = true,
+    include_docs: Boolean = false,
+    inclusive_end: Boolean = true,
+    update_seq: Boolean = false): Result[ViewResult[Key, Value, Doc]]
 
 }
 
 case class ViewDoc(map: String, reduce: Option[String])
 
-final case class ViewResult[Key, Value, Doc](total_rows: Int,
-                                             offset: Int,
-                                             rows: List[Row[Key, Value, Doc]]) {
+final case class ViewResult[Key, Value, Doc](
+    total_rows: Int,
+    offset: Int,
+    rows: List[Row[Key, Value, Doc]]) {
 
   self =>
 
   def values: List[(Key, Value)] =
-    for(row <- rows)
+    for (row <- rows)
       yield (row.key, row.value)
 
   def docs: List[(Key, Doc)] =
@@ -77,16 +79,19 @@ final case class ViewResult[Key, Value, Doc](total_rows: Int,
     new WithFilter(p)
 
   class WithFilter(p: Row[Key, Value, Doc] => Boolean) {
+
     def foreach(f: Row[Key, Value, Doc] => Unit): Unit =
       for {
         row <- rows
         if p(row)
       } f(row)
+
     def map[Key1, Value1, Doc1](f: Row[Key, Value, Doc] => Row[Key1, Value1, Doc1]): ViewResult[Key1, Value1, Doc1] =
       ViewResult(rows.size, offset, for {
         row <- rows
         if p(row)
       } yield f(row))
+
     def flatMap[Key1, Value1, Doc1](f: Row[Key, Value, Doc] => ViewResult[Key1, Value1, Doc1]): ViewResult[Key1, Value1, Doc1] = {
       val rows1 = for {
         row <- rows
@@ -95,14 +100,17 @@ final case class ViewResult[Key, Value, Doc](total_rows: Int,
       } yield row1
       ViewResult(rows1.size, offset, rows1)
     }
+
     def withFilter(q: Row[Key, Value, Doc] => Boolean): WithFilter =
       new WithFilter(row => p(row) && q(row))
+
   }
 
 }
 
-case class Row[Key, Value, Doc](id: String,
-                                key: Key,
-                                value: Value,
-                                doc: Option[Doc] = None)
+case class Row[Key, Value, Doc](
+  id: String,
+  key: Key,
+  value: Value,
+  doc: Option[Doc] = None)
 

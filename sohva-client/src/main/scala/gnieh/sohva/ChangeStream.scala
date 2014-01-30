@@ -46,7 +46,6 @@ abstract class ChangeStream {
   /** Returns a change stream that is filtered by the given predicate */
   def filter(p: Tuple2[String, Option[JObject]] => Boolean): ChangeStream
 
-
   /** Unregisters the change handler identifier by the given identifier */
   def unregister(id: Int)
 

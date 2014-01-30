@@ -61,7 +61,7 @@ trait CouchDB[Result[_]] {
   def _config: Result[Configuration]
 
   /** Returns the configuration section identified by its name
-   * (an empty map is returned if the section does not exist)
+   *  (an empty map is returned if the section does not exist)
    */
   def _config(section: String): Result[Map[String, String]]
 
@@ -97,3 +97,4 @@ final case class ErrorResult(id: Option[String], error: String, reason: String) 
 final case class CouchInfo(couchdb: String, version: String)
 
 private[sohva] final case class Uuids(uuids: List[String])
+

@@ -31,7 +31,7 @@ import java.net.URL
  *  @author Lucas Satabin
  */
 class Replicator(name: String, couch: CouchDB, credit: Int, strategy: Strategy)
-  extends Database(name, couch, credit, strategy) with gnieh.sohva.Replicator[AsyncResult] {
+    extends Database(name, couch, credit, strategy) with gnieh.sohva.Replicator[AsyncResult] {
 
   def start(replication: Replication): AsyncResult[Option[Replication]] =
     saveDoc(replication)

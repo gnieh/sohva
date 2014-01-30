@@ -23,13 +23,13 @@ import net.liftweb.json._
 
 import scala.collection.mutable.Map
 
-/** The original change stream (meaning unfiltered on the client side
+/** The original change stream (meaning unfiltered) on the client side
  *  which contains the active connection to the database
  *
  *  @author Lucas Satabin
  */
 class OriginalChangeStream(database: Database,
-                           filter: Option[String]) extends ChangeStream {
+    filter: Option[String]) extends ChangeStream {
 
   import database.couch.serializer.formats
 
@@ -49,7 +49,7 @@ class OriginalChangeStream(database: Database,
       "feed" -> "continuous",
       "since" -> info.map(_.update_seq.toString).getOrElse("0"),
       "include_docs" -> "true"
-    ) <<? (if(filter.isDefined) List("filter" -> filter.get) else Nil) > handler)
+    ) <<? (if (filter.isDefined) List("filter" -> filter.get) else Nil) > handler)
   } {
     // if the request ends for any reason, close and clear everything
     close
@@ -59,11 +59,11 @@ class OriginalChangeStream(database: Database,
   private[this] def onChange(json: String) = synchronized {
     json match {
       case change(seq, id, rev, deleted, doc) if !closed =>
-        for((_, f) <- actions)
+        for ((_, f) <- actions)
           f(id, doc)
       case last_seq(seq) =>
-      case _ =>
-        // ignore other messages
+      case _             =>
+      // ignore other messages
     }
   }
 
@@ -83,7 +83,7 @@ class OriginalChangeStream(database: Database,
   def closed = _closed
 
   def foreach(f: Tuple2[String, Option[JObject]] => Unit): Int = synchronized {
-    if(!closed) {
+    if (!closed) {
       require(f != null, "Function must not be null")
       val fId = f.hashCode
       actions(fId) = f
@@ -97,7 +97,7 @@ class OriginalChangeStream(database: Database,
     new FilteredChangeStream(p, this)
 
   def unregister(id: Int): Unit = synchronized {
-    if(!closed)
+    if (!closed)
       actions -= id
   }
 
@@ -114,7 +114,7 @@ class FilteredChangeStream(p: Tuple2[String, Option[JObject]] => Boolean, origin
       case (id, doc) if p(id, doc) =>
         f(id, doc)
       case _ =>
-        // do nothing
+      // do nothing
     }
 
   def filter(p: Tuple2[String, Option[JObject]] => Boolean): ChangeStream =

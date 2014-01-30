@@ -67,17 +67,20 @@ case class UserCtx(name: String, roles: List[String])
  *  the handler used and the authentication method
  */
 case class AuthInfo(authentication_db: String,
-                    authentication_handlers: List[String],
-                    authenticated: String)
+  authentication_handlers: List[String],
+  authenticated: String)
 
 /** A couchdb user has a name, a password and a lit of roles. */
 case class UserInfo(val name: String,
-                     val roles: List[String])
+  val roles: List[String])
 
-case class CouchUser(val name: String,
-                     val password: String,
-                     val roles: List[String],
-                     val `type`: String = "user") extends IdRev {
+case class CouchUser(
+    val name: String,
+    val password: String,
+    val roles: List[String],
+    val `type`: String = "user") extends IdRev {
+
   val _id = "org.couchdb.user:" + name
+
 }
 

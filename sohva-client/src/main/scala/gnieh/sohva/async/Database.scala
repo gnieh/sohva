@@ -48,15 +48,17 @@ import gnieh.diffson.JsonPatch
  *  It also exposes the change handler interface, that allows people to react to change notifications. This
  *  is a low-level API, that handles raw Json objects
  *
- * @param credit The credit assigned to the conflict resolver. It represents the number of times the client tries to save the document before giving up.
+ *  @param credit The credit assigned to the conflict resolver. It represents the number of times the client tries to save the document before giving up.
  *  @param strategy The strategy being used to resolve conflicts
  *
  *  @author Lucas Satabin
  */
-class Database private[sohva](val name: String,
-                              val couch: CouchDB,
-                              val credit: Int,
-                              val strategy: Strategy) extends gnieh.sohva.Database[AsyncResult] {
+class Database private[sohva] (
+  val name: String,
+  val couch: CouchDB,
+  val credit: Int,
+  val strategy: Strategy)
+    extends gnieh.sohva.Database[AsyncResult] {
 
   import couch.serializer
 
@@ -64,7 +66,7 @@ class Database private[sohva](val name: String,
    * to save the document after resolution process */
   private object resolver extends CountingRetry {
     // only retry if a conflict occurred, other errors are considered as 'Success'
-    val saveOk = new Success[Either[(Int, Option[ErrorResult]), String]] ({
+    val saveOk = new Success[Either[(Int, Option[ErrorResult]), String]]({
       case Left((409, _)) => false
       case _              => true
     })
@@ -102,7 +104,7 @@ class Database private[sohva](val name: String,
   }
 
   def info: AsyncResult[Option[InfoResult]] =
-    for(info <- couch.optHttp(request).right)
+    for (info <- couch.optHttp(request).right)
       yield info.map(infoResult)
 
   @inline
@@ -119,10 +121,10 @@ class Database private[sohva](val name: String,
     } yield ok
 
   private[this] def create(exist: Boolean) =
-    if(exist) {
+    if (exist) {
       Future.successful(Right(false))
     } else {
-      for(result <- couch.http(request.PUT).right)
+      for (result <- couch.http(request.PUT).right)
         yield couch.ok(result)
     }
 
@@ -130,27 +132,27 @@ class Database private[sohva](val name: String,
     for {
       exist <- exists.right
       ok <- delete(exist)
-      } yield ok
+    } yield ok
 
   private[this] def delete(exist: Boolean) =
-    if(exist) {
-      for(result <- couch.http(request.DELETE).right)
+    if (exist) {
+      for (result <- couch.http(request.DELETE).right)
         yield couch.ok(result)
     } else {
       Future.successful(Right(false))
     }
 
   def _all_docs(key: Option[String] = None,
-                keys: List[String] = Nil,
-                startkey: Option[String] = None,
-                startkey_docid: Option[String] = None,
-                endkey: Option[String] = None,
-                endkey_docid: Option[String] = None,
-                limit: Int = -1,
-                stale: Option[String] = None,
-                descending: Boolean = false,
-                skip: Int = 0,
-                inclusive_end: Boolean = true): AsyncResult[List[String]] =
+    keys: List[String] = Nil,
+    startkey: Option[String] = None,
+    startkey_docid: Option[String] = None,
+    endkey: Option[String] = None,
+    endkey_docid: Option[String] = None,
+    limit: Int = -1,
+    stale: Option[String] = None,
+    descending: Boolean = false,
+    skip: Int = 0,
+    inclusive_end: Boolean = true): AsyncResult[List[String]] =
     for {
       res <- builtInView[String, Map[String, String], Any]("_all_docs").query(
         key = key,
@@ -165,16 +167,16 @@ class Database private[sohva](val name: String,
         skip = skip,
         inclusive_end = inclusive_end
       ).right
-    } yield for(Row(id, _, _, _) <- res.rows) yield id
+    } yield for (Row(id, _, _, _) <- res.rows) yield id
 
   def getDocById[T: Manifest](id: String, revision: Option[String] = None): AsyncResult[Option[T]] =
-    for(raw <- getRawDocById(id, revision).right)
+    for (raw <- getRawDocById(id, revision).right)
       yield raw.map(docResult[T])
 
   def getDocsById[T: Manifest](ids: List[String]): AsyncResult[List[T]] =
     for {
       res <- builtInView[String, Map[String, String], T]("_all_docs").query(keys = ids, include_docs = true).right
-      } yield res.rows.flatMap { case Row(_, _, _, doc) => doc }
+    } yield res.rows.flatMap { case Row(_, _, _, doc) => doc }
 
   def getRawDocById(id: String, revision: Option[String] = None): AsyncResult[Option[String]] =
     couch.optHttp(request / id <<? revision.map("rev" -> _).toList)
@@ -226,16 +228,16 @@ class Database private[sohva](val name: String,
     serializer.fromJson[List[DbResult]](json)
 
   def copy(origin: String, target: String, originRev: Option[String] = None, targetRev: Option[String] = None): AsyncResult[Boolean] =
-    for(
-         res <- couch.http((request / origin).subject.setMethod("COPY")
-           <:< Map("Destination" -> (target + targetRev.map("?rev=" + _).getOrElse("")))
-           <<? originRev.map("rev" -> _).toList
-         ).right)
-      yield couch.ok(res)
+    for (
+      res <- couch.http((request / origin).subject.setMethod("COPY")
+        <:< Map("Destination" -> (target + targetRev.map("?rev=" + _).getOrElse("")))
+        <<? originRev.map("rev" -> _).toList
+      ).right
+    ) yield couch.ok(res)
 
   def patchDoc[T <: IdRev: Manifest](id: String, rev: String, patch: JsonPatch): AsyncResult[Option[T]] =
     for {
-      doc <- getDocById[T](id,Some(rev)).right
+      doc <- getDocById[T](id, Some(rev)).right
       res <- patchDoc(doc, patch).right
     } yield res
 
@@ -245,7 +247,7 @@ class Database private[sohva](val name: String,
   }
 
   def deleteDoc[T <% IdRev](doc: T): AsyncResult[Boolean] =
-    for(res <- couch.http((request / doc._id).DELETE <<? Map("rev" -> doc._rev.getOrElse(""))).right)
+    for (res <- couch.http((request / doc._id).DELETE <<? Map("rev" -> doc._rev.getOrElse(""))).right)
       yield couch.ok(res)
 
   def deleteDoc(id: String): AsyncResult[Boolean] =
@@ -257,7 +259,7 @@ class Database private[sohva](val name: String,
   private[this] def delete(rev: Option[String], id: String) =
     rev match {
       case Some(rev) =>
-        for(res <- couch.http((request / id).DELETE <<? Map("rev" -> rev)).right)
+        for (res <- couch.http((request / id).DELETE <<? Map("rev" -> rev)).right)
           yield couch.ok(res)
       case None =>
         Future.successful(Right(false))
@@ -279,7 +281,6 @@ class Database private[sohva](val name: String,
       ).right
     } yield bulkSaveResult(raw)
 
-
   def attachTo(docId: String, file: File, contentType: String): AsyncResult[Boolean] =
     // first get the last revision of the document (if it exists)
     for {
@@ -298,13 +299,13 @@ class Database private[sohva](val name: String,
     }
 
   def attachTo(docId: String,
-               attachment: String,
-               stream: InputStream,
-               contentType: String): AsyncResult[Boolean] = {
+    attachment: String,
+    stream: InputStream,
+    contentType: String): AsyncResult[Boolean] = {
     // create a temporary file with the content of the input stream
     val file = File.createTempFile(attachment, null)
-    for(fos <- managed(new FileOutputStream(file))) {
-      for(bis <- managed(new BufferedInputStream(stream))) {
+    for (fos <- managed(new FileOutputStream(file))) {
+      for (bis <- managed(new BufferedInputStream(stream))) {
         val array = new Array[Byte](bis.available)
         bis.read(array)
         fos.write(array)
@@ -326,20 +327,21 @@ class Database private[sohva](val name: String,
   private[this] def deleteAttachment(docId: String, attachment: String, rev: Option[String]) =
     rev match {
       case Some(r) =>
-        for(res <- couch.http((request / docId / attachment <<?
-          List("rev" -> r)).DELETE).right)
-            yield couch.ok(res)
+        for (
+          res <- couch.http((request / docId / attachment <<?
+            List("rev" -> r)).DELETE).right
+        ) yield couch.ok(res)
       case None =>
         // doc does not exist? well... good... just do nothing
         Future.successful(Right(false))
     }
 
   def securityDoc: AsyncResult[SecurityDoc] =
-    for(doc <- couch.http(request / "_security").right)
+    for (doc <- couch.http(request / "_security").right)
       yield extractSecurityDoc(doc)
 
   def saveSecurityDoc(doc: SecurityDoc): AsyncResult[Boolean] =
-    for(res <- couch.http((request / "_security" << serializer.toJson(doc)).PUT).right)
+    for (res <- couch.http((request / "_security" << serializer.toJson(doc)).PUT).right)
       yield couch.ok(res)
 
   def design(designName: String, language: String = "javascript"): Design =

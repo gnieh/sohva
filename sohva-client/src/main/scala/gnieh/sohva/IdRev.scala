@@ -21,6 +21,7 @@ package gnieh.sohva
  *  @author Lucas Satabin
  */
 trait IdRev {
+
   val _id: String
   var _rev: Option[String] = None
 

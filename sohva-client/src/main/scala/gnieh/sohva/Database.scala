@@ -33,7 +33,7 @@ import gnieh.diffson.JsonPatch
  *  It also exposes the change handler interface, that allows people to react to change notifications. This
  *  is a low-level API, that handles raw Json objects
  *
- * @param credit The credit assigned to the conflict resolver. It represents the number of times the client tries to save the document before giving up.
+ *  @param credit The credit assigned to the conflict resolver. It represents the number of times the client tries to save the document before giving up.
  *  @param strategy The strategy being used to resolve conflicts
  *
  *  @author Lucas Satabin
@@ -70,16 +70,16 @@ trait Database[Result[_]] {
 
   /** Returns the list of identifiers of the documents in this database */
   def _all_docs(key: Option[String] = None,
-                keys: List[String] = Nil,
-                startkey: Option[String] = None,
-                startkey_docid: Option[String] = None,
-                endkey: Option[String] = None,
-                endkey_docid: Option[String] = None,
-                limit: Int = -1,
-                stale: Option[String] = None,
-                descending: Boolean = false,
-                skip: Int = 0,
-                inclusive_end: Boolean = true): Result[List[String]]
+    keys: List[String] = Nil,
+    startkey: Option[String] = None,
+    startkey_docid: Option[String] = None,
+    endkey: Option[String] = None,
+    endkey_docid: Option[String] = None,
+    limit: Int = -1,
+    stale: Option[String] = None,
+    descending: Boolean = false,
+    skip: Int = 0,
+    inclusive_end: Boolean = true): Result[List[String]]
 
   /** Returns the document identified by the given id if it exists */
   def getDocById[T: Manifest](id: String, revision: Option[String] = None): Result[Option[T]]
@@ -146,9 +146,9 @@ trait Database[Result[_]] {
    *  This method returns `true` iff the file was attached to the document.
    */
   def attachTo(docId: String,
-               attachment: String,
-               stream: InputStream,
-               contentType: String): Result[Boolean]
+    attachment: String,
+    stream: InputStream,
+    contentType: String): Result[Boolean]
 
   /** Returns the given attachment for the given docId.
    *  It returns the mime type if any given in the response and the input stream
@@ -177,19 +177,21 @@ trait Database[Result[_]] {
 
 }
 
-final case class InfoResult(compact_running: Boolean,
-                            db_name: String,
-                            disk_format_version: Int,
-                            disk_size: Int,
-                            doc_count: Int,
-                            doc_del_count: Int,
-                            instance_start_time: String,
-                            purge_seq: Int,
-                            update_seq: Int)
+final case class InfoResult(
+  compact_running: Boolean,
+  db_name: String,
+  disk_format_version: Int,
+  disk_size: Int,
+  doc_count: Int,
+  doc_del_count: Int,
+  instance_start_time: String,
+  purge_seq: Int,
+  update_seq: Int)
 
-final case class DocUpdate(ok: Boolean,
-                           id: String,
-                           rev: String)
+final case class DocUpdate(
+  ok: Boolean,
+  id: String,
+  rev: String)
 
 private[sohva] final case class BulkDocs[T](rows: List[BulkDocRow[T]])
 

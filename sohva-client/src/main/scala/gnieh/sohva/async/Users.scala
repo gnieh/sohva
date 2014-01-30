@@ -36,12 +36,12 @@ class Users(couch: CouchDB) extends gnieh.sohva.Users[AsyncResult] {
   private def userDb = couch.database(dbName)
 
   def add(name: String,
-          password: String,
-          roles: List[String] = Nil): AsyncResult[Boolean] = {
+    password: String,
+    roles: List[String] = Nil): AsyncResult[Boolean] = {
 
     val user = CouchUser(name, password, roles)
 
-    for(res <- http((request / dbName / user._id << serializer.toJson(user)).PUT).right)
+    for (res <- http((request / dbName / user._id << serializer.toJson(user)).PUT).right)
       yield ok(res)
 
   }
@@ -86,7 +86,7 @@ class Users(couch: CouchDB) extends gnieh.sohva.Users[AsyncResult] {
         user match {
           case PasswordResetUser(_id, _rev, name, roles, savedToken, savedSalt, validity) =>
             val saltedToken = hash(token + savedSalt)
-            if(new Date().before(validity) && savedToken == saltedToken) {
+            if (new Date().before(validity) && savedToken == saltedToken) {
               // save the user with the new password
               val newUser = new CouchUser(name, password, roles = roles).withRev(_rev)
               couch.http((request / dbName / _id << serializer.toJson(newUser)).PUT).right.map(ok _)

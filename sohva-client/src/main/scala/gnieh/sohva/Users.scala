@@ -32,8 +32,8 @@ trait Users[Result[_]] {
    *  and returns the new instance.
    */
   def add(name: String,
-          password: String,
-          roles: List[String] = Nil): Result[Boolean]
+    password: String,
+    roles: List[String] = Nil): Result[Boolean]
 
   /** Deletes the given user from the database. */
   def delete(name: String): Result[Boolean]
@@ -49,3 +49,4 @@ trait Users[Result[_]] {
   def resetPassword(name: String, token: String, password: String): Result[Boolean]
 
 }
+

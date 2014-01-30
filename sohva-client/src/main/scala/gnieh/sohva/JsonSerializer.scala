@@ -31,32 +31,33 @@ case class SohvaJsonException(msg: String, inner: Exception) extends Exception(m
  */
 class JsonSerializer(version: String, custom: List[SohvaSerializer[_]]) {
 
-  implicit val formats = new DefaultFormats {
-    override def dateFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SS")
-  } +
-  FieldSerializer[IdRev]() +
-  FieldSerializer[Attachments]() +
-  DbResultSerializer +
-  new UserSerializer(version) +
-  new SecurityDocSerializer(version) +
-  ChangeSerializer +
-  ConfigurationSerializer +
-  DbRefSerializer ++
-  custom.map(_.serializer(version))
+  implicit val formats =
+    new DefaultFormats {
+      override def dateFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SS")
+    } +
+      FieldSerializer[IdRev]() +
+      FieldSerializer[Attachments]() +
+      DbResultSerializer +
+      new UserSerializer(version) +
+      new SecurityDocSerializer(version) +
+      ChangeSerializer +
+      ConfigurationSerializer +
+      DbRefSerializer ++
+      custom.map(_.serializer(version))
 
   import Implicits._
 
   /** Serializes the given object to a json string */
   def toJson[T](obj: T) = obj match {
-    case i: Int => compact(render(JInt(i)))
-    case i: BigInt => compact(render(JInt(i)))
-    case l: Long => compact(render(JInt(l)))
-    case d: Double => compact(render(JDouble(d)))
-    case f: Float => compact(render(JDouble(f)))
+    case i: Int        => compact(render(JInt(i)))
+    case i: BigInt     => compact(render(JInt(i)))
+    case l: Long       => compact(render(JInt(l)))
+    case d: Double     => compact(render(JDouble(d)))
+    case f: Float      => compact(render(JDouble(f)))
     case d: BigDecimal => compact(render(JDouble(d.doubleValue)))
-    case b: Boolean => compact(render(JBool(b)))
-    case s: String => compact(render(JString(s)))
-    case _ => compact(render(Extraction.decompose(obj)))
+    case b: Boolean    => compact(render(JBool(b)))
+    case s: String     => compact(render(JString(s)))
+    case _             => compact(render(Extraction.decompose(obj)))
   }
 
   /** Deserializes from the given json string to the object if possible or throws a
@@ -73,12 +74,9 @@ class JsonSerializer(version: String, custom: List[SohvaSerializer[_]]) {
   def fromCouchJson(json: String) = fromJsonOpt[JObject](json) match {
     case Some(obj) =>
       (obj \ "_id", obj \ "_rev") match {
-        case (JString(_id), JString(_rev)) =>
-          Some(_id -> Some(_rev))
-        case (JString(_id), JNothing) =>
-          Some(_id -> None)
-        case (_, _) =>
-          None
+        case (JString(_id), JString(_rev)) => Some(_id -> Some(_rev))
+        case (JString(_id), JNothing)      => Some(_id -> None)
+        case (_, _)                        => None
       }
     case None =>
       None
@@ -112,8 +110,10 @@ private object DbResultSerializer extends Serializer[DbResult] {
 /** The schema of user document is more flexible now, but in couchdb pre 1.2
  *  one had to compute the password salt and SHA himself
  *
- *  @author Lucas Satabin */
+ *  @author Lucas Satabin
+ */
 private class UserSerializer(version: String) extends Serializer[CouchUser] {
+
   private val CouchUserClass = classOf[CouchUser]
 
   def deserialize(implicit format: Formats): PartialFunction[(TypeInfo, JValue), CouchUser] = {
@@ -147,7 +147,8 @@ private class UserSerializer(version: String) extends Serializer[CouchUser] {
 
 /** Before couchdb 1.2, the `members` field of security documents was named `readers`
  *
- *  @author Lucas Satabin */
+ *  @author Lucas Satabin
+ */
 private class SecurityDocSerializer(version: String) extends Serializer[SecurityDoc] {
 
   private val SecurityDocClass = classOf[SecurityDoc]
@@ -183,7 +184,7 @@ private object ChangeSerializer extends Serializer[Change] {
       val rev = (json \ "changes") match {
         // changes of the form [{"rev": "1-ef334230a0d99ee043"}]
         case JArray(List(JObject(List(JField("rev", JString(rev)))))) => rev
-        case _                          => throw new MappingException("Malformed change object, rev field is not a single-element array")
+        case _ => throw new MappingException("Malformed change object, rev field is not a single-element array")
       }
       val deleted = (json \ "deleted") match {
         case JBool(b) => b
@@ -192,7 +193,7 @@ private object ChangeSerializer extends Serializer[Change] {
       }
       val doc = (json \ "doc") match {
         case obj: JObject if !deleted => Some(obj)
-        case _            => None
+        case _                        => None
       }
       new Change(seq, id, rev, deleted, doc)
   }
@@ -253,11 +254,12 @@ private object ConfigurationSerializer extends Serializer[Configuration] {
 
 }
 
-
 /** Implement this trait to define a custom serializer that may
  *  handle object differently based on the CouchDB version
  *
- *  @author Lucas Satabin */
+ *  @author Lucas Satabin
+ */
 trait SohvaSerializer[T] {
   def serializer(couchVersion: String): Serializer[T]
 }
+

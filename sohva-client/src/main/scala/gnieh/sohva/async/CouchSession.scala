@@ -41,19 +41,20 @@ class CouchSession protected[sohva] (val couch: CouchClient) extends CouchDB wit
   val serializer = couch.serializer
 
   def login(name: String, password: String): AsyncResult[Boolean] =
-    for(res <- _http(request / "_session" <<
-         Map("name" -> name, "password" -> password) <:<
-         Map("Accept" -> "application/json, text/javascript, */*",
-           "Cookie" -> "AuthSession=") > setCookie _))
-             yield Right(res)
+    for (
+      res <- _http(request / "_session" <<
+        Map("name" -> name, "password" -> password) <:<
+        Map("Accept" -> "application/json, text/javascript, */*",
+          "Cookie" -> "AuthSession=") > setCookie _)
+    ) yield Right(res)
 
   def logout: AsyncResult[Boolean] =
-    for(res <- _http((request / "_session").DELETE > setCookie _))
+    for (res <- _http((request / "_session").DELETE > setCookie _))
       yield Right(res)
 
   def currentUser: AsyncResult[Option[UserInfo]] = userContext.right.flatMap {
     case UserCtx(name, _) if name != null =>
-     couch.http(request / "_users" / ("org.couchdb.user:" + name)).right.map(user)
+      couch.http(request / "_users" / ("org.couchdb.user:" + name)).right.map(user)
     case _ => Future.successful(Right(None))
   }
 
@@ -71,7 +72,7 @@ class CouchSession protected[sohva] (val couch: CouchClient) extends CouchDB wit
   def isServerAdmin: AsyncResult[Boolean] = hasRole("_admin")
 
   def userContext: AsyncResult[UserCtx] =
-   couch.http((request / "_session")).right.map(userCtx)
+    couch.http((request / "_session")).right.map(userCtx)
 
   // helper methods
 

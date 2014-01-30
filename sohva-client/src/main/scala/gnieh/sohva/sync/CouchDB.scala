@@ -112,8 +112,8 @@ abstract class CouchDB private[sync] (wrapped: ACouchDB) extends gnieh.sohva.Cou
 
     @inline
     def add(name: String,
-            password: String,
-            roles: List[String] = Nil): Boolean =
+      password: String,
+      roles: List[String] = Nil): Boolean =
       synced(wrapped.users.add(name, password, roles))
 
     @inline
@@ -131,5 +131,4 @@ abstract class CouchDB private[sync] (wrapped: ACouchDB) extends gnieh.sohva.Cou
   }
 
 }
-
 

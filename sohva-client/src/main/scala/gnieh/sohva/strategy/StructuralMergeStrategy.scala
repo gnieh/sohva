@@ -129,7 +129,7 @@ object StructuralMergeStrategy extends Strategy {
       @tailrec
       def loop(ops1: List[Operation], ops2: List[Operation], acc: List[Operation]): List[Operation] = ops1 match {
         case (op @ Replace(path, _)) :: tail1 =>
-          if(modifiesParent(ops2, path)) {
+          if (modifiesParent(ops2, path)) {
             // the path or one of its parent is modified or deleted in the second patch
             loop(tail1, ops2, acc)
           } else {
@@ -143,7 +143,7 @@ object StructuralMergeStrategy extends Strategy {
             op :: acc)
         case (op @ Add(path, _)) :: tail1 =>
           // it was added, if it is also added in the second one, ignore this
-          if(addedIn(ops2, path)) {
+          if (addedIn(ops2, path)) {
             loop(tail1, ops2, acc)
           } else {
             // if the path is an array pointer, also shifts subsequent elements in the array by +1
@@ -191,7 +191,7 @@ object StructuralMergeStrategy extends Strategy {
 
   object ArrayIdx {
     def unapply(p: Pointer): Option[(Pointer, Int)] =
-      if(p.isEmpty) {
+      if (p.isEmpty) {
         // empty pointer is not an index
         None
       } else {

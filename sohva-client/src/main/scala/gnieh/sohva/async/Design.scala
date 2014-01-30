@@ -25,23 +25,23 @@ import Defaults._
  *  @author Lucas Satabin
  */
 class Design(val db: Database,
-             val name: String,
-             val language: String) extends gnieh.sohva.Design[AsyncResult] {
+    val name: String,
+    val language: String) extends gnieh.sohva.Design[AsyncResult] {
 
   import db.couch.serializer
 
   protected[sohva] def request = db.request / "_design" / name.trim
 
   def getDesignDocument: AsyncResult[Option[DesignDoc]] =
-    for(design <- db.couch.optHttp(request).right)
+    for (design <- db.couch.optHttp(request).right)
       yield design.map(designDoc)
 
   def delete: AsyncResult[Boolean] =
     db.deleteDoc("_design/" + name.trim)
 
   def saveView(viewName: String,
-               mapFun: String,
-               reduceFun: Option[String] = None): AsyncResult[Boolean] =
+    mapFun: String,
+    reduceFun: Option[String] = None): AsyncResult[Boolean] =
     saveView(viewName, ViewDoc(mapFun, reduceFun))
 
   def saveView(viewName: String, view: ViewDoc): AsyncResult[Boolean] =
@@ -61,10 +61,10 @@ class Design(val db: Database,
     }
 
   def deleteView(viewName: String): AsyncResult[Boolean] =
-   for {
-     design <- getDesignDocument.right
-     res <- deleteView(design, viewName)
-   } yield res
+    for {
+      design <- getDesignDocument.right
+      res <- deleteView(design, viewName)
+    } yield res
 
   private[this] def deleteView(design: Option[DesignDoc], viewName: String) =
     design match {
@@ -101,7 +101,7 @@ class Design(val db: Database,
   private[this] def deleteValidateFunction(design: Option[DesignDoc]) =
     design match {
       case Some(design) =>
-        for(doc <- db.saveDoc(design.copy(validate_doc_update = None)).right)
+        for (doc <- db.saveDoc(design.copy(validate_doc_update = None)).right)
           yield doc.isDefined
       case None => Future.successful(Right(false))
     }
@@ -131,7 +131,7 @@ class Design(val db: Database,
   private[this] def deleteFilter(design: Option[DesignDoc], filterName: String) =
     design match {
       case Some(design) =>
-        for(doc <- db.saveDoc(design.copy(filters = design.filters - filterName)).right)
+        for (doc <- db.saveDoc(design.copy(filters = design.filters - filterName)).right)
           yield doc.isDefined
       case None =>
         Future.successful(Right(false))

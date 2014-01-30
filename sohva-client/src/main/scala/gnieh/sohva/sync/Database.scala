@@ -38,7 +38,7 @@ import gnieh.diffson.JsonPatch
  *
  *  @author Lucas Satabin
  */
-class Database private[sohva](wrapped: ADatabase) extends gnieh.sohva.Database[Identity] {
+class Database private[sohva] (wrapped: ADatabase) extends gnieh.sohva.Database[Identity] {
 
   @inline
   val name = wrapped.name
@@ -70,16 +70,16 @@ class Database private[sohva](wrapped: ADatabase) extends gnieh.sohva.Database[I
 
   @inline
   def _all_docs(key: Option[String] = None,
-                keys: List[String] = Nil,
-                startkey: Option[String] = None,
-                startkey_docid: Option[String] = None,
-                endkey: Option[String] = None,
-                endkey_docid: Option[String] = None,
-                limit: Int = -1,
-                stale: Option[String] = None,
-                descending: Boolean = false,
-                skip: Int = 0,
-                inclusive_end: Boolean = true): List[String] =
+    keys: List[String] = Nil,
+    startkey: Option[String] = None,
+    startkey_docid: Option[String] = None,
+    endkey: Option[String] = None,
+    endkey_docid: Option[String] = None,
+    limit: Int = -1,
+    stale: Option[String] = None,
+    descending: Boolean = false,
+    skip: Int = 0,
+    inclusive_end: Boolean = true): List[String] =
     synced(
       wrapped._all_docs(
         key = key,
@@ -150,9 +150,9 @@ class Database private[sohva](wrapped: ADatabase) extends gnieh.sohva.Database[I
 
   @inline
   def attachTo(docId: String,
-               attachment: String,
-               stream: InputStream,
-               contentType: String): Boolean =
+    attachment: String,
+    stream: InputStream,
+    contentType: String): Boolean =
     synced(wrapped.attachTo(docId, attachment, stream, contentType))
 
   @inline

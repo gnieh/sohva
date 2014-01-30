@@ -17,4 +17,6 @@ package gnieh.sohva
 
 class CouchException(val status: Int, val detail: Option[ErrorResult])
   extends Exception("status: " + status + "\nbecause: " + detail)
+
 class ConflictException(detail: Option[ErrorResult]) extends CouchException(409, detail)
+

@@ -29,7 +29,7 @@ class View[Key: Manifest, Value: Manifest, Doc: Manifest](
   val design: String,
   val db: Database,
   val view: String)
-extends gnieh.sohva.View[AsyncResult, Key, Value, Doc] {
+    extends gnieh.sohva.View[AsyncResult, Key, Value, Doc] {
 
   import db.couch.serializer
   import serializer.formats
@@ -37,21 +37,21 @@ extends gnieh.sohva.View[AsyncResult, Key, Value, Doc] {
   protected[this] def request = db.request / "_design" / design / "_view" / view
 
   def query(key: Option[Key] = None,
-            keys: List[Key] = Nil,
-            startkey: Option[Key] = None,
-            startkey_docid: Option[String] = None,
-            endkey: Option[Key] = None,
-            endkey_docid: Option[String] = None,
-            limit: Int = -1,
-            stale: Option[String] = None,
-            descending: Boolean = false,
-            skip: Int = 0,
-            group: Boolean = false,
-            group_level: Int = -1,
-            reduce: Boolean = true,
-            include_docs: Boolean = false,
-            inclusive_end: Boolean = true,
-            update_seq: Boolean = false): AsyncResult[ViewResult[Key, Value, Doc]] = {
+    keys: List[Key] = Nil,
+    startkey: Option[Key] = None,
+    startkey_docid: Option[String] = None,
+    endkey: Option[Key] = None,
+    endkey_docid: Option[String] = None,
+    limit: Int = -1,
+    stale: Option[String] = None,
+    descending: Boolean = false,
+    skip: Int = 0,
+    group: Boolean = false,
+    group_level: Int = -1,
+    reduce: Boolean = true,
+    include_docs: Boolean = false,
+    inclusive_end: Boolean = true,
+    update_seq: Boolean = false): AsyncResult[ViewResult[Key, Value, Doc]] = {
 
     // build options
     val options = List(
@@ -76,8 +76,8 @@ extends gnieh.sohva.View[AsyncResult, Key, Value, Doc] {
       .filter(_ != null) // just in case somebody gave Some(null)...
       .map { case (name, value) => (name, value.toString) }
 
-    for(res <- db.couch.http(request <<? options).right)
-      yield viewResult[Key,Value,Doc](res)
+    for (res <- db.couch.http(request <<? options).right)
+      yield viewResult[Key, Value, Doc](res)
 
   }
 
@@ -90,12 +90,12 @@ extends gnieh.sohva.View[AsyncResult, Key, Value, Doc] {
       offset <- (ast \ "offset").extractOpt[Int]
       JArray(rows) = (ast \ "rows")
     } yield ViewResult(total_rows, offset, rows.flatMap { row =>
-        for {
-          id <- (row \ "id").extractOpt[String]
-          key <- (row \ "key").extractOpt[Key]
-          value <- (row \ "value").extractOpt[Value]
-          doc = (row \ "doc").extractOpt[Doc]
-        } yield Row(id, key, value, doc)
+      for {
+        id <- (row \ "id").extractOpt[String]
+        key <- (row \ "key").extractOpt[Key]
+        value <- (row \ "value").extractOpt[Value]
+        doc = (row \ "doc").extractOpt[Doc]
+      } yield Row(id, key, value, doc)
     })
     res.getOrElse(ViewResult(0, 0, Nil))
   }
@@ -108,9 +108,8 @@ extends gnieh.sohva.View[AsyncResult, Key, Value, Doc] {
  */
 private class BuiltInView[Key: Manifest, Value: Manifest, Doc: Manifest](
   db: Database,
-  view: String
-)
-extends View[Key, Value, Doc]("", db, view) {
+  view: String)
+    extends View[Key, Value, Doc]("", db, view) {
 
   override protected[this] def request = db.request / view
 

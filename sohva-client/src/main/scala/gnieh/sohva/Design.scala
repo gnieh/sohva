@@ -38,8 +38,8 @@ trait Design[Result[_]] {
    *  If the design does not exist yet, it is created.
    */
   def saveView(viewName: String,
-               mapFun: String,
-               reduceFun: Option[String] = None): Result[Boolean]
+    mapFun: String,
+    reduceFun: Option[String] = None): Result[Boolean]
 
   /** Creates or updates the view in this design with the given name.
    *  If the design does not exist yet, it is created.
@@ -75,12 +75,13 @@ trait Design[Result[_]] {
 
 }
 
-case class DesignDoc(_id: String,
-                     language: String,
-                     views: Map[String, ViewDoc] = Map(),
-                     validate_doc_update: Option[String] = None,
-                     updates: Map[String, String] = Map(),
-                     filters: Map[String, String] = Map(),
-                     shows: Map[String, String] = Map(),
-                     lists: Map[String, String] = Map()) extends IdRev
+case class DesignDoc(
+  _id: String,
+  language: String,
+  views: Map[String, ViewDoc] = Map(),
+  validate_doc_update: Option[String] = None,
+  updates: Map[String, String] = Map(),
+  filters: Map[String, String] = Map(),
+  shows: Map[String, String] = Map(),
+  lists: Map[String, String] = Map()) extends IdRev
 

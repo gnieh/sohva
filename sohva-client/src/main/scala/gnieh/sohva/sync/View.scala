@@ -28,25 +28,25 @@ import duration._
  *  @author Lucas Satabin
  */
 class View[Key: Manifest, Value: Manifest, Doc: Manifest](wrapped: AView[Key, Value, Doc])
-extends gnieh.sohva.View[Identity, Key, Value, Doc] {
+    extends gnieh.sohva.View[Identity, Key, Value, Doc] {
 
   @inline
   def query(key: Option[Key] = None,
-            keys: List[Key] = Nil,
-            startkey: Option[Key] = None,
-            startkey_docid: Option[String] = None,
-            endkey: Option[Key] = None,
-            endkey_docid: Option[String] = None,
-            limit: Int = -1,
-            stale: Option[String] = None,
-            descending: Boolean = false,
-            skip: Int = 0,
-            group: Boolean = false,
-            group_level: Int = -1,
-            reduce: Boolean = true,
-            include_docs: Boolean = false,
-            inclusive_end: Boolean = true,
-            update_seq: Boolean = false): ViewResult[Key, Value, Doc] =
+    keys: List[Key] = Nil,
+    startkey: Option[Key] = None,
+    startkey_docid: Option[String] = None,
+    endkey: Option[Key] = None,
+    endkey_docid: Option[String] = None,
+    limit: Int = -1,
+    stale: Option[String] = None,
+    descending: Boolean = false,
+    skip: Int = 0,
+    group: Boolean = false,
+    group_level: Int = -1,
+    reduce: Boolean = true,
+    include_docs: Boolean = false,
+    inclusive_end: Boolean = true,
+    update_seq: Boolean = false): ViewResult[Key, Value, Doc] =
 
     synced(wrapped.query(key = key,
       keys = keys,

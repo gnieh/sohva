@@ -43,8 +43,8 @@ class Design(wrapped: ADesign) extends gnieh.sohva.Design[Try] {
 
   @inline
   def saveView(viewName: String,
-               mapFun: String,
-               reduceFun: Option[String] = None): Try[Boolean] =
+    mapFun: String,
+    reduceFun: Option[String] = None): Try[Boolean] =
     synced(wrapped.saveView(viewName, mapFun, reduceFun))
 
   @inline

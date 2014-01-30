@@ -41,7 +41,7 @@ abstract class CouchDB extends gnieh.sohva.CouchDB[AsyncResult] {
   self =>
 
   def info: AsyncResult[CouchInfo] =
-    for(json <- http(request).right)
+    for (json <- http(request).right)
       yield asCouchInfo(json)
 
   def database(name: String, credit: Int = 0, strategy: Strategy = BarneyStinsonStrategy): Database =
@@ -51,39 +51,39 @@ abstract class CouchDB extends gnieh.sohva.CouchDB[AsyncResult] {
     new Replicator(name, this, credit, strategy)
 
   def _all_dbs: AsyncResult[List[String]] =
-    for(dbs <- http(request / "_all_dbs").right)
+    for (dbs <- http(request / "_all_dbs").right)
       yield asStringList(dbs)
 
   def _uuid: AsyncResult[String] =
-    for(uuid <- _uuids(1).right)
+    for (uuid <- _uuids(1).right)
       yield uuid.head
 
   def _uuids(count: Int = 1): AsyncResult[List[String]] =
-    for(uuids <- http(request / "_uuids" <<? Map("count" -> count.toString)).right)
+    for (uuids <- http(request / "_uuids" <<? Map("count" -> count.toString)).right)
       yield asUuidsList(uuids)
 
   def _config: AsyncResult[Configuration] =
-    for(config <- http(request / "_config").right)
+    for (config <- http(request / "_config").right)
       yield serializer.fromJson[Configuration](config)
 
   def _config(section: String): AsyncResult[Map[String, String]] =
-    for(section <- http(request / "_config" / section).right)
+    for (section <- http(request / "_config" / section).right)
       yield serializer.fromJson[Map[String, String]](section)
 
   def _config(section: String, key: String): AsyncResult[Option[String]] =
-    for(section <- _config(section).right)
+    for (section <- _config(section).right)
       yield section.get(key)
 
   def saveConfigValue(section: String, key: String, value: String): AsyncResult[Boolean] =
-    for(res <- http((request / "_config" / section / key << serializer.toJson(value)).PUT).right)
+    for (res <- http((request / "_config" / section / key << serializer.toJson(value)).PUT).right)
       yield ok(res)
 
   def deleteConfigValue(section: String, key: String): AsyncResult[Boolean] =
-    for(res <- http((request / "_config" / section / key).DELETE).right)
+    for (res <- http((request / "_config" / section / key).DELETE).right)
       yield ok(res)
 
   def contains(dbName: String): AsyncResult[Boolean] =
-    for(dbs <- _all_dbs.right)
+    for (dbs <- _all_dbs.right)
       yield dbs.contains(dbName)
 
   // user management section
@@ -117,9 +117,9 @@ abstract class CouchDB extends gnieh.sohva.CouchDB[AsyncResult] {
 
   private def handleOptionalCouchResponse(response: Response): Either[(Int, Option[ErrorResult]), Option[String]] =
     handleCouchResponse(response) match {
-      case Right(v) => Right(Some(v))
+      case Right(v)       => Right(Some(v))
       case Left((404, _)) => Right(None)
-      case Left(err) => Left(err)
+      case Left(err)      => Left(err)
     }
 
   @inline

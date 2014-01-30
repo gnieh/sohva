@@ -23,7 +23,7 @@ import net.liftweb.json._
  *  the newest document (the one the client wants to store) is taken and overrides
  *  the previous revision.
  *
- * @author Lucas Satabin
+ *  @author Lucas Satabin
  *
  */
 object BarneyStinsonStrategy extends Strategy {

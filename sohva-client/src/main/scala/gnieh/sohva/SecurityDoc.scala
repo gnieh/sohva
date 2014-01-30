@@ -23,5 +23,6 @@ package gnieh.sohva
 case class SecurityDoc(admins: SecurityList = EmptySecurityList, members: SecurityList = EmptySecurityList)
 
 case class SecurityList(names: List[String] = Nil, roles: List[String] = Nil)
+
 object EmptySecurityList extends SecurityList()
 

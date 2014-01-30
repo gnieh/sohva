@@ -4,7 +4,9 @@ import sbt._
 import Keys._
 import com.typesafe.sbt.osgi.SbtOsgi._
 import com.typesafe.sbt.osgi.OsgiKeys
+import com.typesafe.sbt.SbtScalariform._
 import sbtunidoc.Plugin._
+import scalariform.formatter.preferences._
 
 import java.io.File
 
@@ -29,6 +31,15 @@ object SohvaBuild extends Build {
     settings(publishSettings: _*)
     settings(unidocSettings: _*)
   ) aggregate(client, testing)
+
+  lazy val scalariformSettings = defaultScalariformSettings ++ Seq(
+    ScalariformKeys.preferences :=
+      ScalariformKeys.preferences.value
+        .setPreference(AlignSingleLineCaseStatements, true)
+        .setPreference(DoubleIndentClassDeclaration, true)
+        .setPreference(PreserveDanglingCloseParenthesis, true)
+        .setPreference(MultilineScaladocCommentsStartOnFirstLine, true)
+  )
 
   lazy val globalDependencies = Seq(
     "org.scalatest" %% "scalatest" % "2.0.M5b" % "test",
@@ -86,7 +97,7 @@ object SohvaBuild extends Build {
       libraryDependencies ++= clientDependencies,
       fork in test := true,
       resourceDirectories in Compile := List()
-    ) settings(osgiSettings: _*) settings (
+    ) settings(osgiSettings: _*) settings(scalariformSettings: _*) settings (
       OsgiKeys.exportPackage := Seq(
         "gnieh.sohva",
         "gnieh.sohva.*"

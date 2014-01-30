@@ -35,10 +35,10 @@ import org.slf4j.LoggerFactory
  *
  */
 class CouchClient(val host: String = "localhost",
-                  val port: Int = 5984,
-                  val ssl: Boolean = false,
-                  val version: String = "1.4",
-                  val custom: List[SohvaSerializer[_]] = Nil) extends CouchDB with gnieh.sohva.CouchClient[AsyncResult] {
+    val port: Int = 5984,
+    val ssl: Boolean = false,
+    val version: String = "1.4",
+    val custom: List[SohvaSerializer[_]] = Nil) extends CouchDB with gnieh.sohva.CouchClient[AsyncResult] {
 
   val serializer = new JsonSerializer(this.version, custom)
 
@@ -47,7 +47,7 @@ class CouchClient(val host: String = "localhost",
     Right(i) <- info
     if CouchVersion(i.version) != CouchVersion(version)
   } {
-    LoggerFactory.getLogger(classOf[CouchClient]).warn("Warning Expected version is "  + version + " but actual server version is " + i.version)
+    LoggerFactory.getLogger(classOf[CouchClient]).warn("Warning Expected version is " + version + " but actual server version is " + i.version)
   }
 
   def startSession =
