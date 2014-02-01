@@ -12,7 +12,7 @@ import java.io.File
 
 object SohvaBuild extends Build {
 
-  val sohvaVersion = "0.5"
+  val sohvaVersion = "0.6-SNAPSHOT"
 
   lazy val sohva = (Project(id = "sohva",
     base = file(".")) settings (
