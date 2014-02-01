@@ -45,10 +45,19 @@ package object sohva {
     val _rev: Option[String]
   }
 
+  @deprecated(message = "Use type CookieSession instead", since = "0.5")
+  type CouchSession[Result[_]] = CookieSession[Result]
+
   implicit def doc2idrev(d: Doc): IdRev =
     new IdRev {
       val _id = d._id
       _rev = d._rev
+    }
+
+  implicit def map2idrev(m: Map[String, Any]): IdRev =
+    new IdRev {
+      val _id = m.get("_id").collect { case s: String => s }.getOrElse("")
+      _rev = m.get("_rev").collect { case s: String => s }
     }
 
   protected[sohva] def bytes2string(bytes: Array[Byte]) =

@@ -24,12 +24,11 @@ import strategy._
 
 object SohvaTests {
   val couch = new CouchClient
-  val session = couch.startSession
+  val session = couch.startCookieSession
   val db =  session.database("sohva-tests")
 }
 
-/** Code to be executed before and after each test */
-abstract class SohvaTestSpec extends FlatSpec {
+abstract class SohvaTestSpec extends FlatSpec with ShouldMatchers {
 
   val couch = SohvaTests.couch
   val session = SohvaTests.session
@@ -46,6 +45,7 @@ class SohvaTestSuite extends Suites(TestBasic,
   TestPasswordReset,
   TestBarneyStinsonStrategy,
   TestViews,
+  TestOAuth,
   TestChanges) with BeforeAndAfterAll {
 
   override def beforeAll() {

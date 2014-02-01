@@ -37,8 +37,15 @@ class CouchClient private[sync] (wrapped: ACouchClient) extends CouchDB(wrapped)
     version: String = "1.4") =
     this(new ACouchClient(host, port, ssl, version))
 
+  def startCookieSession =
+    new CookieSession(wrapped.startCookieSession)
+
+  @deprecated(message = "This method has been deprecated and will be removed in the next version. Please use startCookieSession instead", since = "0.5")
   def startSession =
-    new CouchSession(wrapped.startSession)
+    startCookieSession
+
+  def startOAuthSession(consumerKey: String, consumerSecret: String, token: String, secret: String) =
+    new OAuthSession(consumerKey, consumerSecret, token, secret, wrapped)
 
   def shutdown =
     wrapped.shutdown

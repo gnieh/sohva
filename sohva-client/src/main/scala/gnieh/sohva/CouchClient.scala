@@ -26,8 +26,15 @@ package gnieh.sohva
  */
 trait CouchClient[Result[_]] extends CouchDB[Result] {
 
-  /** Starts a new session to with this client */
-  def startSession: CouchSession[Result]
+  /** Starts a new cookie based session */
+  def startCookieSession: CookieSession[Result]
+
+  /** Start a new cookie based session */
+  @deprecated(message = "This method has been deprecated and will be removed in the next version. Please use startCookieSession instead", since = "0.5")
+  def startSession: CookieSession[Result]
+
+  /** Starts a new OAuth session */
+  def startOAuthSession(consumerKey: String, consumerSecret: String, token: String, secret: String): OAuthSession[Result]
 
   /** Shuts down this instance of couchdb client. */
   def shutdown

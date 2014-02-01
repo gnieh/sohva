@@ -17,35 +17,44 @@ package gnieh.sohva
 package sync
 
 import gnieh.sohva.async.{
-  CouchSession => ACouchSession
+  OAuthSession => AOAuthSession,
+  CouchClient => ACouchClient
 }
 
-/** An instance of a Couch session, that allows the user to login and
- *  send request identified with the login credentials.
- *  This performs a cookie based authentication against the couchdb server.
- *  The couchdb client instance retrieved for this session will send request
- *  authenticated by the user that logged in in this session.
+/** An instance of a Couch session that allows the user to perform authenticated
+ *  operations using OAuth.
  *
  *  @author Lucas Satabin
- *
  */
-class CouchSession private[sync] (wrapped: ACouchSession) extends CouchDB(wrapped) with gnieh.sohva.CouchSession[Identity] {
+class OAuthSession private[sync] (val wrapped: AOAuthSession) extends CouchDB(wrapped) with gnieh.sohva.OAuthSession[Identity] {
 
-  @inline
-  def login(name: String, password: String): Boolean =
-    synced(wrapped.login(name, password))
+  def this(
+    consumerKey: String,
+    consumerSecret: String,
+    token: String,
+    secret: String,
+    couch: ACouchClient) =
+    this(new AOAuthSession(consumerKey, consumerSecret, token, secret, couch))
 
-  @inline
-  def logout: Boolean =
-    synced(wrapped.logout)
+  val consumerKey =
+    wrapped.consumerKey
+
+  val consumerSecret =
+    wrapped.consumerSecret
+
+  val token =
+    wrapped.token
+
+  val secret =
+    wrapped.secret
 
   @inline
   def currentUser: Option[UserInfo] =
     synced(wrapped.currentUser)
 
   @inline
-  def isLoggedIn: Boolean =
-    synced(wrapped.isLoggedIn)
+  def isAuthenticated: Boolean =
+    synced(wrapped.isAuthenticated)
 
   @inline
   def hasRole(role: String): Boolean =
@@ -60,3 +69,4 @@ class CouchSession private[sync] (wrapped: ACouchSession) extends CouchDB(wrappe
     synced(wrapped.userContext)
 
 }
+

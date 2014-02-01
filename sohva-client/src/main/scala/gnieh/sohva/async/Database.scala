@@ -182,7 +182,7 @@ class Database private[sohva] (
     couch.optHttp(request / id <<? revision.map("rev" -> _).toList)
 
   def getDocRevision(id: String): AsyncResult[Option[String]] =
-    couch._http((request / id).HEAD > extractRev _)
+    couch._http((request / id).HEAD, new FunctionHandler(extractRev _))
 
   def getDocRevisions(ids: List[String]): AsyncResult[List[(String, String)]] =
     for {
@@ -219,7 +219,7 @@ class Database private[sohva] (
       Future.successful(Right(None))
   }
 
-  def saveDocs[T](docs: List[T], all_or_nothing: Boolean = false): AsyncResult[List[DbResult]] =
+  def saveDocs[T <% IdRev](docs: List[T], all_or_nothing: Boolean = false): AsyncResult[List[DbResult]] =
     for {
       raw <- couch.http(request / "_bulk_docs" << serializer.toJson(BulkSave(all_or_nothing, docs))).right
     } yield bulkSaveResult(raw)
@@ -315,7 +315,7 @@ class Database private[sohva] (
   }
 
   def getAttachment(docId: String, attachment: String): AsyncResult[Option[(String, InputStream)]] =
-    couch._http(request / docId / attachment > readFile _)
+    couch._http(request / docId / attachment, new FunctionHandler(readFile _))
 
   def deleteAttachment(docId: String, attachment: String): AsyncResult[Boolean] =
     for {

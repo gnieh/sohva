@@ -15,14 +15,24 @@
 */
 package gnieh.sohva
 
-import dispatch._
+/** An instance of a Couch session that allows the user to perform authenticated
+ *  operations using OAuth.
+ *
+ *  @author Lucas Satabin
+ */
+trait OAuthSession[Result[_]] extends CouchDB[Result] with Session[Result] {
 
-package object async {
+  /** The current session consumer key */
+  val consumerKey: String
 
-  type RawResult[T] = Either[(Int, Option[ErrorResult]), T]
-  type AsyncResult[T] = Future[RawResult[T]]
+  /** The current session consumer secret */
+  val consumerSecret: String
 
-  @deprecated(message = "This type has been deprecated and will be removed in the next version. Please use type CookieSession instead", since = "0.5")
-  type CouchSession = CookieSession
+  /** The current session token */
+  val token: String
+
+  /** The current session secret */
+  val secret: String
 
 }
+

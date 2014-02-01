@@ -47,12 +47,12 @@ object TestPasswordReset extends SohvaTestSpec with ShouldMatchers with BeforeAn
 
     session.users.resetPassword("test_user", token.get, "new_password") should be(true)
 
-    couch.startSession.login("test_user", "new_password") should be(true)
+    couch.startCookieSession.login("test_user", "new_password") should be(true)
   }
 
   it should "not be able to reset password if no token exists" in {
     session.users.resetPassword("test_user", "some token", "new_password") should be(false)
-    couch.startSession.login("test_user", "new_password") should be(false)
+    couch.startCookieSession.login("test_user", "new_password") should be(false)
   }
 
   it should "not be able to reset password if the token is not valid anymore" in {
@@ -62,7 +62,7 @@ object TestPasswordReset extends SohvaTestSpec with ShouldMatchers with BeforeAn
 
     session.users.resetPassword("test_user", token.get, "new_password") should be(false)
 
-    couch.startSession.login("test_user", "new_password") should be(false)
+    couch.startCookieSession.login("test_user", "new_password") should be(false)
   }
 
   it should "not be able to reset password if a wrong token is given" in {
@@ -72,7 +72,7 @@ object TestPasswordReset extends SohvaTestSpec with ShouldMatchers with BeforeAn
 
     session.users.resetPassword("test_user", token.get + "wrong", "new_password") should be(false)
 
-    couch.startSession.login("test_user", "new_password") should be(false)
+    couch.startCookieSession.login("test_user", "new_password") should be(false)
   }
 
 }

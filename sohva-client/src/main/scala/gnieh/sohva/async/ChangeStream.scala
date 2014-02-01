@@ -45,11 +45,11 @@ class OriginalChangeStream(database: Database,
 
   for {
     info <- database.info.right
-    () <- database.couch._http(request <<? List(
+    _ <- database.couch._http(request <<? List(
       "feed" -> "continuous",
       "since" -> info.map(_.update_seq.toString).getOrElse("0"),
       "include_docs" -> "true"
-    ) <<? (if (filter.isDefined) List("filter" -> filter.get) else Nil) > handler)
+    ) <<? (if (filter.isDefined) List("filter" -> filter.get) else Nil), handler)
   } {
     // if the request ends for any reason, close and clear everything
     close
