@@ -109,7 +109,7 @@ final case class ViewResult[Key, Value, Doc](
 }
 
 case class Row[Key, Value, Doc](
-  id: String,
+  id: Option[String],
   key: Key,
   value: Value,
   doc: Option[Doc] = None)

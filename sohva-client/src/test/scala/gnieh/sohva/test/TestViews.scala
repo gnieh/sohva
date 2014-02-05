@@ -64,7 +64,7 @@ object TestViews extends SohvaTestSpec with ShouldMatchers with BeforeAndAfterEa
 
     viewResult.total_rows should be(docs.size)
     viewResult.offset should be(0)
-    viewResult.rows should be(docs.map(doc => Row(doc._id, doc._id, null)).sortBy { case Row (id, _, _, _) => id })
+    viewResult.rows should be(docs.map(doc => Row(Some(doc._id), doc._id, null)).sortBy { case Row (Some(id), _, _, _) => id })
 
   }
 
@@ -78,7 +78,7 @@ object TestViews extends SohvaTestSpec with ShouldMatchers with BeforeAndAfterEa
       for {
         i <- 7 to 8
         j <- i to 10
-      } yield Row("view_doc" + i + j, "view_doc" + i + j, null)
+      } yield Row(Some("view_doc" + i + j), "view_doc" + i + j, null)
 
     viewResult.total_rows should be(docs.size)
     viewResult.offset should be(46)
@@ -108,7 +108,7 @@ object TestViews extends SohvaTestSpec with ShouldMatchers with BeforeAndAfterEa
       for {
         i <- 1 to 10
         j <- math.max(5, i) to 10
-      } yield Row("view_doc" + i + j, List(j - 1, j), null)
+      } yield Row(Some("view_doc" + i + j), List(j - 1, j), null)
 
     val viewResult = view.query(startkey = Some(List(3, 5)))
 
@@ -118,6 +118,27 @@ object TestViews extends SohvaTestSpec with ShouldMatchers with BeforeAndAfterEa
     val filteredSet = filtered.toSet
 
     viewSet should be(filteredSet)
+
+  }
+
+  "reduced views" should "be queryable as well" in {
+
+    case class TestReduce(_id: String, name: String, count: Int) extends IdRev
+
+    db.saveDoc(TestReduce("A1", "A", 1))
+    db.saveDoc(TestReduce("A2", "A", 2))
+    db.saveDoc(TestReduce("A3", "A", 3))
+
+    db.saveDoc(TestReduce("B4", "B", 4))
+    db.saveDoc(TestReduce("B5", "B", 5))
+
+    val design = db.design("reduce_design")
+    design.saveView("counts", "function(doc) { if(doc.name && doc.count) emit(doc.name, doc.count); }", Some("_sum"))
+    val view = design.view[String, Int, TestReduce]("counts")
+
+    val result = view.query(group_level = 2)
+
+    result.rows should be(List(Row(None, "A", 6), Row(None, "B", 9)))
 
   }
 

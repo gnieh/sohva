@@ -85,19 +85,22 @@ class View[Key: Manifest, Value: Manifest, Doc: Manifest](
 
   private def viewResult[Key: Manifest, Value: Manifest, Doc: Manifest](json: String) = {
     val ast = parse(json)
-    val res = for {
-      total_rows <- (ast \ "total_rows").extractOpt[Int]
-      offset <- (ast \ "offset").extractOpt[Int]
-      JArray(rows) = (ast \ "rows")
-    } yield ViewResult(total_rows, offset, rows.flatMap { row =>
-      for {
-        id <- (row \ "id").extractOpt[String]
-        key <- (row \ "key").extractOpt[Key]
-        value <- (row \ "value").extractOpt[Value]
-        doc = (row \ "doc").extractOpt[Doc]
-      } yield Row(id, key, value, doc)
-    })
-    res.getOrElse(ViewResult(0, 0, Nil))
+    val offset = (ast \ "offset").extractOpt[Int].getOrElse(0)
+    val rows = (ast \ "rows") match {
+      case JArray(rows) =>
+        rows.flatMap { row =>
+          for {
+            key <- (row \ "key").extractOpt[Key]
+            id = (row \ "id").extractOpt[String]
+            value <- (row \ "value").extractOpt[Value]
+            doc = (row \ "doc").extractOpt[Doc]
+          } yield Row(id, key, value, doc)
+        }
+      case _ =>
+        Nil
+    }
+    val total_rows = (ast \ "total_rows").extractOpt[Int].getOrElse(rows.size)
+    ViewResult(total_rows, offset, rows)
   }
 
 }

@@ -167,7 +167,7 @@ class Database private[sohva] (
         skip = skip,
         inclusive_end = inclusive_end
       ).right
-    } yield for (Row(id, _, _, _) <- res.rows) yield id
+    } yield for (Row(Some(id), _, _, _) <- res.rows) yield id
 
   def getDocById[T: Manifest](id: String, revision: Option[String] = None): AsyncResult[Option[T]] =
     for (raw <- getRawDocById(id, revision).right)
@@ -187,7 +187,7 @@ class Database private[sohva] (
   def getDocRevisions(ids: List[String]): AsyncResult[List[(String, String)]] =
     for {
       res <- builtInView[String, Map[String, String], Any]("_all_docs").query(keys = ids).right
-    } yield res.rows.map(row => (row.id, row.value("rev")))
+      } yield res.rows.map { case Row(Some(id), _, value, _) => (id, value("rev")) }
 
   def saveDoc[T <% IdRev: Manifest](doc: T): AsyncResult[Option[T]] =
     for {
