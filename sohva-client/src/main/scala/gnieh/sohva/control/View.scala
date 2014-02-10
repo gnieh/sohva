@@ -26,11 +26,11 @@ import scala.util.Try
  *
  *  @author Lucas Satabin
  */
-class View[Key: Manifest, Value: Manifest, Doc: Manifest](wrapped: AView[Key, Value, Doc])
-    extends gnieh.sohva.View[Try, Key, Value, Doc] {
+class View(wrapped: AView)
+    extends gnieh.sohva.View[Try] {
 
   @inline
-  def query(key: Option[Key] = None,
+  def query[Key: Manifest, Value: Manifest, Doc: Manifest](key: Option[Key] = None,
     keys: List[Key] = Nil,
     startkey: Option[Key] = None,
     startkey_docid: Option[String] = None,
@@ -46,7 +46,7 @@ class View[Key: Manifest, Value: Manifest, Doc: Manifest](wrapped: AView[Key, Va
     include_docs: Boolean = false,
     inclusive_end: Boolean = true,
     update_seq: Boolean = false): Try[ViewResult[Key, Value, Doc]] =
-    synced(wrapped.query(key = key,
+    synced(wrapped.query[Key, Value, Doc](key = key,
       keys = keys,
       startkey = startkey,
       startkey_docid = startkey_docid,

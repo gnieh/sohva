@@ -19,13 +19,13 @@ package gnieh.sohva
  *
  *  @author Lucas Satabin
  */
-trait View[Result[_], Key, Value, Doc] {
+trait View[Result[_]] {
 
   /** Queries the view on the server and returned the typed result.
    *  BE CAREFUL: If the types given to the constructor are not correct,
    *  strange things may happen! By 'strange', I mean exceptions
    */
-  def query(
+  def query[Key: Manifest, Value: Manifest, Doc: Manifest](
     key: Option[Key] = None,
     keys: List[Key] = Nil,
     startkey: Option[Key] = None,

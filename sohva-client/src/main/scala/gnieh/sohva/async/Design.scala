@@ -78,8 +78,8 @@ class Design(val db: Database,
       case None => Future.successful(false)
     }
 
-  def view[Key: Manifest, Value: Manifest, Doc: Manifest](viewName: String): View[Key, Value, Doc] =
-    new View[Key, Value, Doc](this.name, db, viewName)
+  def view(viewName: String): View =
+    new View(this.name, db, viewName)
 
   def saveValidateFunction(validateFun: String): Future[Boolean] =
     for {
