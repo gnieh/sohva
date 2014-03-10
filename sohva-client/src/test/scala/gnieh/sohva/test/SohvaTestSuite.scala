@@ -61,7 +61,7 @@ class SohvaTestSuite extends Suites(TestBasic,
     // logout
     SohvaTests.session.logout
     // shutdown client
-    SohvaTests.couch.shutdown
+    //SohvaTests.couch.shutdown
   }
 }
 
