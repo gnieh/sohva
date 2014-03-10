@@ -104,12 +104,12 @@ class Database private[sohva] (
   }
 
   def info: AsyncResult[Option[InfoResult]] =
-    for (info <- couch.optHttp(request).right)
+    for(info <- couch.optHttp(request).right)
       yield info.map(infoResult)
 
-  @inline
   def exists: AsyncResult[Boolean] =
-    couch.contains(name)
+    for(h <- couch.optHttp(request.HEAD).right)
+      yield h.isDefined
 
   def changes(filter: Option[String] = None): ChangeStream =
     new OriginalChangeStream(this, filter)
