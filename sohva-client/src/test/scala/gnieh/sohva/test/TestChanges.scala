@@ -30,7 +30,8 @@ object TestChanges extends SohvaTestSpec with ShouldMatchers with AsyncAssertion
   implicit val formats = DefaultFormats
 
   override def beforeEach {
-    db.delete
+    if(db.exists)
+      db.delete
     db.create
   }
 
