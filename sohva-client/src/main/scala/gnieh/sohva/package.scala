@@ -15,9 +15,6 @@
 */
 package gnieh
 
-import dispatch._
-import Defaults._
-
 import scala.concurrent.Future
 
 import java.security.MessageDigest

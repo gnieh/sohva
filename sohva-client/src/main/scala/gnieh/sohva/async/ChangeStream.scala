@@ -16,12 +16,20 @@
 package gnieh.sohva
 package async
 
-import dispatch._
-import Defaults._
-
 import net.liftweb.json._
 
-import scala.collection.mutable.Map
+import akka.io._
+import akka.actor._
+
+import spray.http._
+import spray.can.Http
+import spray.can.client._
+
+import scala.util.{
+  Try,
+  Success
+}
+import scala.concurrent.duration.Duration
 
 /** The original change stream (meaning unfiltered) on the client side
  *  which contains the active connection to the database
@@ -33,51 +41,98 @@ class OriginalChangeStream(database: Database,
 
   import database.couch.serializer.formats
 
+  import database.ec
+
   import ChangeStream._
 
-  private[this] var handler = as.stream.Lines(onChange)
-
-  private[this] var request = database.request / "_changes"
-
-  private[this] var actions = Map.empty[Int, Tuple2[String, Option[JObject]] => Unit]
+  private[this] val uri = database.uri / "_changes"
 
   private[this] var _closed = false
 
-  for {
-    info <- database.info.right
-    _ <- database.couch._http(request <<? List(
-      "feed" -> "continuous",
-      "since" -> info.map(_.update_seq.toString).getOrElse("0"),
-      "include_docs" -> "true"
-    ) <<? (if (filter.isDefined) List("filter" -> filter.get) else Nil), handler)
-  } {
-    // if the request ends for any reason, close and clear everything
-    close
-  }
+  private[this] implicit def system = database.couch.system
 
-  /* notify the registered handler if any */
-  private[this] def onChange(json: String) = synchronized {
-    json match {
-      case change(seq, id, rev, deleted, doc) if !closed =>
-        for ((_, f) <- actions)
-          f(id, doc)
-      case last_seq(seq) =>
-      case _             =>
-      // ignore other messages
+  private[this] val actor = system.actorOf(Props(new ChangeActor))
+
+  private[this] class ChangeActor extends Actor with ActorLogging {
+
+    override def preStart(): Unit = {
+      val couch = database.couch
+      val localSettings =
+        ClientConnectionSettings(system).copy(responseChunkAggregationLimit = 0, requestTimeout = Duration.Inf)
+      log.debug(s"change stream settings for database ${database.name}: $localSettings")
+      IO(Http) ! Http.Connect(couch.host, port = couch.port, sslEncryption = couch.ssl, settings = Some(localSettings))
     }
+
+    def receive = connecting(sender, Map())
+
+    def connecting(commander: ActorRef, handlers: Map[Int, ((String, Option[JObject])) => Unit]): Receive = {
+      case _: Http.Connected =>
+        // connection has been established, send the change stream request
+        val params = {
+          val base = Map(
+            "feed" -> "continuous",
+            "since" -> "now",
+            "include_docs" -> "true"
+          )
+          filter match {
+            case Some(filter) => base + ("filter" -> filter)
+            case None         => base
+          }
+        }
+        val req = HttpRequest(uri = uri <<? params)
+
+        sender ! req
+
+        context.become(receiving(commander, handlers))
+
+      case Http.CommandFailed(Http.Connect(address, _, _, _, _)) =>
+        commander ! Status.Failure(new RuntimeException("Connection error"))
+        close()
+
+      case Register(handler) =>
+        context.become(connecting(commander, handlers + (handler.hashCode -> handler)))
+
+      case Unregister(id) =>
+        context.become(connecting(commander, handlers - id))
+
+    }
+
+    def receiving(commander: ActorRef, handlers: Map[Int, ((String, Option[JObject])) => Unit]): Receive = {
+      case MessageChunk(data, _) =>
+        Try(parse(data.asString)).map {
+          case change(seq, id, rev, deleted, doc) =>
+            for ((_, f) <- handlers)
+              f(id, doc)
+          case _ =>
+          // ignore other messages
+        }
+
+      case ChunkedMessageEnd(_, _) =>
+        sender ! Http.Close
+        close()
+
+      case Register(handler) =>
+        context.become(receiving(commander, handlers + (handler.hashCode -> handler)))
+
+      case Unregister(id) =>
+        context.become(receiving(commander, handlers - id))
+
+      case Http.SendFailed(_) | Timedout(_) =>
+        commander ! Status.Failure(new RuntimeException("Request error"))
+        close()
+
+      case CloseStream =>
+        commander ! Http.Close
+        context.stop(self)
+
+    }
+
   }
 
   def close(): Unit = synchronized {
-    // unregister the handlers if any
-    actions.clear
-    // stop the request handler
-    handler.stop
     // mark the stream as closed
     _closed = true
-    // free resources
-    handler = null
-    request = null
-    actions = null
+    actor ! CloseStream
   }
 
   def closed = _closed
@@ -85,9 +140,8 @@ class OriginalChangeStream(database: Database,
   def foreach(f: Tuple2[String, Option[JObject]] => Unit): Int = synchronized {
     if (!closed) {
       require(f != null, "Function must not be null")
-      val fId = f.hashCode
-      actions(fId) = f
-      fId
+      actor ! Register(f)
+      f.hashCode
     } else {
       -1
     }
@@ -98,7 +152,7 @@ class OriginalChangeStream(database: Database,
 
   def unregister(id: Int): Unit = synchronized {
     if (!closed)
-      actions -= id
+      actor ! Unregister(id)
   }
 
 }
@@ -123,7 +177,15 @@ class FilteredChangeStream(p: Tuple2[String, Option[JObject]] => Boolean, origin
   def closed =
     original.closed
 
+  def close() =
+    original.close()
+
   def unregister(id: Int) =
     original.unregister(id)
 
 }
+
+private case class Unregister(id: Int)
+private case class Register(handler: ((String, Option[JObject])) => Unit)
+private case object CloseStream
+

@@ -16,10 +16,12 @@
 package gnieh.sohva
 package async
 
-import dispatch._
-import Defaults._
+import spray.http._
+import spray.client.pipelining._
 
-import com.ning.http.client._
+import akka.actor.ActorRef
+
+import scala.concurrent.Future
 
 /** An instance of a Couch session, that allows the user to login and
  *  send request identified with the login credentials.
@@ -30,34 +32,53 @@ import com.ning.http.client._
  *  @author Lucas Satabin
  *
  */
-class CookieSession protected[sohva] (val couch: CouchClient) extends CouchDB with Session with gnieh.sohva.CookieSession[AsyncResult] {
+class CookieSession protected[sohva] (val couch: CouchClient) extends CouchDB with Session with gnieh.sohva.CookieSession[Future] {
 
-  val host = couch.host
+  val host =
+    couch.host
 
-  val port = couch.port
+  val port =
+    couch.port
 
-  val version = couch.version
+  val ssl =
+    couch.ssl
 
-  val serializer = couch.serializer
+  val version =
+    couch.version
 
-  def login(name: String, password: String): AsyncResult[Boolean] =
+  val serializer =
+    couch.serializer
+
+  val system =
+    couch.system
+
+  implicit def ec =
+    couch.ec
+
+  implicit def formats =
+    couch.formats
+
+  def login(name: String, password: String): Future[Boolean] =
     for (
-      res <- _http(request / "_session" <<
-        Map("name" -> name, "password" -> password) <:<
-        Map("Accept" -> "application/json, text/javascript, */*"), noError)
-    ) yield Right(res)
+      res <- pipeline(prepare(Post(uri / "_session",
+        FormData(Map("name" -> name, "password" -> password))) <:<
+        Map("Accept" -> "application/json, text/javascript, */*")))
+    ) yield res.status.isSuccess
 
-  def logout: AsyncResult[Boolean] =
-    for (res <- _http((request / "_session").DELETE, noError))
-      yield Right(res)
+  def logout: Future[Boolean] =
+    for (res <- pipeline(prepare(Delete(uri / "_session"))))
+      yield res.status.isSuccess
 
-  def isLoggedIn: AsyncResult[Boolean] =
+  def isLoggedIn: Future[Boolean] =
     isAuthenticated
 
   // helper methods
 
-  protected[sohva] def _http[T](req: Req, handler: AsyncHandler[T]) =
-    couch._http(req <:< Map("Cookie" -> cookie), new CookieProxyHandler(handler))
+  protected[sohva] val pipeline =
+    couch.pipeline.andThen(_.map(withCookie))
+
+  protected[sohva] def prepare(req: HttpRequest) =
+    req <:< Map("Cookie" -> cookie)
 
   private var _cookie = "AuthSession="
 
@@ -69,33 +90,20 @@ class CookieSession protected[sohva] (val couch: CouchClient) extends CouchDB wi
     _cookie = c
   }
 
-  protected[sohva] def request =
-    couch.request
+  protected[sohva] def uri =
+    couch.uri
 
-  private val noError = new FunctionHandler(r => r.getStatusCode / 100 == 2)
-
-  private class CookieProxyHandler[T](underlying: AsyncHandler[T]) extends AsyncHandler[T] {
-
-    def onBodyPartReceived(bodyPart: HttpResponseBodyPart) =
-      underlying.onBodyPartReceived(bodyPart)
-
-    def onCompleted() =
-      underlying.onCompleted()
-
-    def onHeadersReceived(headers: HttpResponseHeaders) =
-      if (headers.getHeaders.containsKey("Set-Cookie")) {
-        cookie = headers.getHeaders.getFirstValue("Set-Cookie")
-        underlying.onHeadersReceived(headers)
-      } else {
-        underlying.onHeadersReceived(headers)
+  private def withCookie[T](resp: HttpResponse): HttpResponse = {
+    for (
+      HttpHeaders.`Set-Cookie`(cookie) <- resp.headers.find {
+        case HttpHeaders.`Set-Cookie`(_) =>
+          true
+        case _ =>
+          false
       }
-
-    def onStatusReceived(status: HttpResponseStatus) =
-      underlying.onStatusReceived(status)
-
-    def onThrowable(t: Throwable) =
-      underlying.onThrowable(t)
-
+    ) this.cookie = cookie.toString
+    resp
   }
 
 }
+

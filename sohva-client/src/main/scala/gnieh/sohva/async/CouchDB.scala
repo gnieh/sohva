@@ -18,12 +18,16 @@ package async
 
 import strategy._
 
-import dispatch._
-import Defaults._
+import scala.concurrent.{
+  Future,
+  ExecutionContext
+}
 
-import scala.concurrent.Future
+import spray.http._
+import spray.client.pipelining._
+import spray.httpx.unmarshalling._
 
-import com.ning.http.client.AsyncHandler
+import akka.actor._
 
 import net.liftweb.json._
 
@@ -35,12 +39,18 @@ import net.liftweb.json._
  *  @author Lucas Satabin
  *
  */
-abstract class CouchDB extends gnieh.sohva.CouchDB[AsyncResult] {
+abstract class CouchDB extends gnieh.sohva.CouchDB[Future] with LiftMarshalling {
 
   self =>
 
-  def info: AsyncResult[CouchInfo] =
-    for (json <- http(request).right)
+  implicit def ec: ExecutionContext
+
+  def system: ActorSystem
+
+  val ssl: Boolean
+
+  def info: Future[CouchInfo] =
+    for (json <- http(Get(uri)))
       yield asCouchInfo(json)
 
   def database(name: String, credit: Int = 0, strategy: Strategy = BarneyStinsonStrategy): Database =
@@ -49,40 +59,40 @@ abstract class CouchDB extends gnieh.sohva.CouchDB[AsyncResult] {
   def replicator(name: String = "_replicator", credit: Int = 0, strategy: Strategy = BarneyStinsonStrategy): Replicator =
     new Replicator(name, this, credit, strategy)
 
-  def _all_dbs: AsyncResult[List[String]] =
-    for (dbs <- http(request / "_all_dbs").right)
+  def _all_dbs: Future[List[String]] =
+    for (dbs <- http(Get(uri / "_all_dbs")))
       yield asStringList(dbs)
 
-  def _uuid: AsyncResult[String] =
-    for (uuid <- _uuids(1).right)
+  def _uuid: Future[String] =
+    for (uuid <- _uuids(1))
       yield uuid.head
 
-  def _uuids(count: Int = 1): AsyncResult[List[String]] =
-    for (uuids <- http(request / "_uuids" <<? Map("count" -> count.toString)).right)
+  def _uuids(count: Int = 1): Future[List[String]] =
+    for (uuids <- http(Get(uri / "_uuids" <<? Map("count" -> count.toString))))
       yield asUuidsList(uuids)
 
-  def _config: AsyncResult[Configuration] =
-    for (config <- http(request / "_config").right)
+  def _config: Future[Configuration] =
+    for (config <- http(Get(uri / "_config")))
       yield serializer.fromJson[Configuration](config)
 
-  def _config(section: String): AsyncResult[Map[String, String]] =
-    for (section <- http(request / "_config" / section).right)
+  def _config(section: String): Future[Map[String, String]] =
+    for (section <- http(Get(uri / "_config" / section)))
       yield serializer.fromJson[Map[String, String]](section)
 
-  def _config(section: String, key: String): AsyncResult[Option[String]] =
-    for (section <- _config(section).right)
+  def _config(section: String, key: String): Future[Option[String]] =
+    for (section <- _config(section))
       yield section.get(key)
 
-  def saveConfigValue(section: String, key: String, value: String): AsyncResult[Boolean] =
-    for (res <- http((request / "_config" / section / key << serializer.toJson(value)).PUT).right)
+  def saveConfigValue(section: String, key: String, value: String): Future[Boolean] =
+    for (res <- http(Put(uri / "_config" / section / key, serializer.toJson(value))))
       yield ok(res)
 
-  def deleteConfigValue(section: String, key: String): AsyncResult[Boolean] =
-    for (res <- http((request / "_config" / section / key).DELETE).right)
+  def deleteConfigValue(section: String, key: String): Future[Boolean] =
+    for (res <- http(Delete(uri / "_config" / section / key)))
       yield ok(res)
 
-  def contains(dbName: String): AsyncResult[Boolean] =
-    for (dbs <- _all_dbs.right)
+  def contains(dbName: String): Future[Boolean] =
+    for (dbs <- _all_dbs)
       yield dbs.contains(dbName)
 
   // user management section
@@ -92,54 +102,54 @@ abstract class CouchDB extends gnieh.sohva.CouchDB[AsyncResult] {
 
   // helper methods
 
-  protected[sohva] def request: Req
+  protected[sohva] def uri: Uri
 
-  protected[sohva] def _http[T](req: Req, handler: AsyncHandler[T]): Future[T]
+  protected[sohva] def prepare(req: HttpRequest): HttpRequest
 
-  protected[sohva] def http(request: Req, contentType: String = "application/json", contentEncoding: String = "UTF-8"): AsyncResult[String] =
-    _http(request.underlying(_.setBodyEncoding(contentEncoding)) <:< Map("Content-Type" -> contentType), new FunctionHandler(handleCouchResponse _))
+  protected[sohva] val pipeline: HttpRequest => Future[HttpResponse]
 
-  protected[sohva] def optHttp(request: Req, contentType: String = "application/json", contentEncoding: String = "UTF-8"): AsyncResult[Option[String]] =
-    _http(
-      request.underlying(_.setBodyEncoding(contentEncoding)) <:< Map("Content-Type" -> contentType), new FunctionHandler(handleOptionalCouchResponse _))
+  protected[sohva] def http(req: HttpRequest): Future[JValue] =
+    pipeline(prepare(req)).flatMap(handleCouchResponse)
 
-  private def handleCouchResponse(response: Res): RawResult[String] = {
-    val json = as.String(response)
-    val code = response.getStatusCode
-    if (code / 100 != 2) {
-      // something went wrong...
-      val error = serializer.fromJsonOpt[ErrorResult](json)
-      Left((code, error))
+  protected[sohva] def optHttp(req: HttpRequest): Future[Option[JValue]] =
+    pipeline(prepare(req)).flatMap(handleOptionalCouchResponse)
+
+  private def handleCouchResponse(response: HttpResponse): Future[JValue] = {
+    val json = parse(response.entity.asString)
+    if (response.status.isSuccess) {
+      Future.successful(json)
     } else {
-      Right(json)
+      // something went wrong...
+      val code = response.status.intValue
+      val error = serializer.fromJsonOpt[ErrorResult](json)
+      Future.failed(CouchException(code, error))
     }
   }
 
-  private def handleOptionalCouchResponse(response: Res): RawResult[Option[String]] =
-    handleCouchResponse(response) match {
-      case Right(v)       => Right(Some(v))
-      case Left((404, _)) => Right(None)
-      case Left(err)      => Left(err)
+  private def handleOptionalCouchResponse(response: HttpResponse): Future[Option[JValue]] =
+    handleCouchResponse(response) map (Some(_)) recoverWith {
+      case CouchException(404, _) => Future.successful(None)
+      case err                    => Future.failed(err)
     }
 
   @inline
-  protected[sohva] def ok(json: String) =
+  protected[sohva] def ok(json: JValue) =
     serializer.fromJson[OkResult](json).ok
 
   @inline
-  private def asCouchInfo(json: String) =
+  private def asCouchInfo(json: JValue) =
     serializer.fromJson[CouchInfo](json)
 
   @inline
-  private def asStringList(json: String) =
+  private def asStringList(json: JValue) =
     serializer.fromJson[List[String]](json)
 
   @inline
-  private def asUuidsList(json: String) =
+  private def asUuidsList(json: JValue) =
     serializer.fromJson[Uuids](json).uuids
 
   @inline
-  private def asConfiguration(json: String) =
+  private def asConfiguration(json: JValue) =
     serializer.fromJson[Configuration](json)
 
 }

@@ -14,21 +14,24 @@
 * limitations under the License.
 */
 package gnieh.sohva
+package async
 
-import scala.util.{
-  Try,
-  Success,
-  Failure
+import net.liftweb.json._
+
+import spray.http._
+import spray.httpx.marshalling.{
+  Marshaller,
+  MarshallingContext
 }
 
-import scala.concurrent._
-import duration._
+trait LiftMarshalling {
 
-package object control {
+  implicit def formats: Formats
 
-  @deprecated(message = "This type has been deprecated and will be removed in the next version. Please use type CookieSession instead", since = "0.5")
-  type CouchSession = CookieSession
-
-  private[control] def synced[T](result: Future[T]): Try[T] = Try(Await.result(result, Duration.Inf))
+  implicit def jvalueMarshaller: Marshaller[JValue] =
+    Marshaller.of[JValue](MediaTypes.`application/json`) { (value, contentType, ctx) =>
+      ctx.marshalTo(HttpEntity(contentType, HttpData(pretty(render(value)), HttpCharsets.`UTF-8`)))
+    }
 
 }
+

@@ -16,12 +16,19 @@
 package gnieh.sohva
 package async
 
-import dispatch._
-import Defaults._
-
-import com.ning.http.client._
-
 import net.liftweb.json._
+
+import spray.http._
+import spray.client.pipelining._
+import spray.can._
+
+import scala.concurrent.{
+  Future,
+  ExecutionContext
+}
+import akka.actor._
+import akka.util.Timeout
+import akka.io.IO
 
 import org.slf4j.LoggerFactory
 
@@ -35,19 +42,29 @@ import org.slf4j.LoggerFactory
  *
  */
 class CouchClient(val host: String = "localhost",
-    val port: Int = 5984,
-    val ssl: Boolean = false,
-    val version: String = "1.4",
-    val custom: List[SohvaSerializer[_]] = Nil) extends CouchDB with gnieh.sohva.CouchClient[AsyncResult] {
+  val port: Int = 5984,
+  val ssl: Boolean = false,
+  val version: String = "1.4",
+  val custom: List[SohvaSerializer[_]] = Nil)(
+    implicit val system: ActorSystem,
+    val timeout: Timeout)
+    extends CouchDB with gnieh.sohva.CouchClient[Future] {
 
-  val serializer = new JsonSerializer(this.version, custom)
+  val serializer =
+    new JsonSerializer(this.version, custom)
+
+  implicit def ec: ExecutionContext =
+    system.dispatcher
+
+  implicit def formats =
+    serializer.formats
 
   // check that the version matches the one of the server
   for {
-    Right(i) <- info
+    i <- info
     if CouchVersion(i.version) != CouchVersion(version)
   } {
-    LoggerFactory.getLogger(classOf[CouchClient]).warn("Warning Expected version is " + version + " but actual server version is " + i.version)
+    LoggerFactory.getLogger(classOf[CouchClient]).warn(s"Warning Expected version is $version but actual server version is ${i.version}")
   }
 
   def startCookieSession =
@@ -61,23 +78,22 @@ class CouchClient(val host: String = "localhost",
     new OAuthSession(consumerKey, consumerSecret, token, secret, this)
 
   def shutdown =
-    sohvaHttp.shutdown
+    IO(Http) ! Http.CloseAll
 
   // ========== internals ==========
 
-  private lazy val sohvaHttp = Http.configure { builder =>
-    builder.setFollowRedirects(true)
-  }
+  lazy val pipeline: HttpRequest => Future[HttpResponse] =
+    sendReceive
 
-  protected[sohva] def _http[T](req: Req, handler: AsyncHandler[T]) =
-    sohvaHttp(req > handler)
+  protected[sohva] def prepare(req: HttpRequest) =
+    req
 
-  // the base request to this couch instance
-  protected[sohva] def request =
+  // the base uri to this couch instance
+  protected[sohva] def uri =
     if (ssl)
-      :/(host, port).secure
+      Uri("https", Uri.Authority(Uri.Host(host), port))
     else
-      :/(host, port)
+      Uri("http", Uri.Authority(Uri.Host(host), port))
 
 }
 

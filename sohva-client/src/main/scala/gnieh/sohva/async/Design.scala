@@ -16,8 +16,11 @@
 package gnieh.sohva
 package async
 
-import dispatch._
-import Defaults._
+import scala.concurrent.Future
+
+import net.liftweb.json._
+
+import spray.client.pipelining._
 
 /** A design gives access to the different views.
  *  Use this class to get or create new views.
@@ -26,28 +29,30 @@ import Defaults._
  */
 class Design(val db: Database,
     val name: String,
-    val language: String) extends gnieh.sohva.Design[AsyncResult] {
+    val language: String) extends gnieh.sohva.Design[Future] {
 
   import db.couch.serializer
 
-  protected[sohva] def request = db.request / "_design" / name.trim
+  import db.ec
 
-  def getDesignDocument: AsyncResult[Option[DesignDoc]] =
-    for (design <- db.couch.optHttp(request).right)
+  protected[sohva] def uri = db.uri / "_design" / name.trim
+
+  def getDesignDocument: Future[Option[DesignDoc]] =
+    for (design <- db.couch.optHttp(Get(uri)))
       yield design.map(designDoc)
 
-  def delete: AsyncResult[Boolean] =
+  def delete: Future[Boolean] =
     db.deleteDoc("_design/" + name.trim)
 
   def saveView(viewName: String,
     mapFun: String,
-    reduceFun: Option[String] = None): AsyncResult[Boolean] =
+    reduceFun: Option[String] = None): Future[Boolean] =
     saveView(viewName, ViewDoc(mapFun, reduceFun))
 
-  def saveView(viewName: String, view: ViewDoc): AsyncResult[Boolean] =
+  def saveView(viewName: String, view: ViewDoc): Future[Boolean] =
     for {
-      design <- getDesignDocument.right
-      doc <- db.saveDoc(newDoc(design, viewName, view)).right
+      design <- getDesignDocument
+      doc <- db.saveDoc(newDoc(design, viewName, view))
     } yield doc.isDefined
 
   private[this] def newDoc(design: Option[DesignDoc], viewName: String, view: ViewDoc) =
@@ -60,26 +65,26 @@ class Design(val db: Database,
         DesignDoc("_design/" + name, language, Map(viewName -> view), None)
     }
 
-  def deleteView(viewName: String): AsyncResult[Boolean] =
+  def deleteView(viewName: String): Future[Boolean] =
     for {
-      design <- getDesignDocument.right
+      design <- getDesignDocument
       res <- deleteView(design, viewName)
     } yield res
 
   private[this] def deleteView(design: Option[DesignDoc], viewName: String) =
     design match {
       case Some(design) =>
-        db.saveDoc(design.copy(views = design.views - viewName)).right.map(_.isDefined)
-      case None => Future.successful(Right(false))
+        db.saveDoc(design.copy(views = design.views - viewName)).map(_.isDefined)
+      case None => Future.successful(false)
     }
 
   def view[Key: Manifest, Value: Manifest, Doc: Manifest](viewName: String): View[Key, Value, Doc] =
     new View[Key, Value, Doc](this.name, db, viewName)
 
-  def saveValidateFunction(validateFun: String): AsyncResult[Boolean] =
+  def saveValidateFunction(validateFun: String): Future[Boolean] =
     for {
-      design <- getDesignDocument.right
-      res <- db.saveDoc(newDoc(design, validateFun)).right
+      design <- getDesignDocument
+      res <- db.saveDoc(newDoc(design, validateFun))
     } yield res.isDefined
 
   private[this] def newDoc(design: Option[DesignDoc], validateFun: String) =
@@ -92,24 +97,24 @@ class Design(val db: Database,
         DesignDoc("_design/" + name, language, Map(), Some(validateFun))
     }
 
-  def deleteValidateFunction: AsyncResult[Boolean] =
+  def deleteValidateFunction: Future[Boolean] =
     for {
-      design <- getDesignDocument.right
+      design <- getDesignDocument
       res <- deleteValidateFunction(design)
     } yield res
 
   private[this] def deleteValidateFunction(design: Option[DesignDoc]) =
     design match {
       case Some(design) =>
-        for (doc <- db.saveDoc(design.copy(validate_doc_update = None)).right)
+        for (doc <- db.saveDoc(design.copy(validate_doc_update = None)))
           yield doc.isDefined
-      case None => Future.successful(Right(false))
+      case None => Future.successful(false)
     }
 
-  def saveFilter(name: String, filterFun: String): AsyncResult[Boolean] =
+  def saveFilter(name: String, filterFun: String): Future[Boolean] =
     for {
-      design <- getDesignDocument.right
-      res <- db.saveDoc(withFilterDoc(design, name, filterFun)).right
+      design <- getDesignDocument
+      res <- db.saveDoc(withFilterDoc(design, name, filterFun))
     } yield res.isDefined
 
   private[this] def withFilterDoc(design: Option[DesignDoc], filterName: String, filterFun: String) =
@@ -122,24 +127,24 @@ class Design(val db: Database,
         DesignDoc("_design/" + name, language, Map(), None, filters = Map(filterName -> filterFun))
     }
 
-  def deleteFilter(name: String): AsyncResult[Boolean] =
+  def deleteFilter(name: String): Future[Boolean] =
     for {
-      design <- getDesignDocument.right
+      design <- getDesignDocument
       res <- deleteFilter(design, name)
     } yield res
 
   private[this] def deleteFilter(design: Option[DesignDoc], filterName: String) =
     design match {
       case Some(design) =>
-        for (doc <- db.saveDoc(design.copy(filters = design.filters - filterName)).right)
+        for (doc <- db.saveDoc(design.copy(filters = design.filters - filterName)))
           yield doc.isDefined
       case None =>
-        Future.successful(Right(false))
+        Future.successful(false)
     }
 
   // helper methods
 
-  private def designDoc(json: String) =
+  private def designDoc(json: JValue) =
     serializer.fromJson[DesignDoc](json)
 
 }

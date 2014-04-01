@@ -29,7 +29,7 @@ import java.io.{
 
 import resource._
 
-object TestAttachments extends SohvaTestSpec with ShouldMatchers {
+class TestAttachments extends SohvaTestSpec with ShouldMatchers {
 
   case class TestDoc(_id: String, value: Int) extends IdRev with Attachments
 

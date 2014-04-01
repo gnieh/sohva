@@ -24,7 +24,7 @@ import sync._
 
 import gnieh.diffson._
 
-object TestBasic extends SohvaTestSpec with ShouldMatchers {
+class TestBasic extends SohvaTestSpec with ShouldMatchers {
 
   "an unknown document" should "not be retrieved" in {
     db.getDocById[TestDoc]("unknown-doc") should be(None)

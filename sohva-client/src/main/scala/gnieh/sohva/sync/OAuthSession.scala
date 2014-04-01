@@ -41,14 +41,8 @@ class OAuthSession private[control] (val wrapped: AOAuthSession) extends CouchDB
   val consumerKey =
     wrapped.consumerKey
 
-  val consumerSecret =
-    wrapped.consumerSecret
-
   val token =
     wrapped.token
-
-  val secret =
-    wrapped.secret
 
   @inline
   def currentUser: Try[Option[UserInfo]] =

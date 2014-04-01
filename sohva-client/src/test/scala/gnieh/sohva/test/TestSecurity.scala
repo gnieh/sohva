@@ -24,7 +24,7 @@ import sync._
 /** @author satabin
  *
  */
-object TestSecurity extends SohvaTestSpec with ShouldMatchers with BeforeAndAfterEach {
+class TestSecurity extends SohvaTestSpec with ShouldMatchers with BeforeAndAfterEach {
 
   var secDb: Database = couch.database("sohva_test_security")
   var adminSecDb: Database = _

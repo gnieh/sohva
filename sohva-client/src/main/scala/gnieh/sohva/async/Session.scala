@@ -16,42 +16,45 @@
 package gnieh.sohva
 package async
 
-import dispatch._
-import Defaults._
+import scala.concurrent.Future
+
+import net.liftweb.json._
+
+import spray.client.pipelining._
 
 /** Methods that must be implemented by a session.
  *
  *  @author Lucas Satabin
  */
-trait Session extends gnieh.sohva.Session[AsyncResult] {
+trait Session extends gnieh.sohva.Session[Future] {
   this: CouchDB =>
 
-  def currentUser: AsyncResult[Option[UserInfo]] = userContext.right.flatMap {
+  def currentUser: Future[Option[UserInfo]] = userContext.flatMap {
     case UserCtx(name, _) if name != null =>
-      http(request / "_users" / ("org.couchdb.user:" + name)).right.map(user)
-    case _ => Future.successful(Right(None))
+      http(Get(uri / "_users" / (s"org.couchdb.user:$name"))).map(user)
+    case _ => Future.successful(None)
   }
 
-  def isAuthenticated: AsyncResult[Boolean] = userContext.right.map {
+  def isAuthenticated: Future[Boolean] = userContext.map {
     case UserCtx(name, _) if name != null =>
       true
     case _ => false
   }
 
-  def hasRole(role: String): AsyncResult[Boolean] = userContext.right.map {
+  def hasRole(role: String): Future[Boolean] = userContext.map {
     case UserCtx(_, roles) => roles.contains(role)
     case _                 => false
   }
 
-  def isServerAdmin: AsyncResult[Boolean] = hasRole("_admin")
+  def isServerAdmin: Future[Boolean] = hasRole("_admin")
 
-  def userContext: AsyncResult[UserCtx] =
-    http((request / "_session")).right.map(userCtx)
+  def userContext: Future[UserCtx] =
+    http(Get(uri / "_session")).map(userCtx)
 
-  private def user(json: String) =
+  private def user(json: JValue) =
     serializer.fromJsonOpt[UserInfo](json)
 
-  private def userCtx(json: String) =
+  private def userCtx(json: JValue) =
     serializer.fromJson[AuthResult](json).userCtx
 
 }

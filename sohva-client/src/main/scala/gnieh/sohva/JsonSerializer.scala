@@ -49,47 +49,40 @@ class JsonSerializer(version: String, custom: List[SohvaSerializer[_]]) {
 
   /** Serializes the given object to a json string */
   def toJson[T](obj: T) = obj match {
-    case i: Int        => compact(render(JInt(i)))
-    case i: BigInt     => compact(render(JInt(i)))
-    case l: Long       => compact(render(JInt(l)))
-    case d: Double     => compact(render(JDouble(d)))
-    case f: Float      => compact(render(JDouble(f)))
-    case d: BigDecimal => compact(render(JDouble(d.doubleValue)))
-    case b: Boolean    => compact(render(JBool(b)))
-    case s: String     => compact(render(JString(s)))
-    case _             => compact(render(Extraction.decompose(obj)))
+    case i: Int        => JInt(i)
+    case i: BigInt     => JInt(i)
+    case l: Long       => JInt(l)
+    case d: Double     => JDouble(d)
+    case f: Float      => JDouble(f)
+    case d: BigDecimal => JDouble(d.doubleValue)
+    case b: Boolean    => JBool(b)
+    case s: String     => JString(s)
+    case _             => Extraction.decompose(obj)
   }
 
   /** Deserializes from the given json string to the object if possible or throws a
    *  `SohvaJsonExpcetion`
    */
-  def fromJson[T: Manifest](json: String): T =
+  def fromJson[T: Manifest](json: JValue): T =
     try {
-      Serialization.read[T](json)
+      json.extract[T]
     } catch {
       case e: Exception =>
         throw SohvaJsonException("Unable to extract from the json string \"" + json + "\"", e)
     }
 
-  def fromCouchJson(json: String) = fromJsonOpt[JObject](json) match {
-    case Some(obj) =>
-      (obj \ "_id", obj \ "_rev") match {
-        case (JString(_id), JString(_rev)) => Some(_id -> Some(_rev))
-        case (JString(_id), JNothing)      => Some(_id -> None)
-        case (_, _)                        => None
-      }
-    case None =>
-      None
-  }
+  def fromCouchJson(json: JValue) =
+    (json \ "_id", json \ "_rev") match {
+      case (JString(_id), JString(_rev)) => Some(_id -> Some(_rev))
+      case (JString(_id), JNothing)      => Some(_id -> None)
+      case (_, _)                        => None
+    }
 
   /** Deserializes from the given json string to the object if possible or returns
    *  `None` otherwise
    */
-  def fromJsonOpt[T: Manifest](json: String): Option[T] =
-    fromJsonOpt(JsonParser.parse(json))
-
   def fromJsonOpt[T: Manifest](json: JValue): Option[T] =
-    Extraction.extractOpt(json)
+    json.extractOpt[T]
 
 }
 

@@ -25,14 +25,8 @@ trait OAuthSession[Result[_]] extends CouchDB[Result] with Session[Result] {
   /** The current session consumer key */
   val consumerKey: String
 
-  /** The current session consumer secret */
-  val consumerSecret: String
-
   /** The current session token */
   val token: String
-
-  /** The current session secret */
-  val secret: String
 
 }
 

@@ -18,10 +18,9 @@ package async
 
 import strategy._
 
-import dispatch._
-import Defaults._
-
 import java.net.URL
+
+import scala.concurrent.Future
 
 /** A replicator database that allows people to manage replications:
  *   - start replication
@@ -31,25 +30,25 @@ import java.net.URL
  *  @author Lucas Satabin
  */
 class Replicator(name: String, couch: CouchDB, credit: Int, strategy: Strategy)
-    extends Database(name, couch, credit, strategy) with gnieh.sohva.Replicator[AsyncResult] {
+    extends Database(name, couch, credit, strategy) with gnieh.sohva.Replicator[Future] {
 
-  def start(replication: Replication): AsyncResult[Option[Replication]] =
+  def start(replication: Replication): Future[Option[Replication]] =
     saveDoc(replication)
 
-  def stop(id: String): AsyncResult[Boolean] =
+  def stop(id: String): Future[Boolean] =
     for {
-      repl <- getDocById[Replication](id).right
-      ok <- deleteReplication(repl).right
+      repl <- getDocById[Replication](id)
+      ok <- deleteReplication(repl)
     } yield ok
 
   private def deleteReplication(repl: Option[Replication]) = repl match {
     case Some(r) =>
       for {
-        ok <- deleteDoc(r).right
+        ok <- deleteDoc(r)
         // is this the original document that started the replication task?
       } yield r._replication_state.isDefined && ok
     case None =>
-      Future.successful(Right(false))
+      Future.successful(false)
   }
 
 }

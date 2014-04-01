@@ -22,48 +22,36 @@ import org.scalatest._
 
 import strategy._
 
-object SohvaTests {
+import akka.actor.ActorSystem
+import akka.util.Timeout
+import scala.concurrent.duration._
+
+abstract class SohvaTestSpec extends FlatSpec with ShouldMatchers with BeforeAndAfterAll {
+
+  implicit val system = ActorSystem()
+  implicit val timeout = Timeout(5.seconds)
+
   val couch = new CouchClient
   val session = couch.startCookieSession
   val db =  session.database("sohva-tests")
-}
-
-abstract class SohvaTestSpec extends FlatSpec with ShouldMatchers {
-
-  val couch = SohvaTests.couch
-  val session = SohvaTests.session
-  val db = SohvaTests.db
-
-}
-
-class SohvaTestSuite extends Suites(TestBasic,
-  TestCopy,
-  TestAttachments,
-  TestBulkDocs,
-  TestSecurity,
-  TestSerializer,
-  TestPasswordReset,
-  TestBarneyStinsonStrategy,
-  TestViews,
-  TestOAuth,
-  TestChanges) with BeforeAndAfterAll {
 
   override def beforeAll() {
     // login
-    SohvaTests.session.login("admin", "admin")
+    session.login("admin", "admin")
     // create database
-    SohvaTests.db.create
+    db.create
   }
 
   override def afterAll() {
     // cleanup database
-    SohvaTests.db.delete
+    db.delete
     // logout
-    SohvaTests.session.logout
-    // shutdown client
-    //SohvaTests.couch.shutdown
+    session.logout
+    system.shutdown()
   }
+
 }
 
 case class TestDoc(_id: String, toto: Int)(val _rev: Option[String] = None)
 case class TestDoc2(_id: String, toto: Int) extends IdRev
+

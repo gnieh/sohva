@@ -20,7 +20,7 @@ import org.scalatest._
 
 import sync._
 
-object TestOAuth extends SohvaTestSpec with BeforeAndAfterAll {
+class TestOAuth extends SohvaTestSpec with BeforeAndAfterAll {
 
   val consumerKey1 = "consumer1"
   val consumerSecret1 = "comsumer1_secret"
@@ -51,10 +51,10 @@ object TestOAuth extends SohvaTestSpec with BeforeAndAfterAll {
   }
 
   override def afterAll(): Unit = try {
-    super.afterAll()
-  } finally {
     val userDb = session.database("_users")
     userDb.deleteDoc("org.couchdb.user:" + user)
+  } finally {
+    super.afterAll()
   }
 
   "An OAuth session" should "give access to same rights as the cookie authenticated user" in {

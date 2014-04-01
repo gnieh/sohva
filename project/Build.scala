@@ -12,7 +12,7 @@ import java.io.File
 
 object SohvaBuild extends Build {
 
-  val sohvaVersion = "0.6-SNAPSHOT"
+  val sohvaVersion = "1.0.0-SNAPSHOT"
 
   lazy val sohva = (Project(id = "sohva",
     base = file(".")) settings (
@@ -23,11 +23,10 @@ object SohvaBuild extends Build {
     homepage in ThisBuild := Some(url("https://github.com/gnieh/sohva")),
     name := "sohva",
     version in ThisBuild := sohvaVersion,
-    scalaVersion in ThisBuild := "2.10.3",
-    crossScalaVersions in ThisBuild := Seq("2.9.3", "2.10.3"),
+    scalaVersion in ThisBuild := "2.10.4",
     libraryDependencies in ThisBuild ++= globalDependencies,
     parallelExecution in ThisBuild := false,
-    compileOptions)
+    scalacOptions in ThisBuild ++= Seq("-deprecation", "-feature", "-language:higherKinds,implicitConversions,reflectiveCalls"))
     settings(publishSettings: _*)
     settings(unidocSettings: _*)
   ) aggregate(client, testing)
@@ -43,18 +42,9 @@ object SohvaBuild extends Build {
 
   lazy val globalDependencies = Seq(
     "org.scalatest" %% "scalatest" % "2.0.M5b" % "test",
-    "com.jsuereth" %% "scala-arm" % "1.3" % "test" cross CrossVersion.binaryMapped {
-      case "2.9.3" => "2.9.2"
-      case v       => v
-    }
+    "com.jsuereth" %% "scala-arm" % "1.3" % "test",
+    "com.typesafe.akka" %% "akka-osgi" % "2.3.0" % "test"
   )
-
-  lazy val compileOptions = scalacOptions in ThisBuild <++= scalaVersion map { v =>
-    if(v.startsWith("2.10"))
-      Seq("-deprecation", "-language:_")
-    else
-      Seq("-deprecation")
-  }
 
   lazy val publishSettings = Seq(
     publishMavenStyle in ThisBuild := true,
@@ -110,16 +100,11 @@ object SohvaBuild extends Build {
     )
 
   lazy val clientDependencies = Seq(
-    "net.databinder.dispatch" %% "dispatch-core" % "0.11.0" exclude("commons-logging", "commons-logging"),
+    "io.spray" % "spray-client" % "1.3.1",
+    "com.typesafe.akka" %% "akka-actor" % "2.3.0" % "provided",
     "org.gnieh" %% "diffson" % "0.2",
-    "com.jsuereth" %% "scala-arm" % "1.3" cross CrossVersion.binaryMapped {
-      case "2.9.3" => "2.9.2"
-      case v => "2.10"
-    },
-    "net.liftweb" %% "lift-json" % "2.5" cross CrossVersion.binaryMapped {
-      case "2.9.3" => "2.9.2"
-      case v => "2.10"
-    },
+    "com.jsuereth" %% "scala-arm" % "1.3",
+    "net.liftweb" %% "lift-json" % "2.5",
     "org.slf4j" % "slf4j-api" % "1.7.2"
   )
 

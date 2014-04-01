@@ -85,7 +85,7 @@ trait Database[Result[_]] {
   def getDocById[T: Manifest](id: String, revision: Option[String] = None): Result[Option[T]]
 
   /** Returns the raw repsentation of the document identified by the given id if it exists */
-  def getRawDocById(id: String, revision: Option[String] = None): Result[Option[String]]
+  def getRawDocById(id: String, revision: Option[String] = None): Result[Option[JValue]]
 
   /** Returns all the documents with given identifiers and of the given type.
    *  If the document with an identifier exists in the database but has not the

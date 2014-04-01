@@ -22,7 +22,7 @@ import org.scalatest.OptionValues._
 
 import sync._
 
-object TestViews extends SohvaTestSpec with ShouldMatchers with BeforeAndAfterEach {
+class TestViews extends SohvaTestSpec with ShouldMatchers with BeforeAndAfterEach {
 
   val docs: List[TestDoc] =
     (for {

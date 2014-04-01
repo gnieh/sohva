@@ -16,10 +16,11 @@
 package gnieh.sohva
 package async
 
-import dispatch._
-import Defaults._
-
 import net.liftweb.json._
+
+import scala.concurrent.Future
+
+import spray.client.pipelining._
 
 /** A view can be queried to get the result.
  *
@@ -29,12 +30,13 @@ class View[Key: Manifest, Value: Manifest, Doc: Manifest](
   val design: String,
   val db: Database,
   val view: String)
-    extends gnieh.sohva.View[AsyncResult, Key, Value, Doc] {
+    extends gnieh.sohva.View[Future, Key, Value, Doc] {
 
   import db.couch.serializer
+  import db.ec
   import serializer.formats
 
-  protected[this] def request = db.request / "_design" / design / "_view" / view
+  protected[this] def uri = db.uri / "_design" / design / "_view" / view
 
   def query(key: Option[Key] = None,
     keys: List[Key] = Nil,
@@ -51,15 +53,15 @@ class View[Key: Manifest, Value: Manifest, Doc: Manifest](
     reduce: Boolean = true,
     include_docs: Boolean = false,
     inclusive_end: Boolean = true,
-    update_seq: Boolean = false): AsyncResult[ViewResult[Key, Value, Doc]] = {
+    update_seq: Boolean = false): Future[ViewResult[Key, Value, Doc]] = {
 
     // build options
     val options = List(
-      key.map(k => "key" -> serializer.toJson(k)),
-      if (keys.nonEmpty) Some("keys" -> serializer.toJson(keys)) else None,
-      startkey.map(k => "startkey" -> serializer.toJson(k)),
+      key.map(k => "key" -> compact(render(serializer.toJson(k)))),
+      if (keys.nonEmpty) Some("keys" -> compact(render(serializer.toJson(keys)))) else None,
+      startkey.map(k => "startkey" -> compact(render(serializer.toJson(k)))),
       startkey_docid.map("startkey_docid" -> _),
-      endkey.map(k => "endkey" -> serializer.toJson(k)),
+      endkey.map(k => "endkey" -> compact(render(serializer.toJson(k)))),
       endkey_docid.map("endkey_docid" -> _),
       if (limit > 0) Some("limit" -> limit) else None,
       stale.map("stale" -> _),
@@ -75,18 +77,18 @@ class View[Key: Manifest, Value: Manifest, Doc: Manifest](
       .flatten
       .filter(_ != null) // just in case somebody gave Some(null)...
       .map { case (name, value) => (name, value.toString) }
+      .toMap
 
-    for (res <- db.couch.http(request <<? options).right)
+    for (res <- db.couch.http(Get(uri <<? options)))
       yield viewResult[Key, Value, Doc](res)
 
   }
 
   // helper methods
 
-  private def viewResult[Key: Manifest, Value: Manifest, Doc: Manifest](json: String) = {
-    val ast = parse(json)
-    val offset = (ast \ "offset").extractOpt[Int].getOrElse(0)
-    val rows = (ast \ "rows") match {
+  private def viewResult[Key: Manifest, Value: Manifest, Doc: Manifest](json: JValue) = {
+    val offset = (json \ "offset").extractOpt[Int].getOrElse(0)
+    val rows = (json \ "rows") match {
       case JArray(rows) =>
         rows.flatMap { row =>
           for {
@@ -99,7 +101,7 @@ class View[Key: Manifest, Value: Manifest, Doc: Manifest](
       case _ =>
         Nil
     }
-    val total_rows = (ast \ "total_rows").extractOpt[Int].getOrElse(rows.size)
+    val total_rows = (json \ "total_rows").extractOpt[Int].getOrElse(rows.size)
     ViewResult(total_rows, offset, rows)
   }
 
@@ -114,7 +116,7 @@ private class BuiltInView[Key: Manifest, Value: Manifest, Doc: Manifest](
   view: String)
     extends View[Key, Value, Doc]("", db, view) {
 
-  override protected[this] def request = db.request / view
+  override protected[this] def uri = db.uri / view
 
 }
 

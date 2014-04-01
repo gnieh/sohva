@@ -15,14 +15,50 @@
 */
 package gnieh.sohva
 
-import dispatch._
+import spray.http._
+import spray.httpx._
+import spray.client.pipelining._
+
+import java.io.File
 
 package object async {
-
-  type RawResult[T] = Either[(Int, Option[ErrorResult]), T]
-  type AsyncResult[T] = Future[RawResult[T]]
 
   @deprecated(message = "This type has been deprecated and will be removed in the next version. Please use type CookieSession instead", since = "0.5")
   type CouchSession = CookieSession
 
+  // register the COPY method
+  val COPY = HttpMethod.custom("COPY", true, true, false)
+  HttpMethods.register(COPY)
+  val Copy = new RequestBuilding.RequestBuilder(COPY)
+
+  private[async] implicit class EnhancedUri(val uri: Uri) extends AnyVal {
+
+    def /(part: String) =
+      uri.withPath(part.split("/").foldLeft(uri.path)(_ / _))
+
+    def <<?(params: Map[String, String]): Uri =
+      uri.withQuery(params)
+
+    def <<?(params: Seq[(String, String)]): Uri =
+      uri.withQuery(params: _*)
+
+    def <<?(param: Option[(String, String)]): Uri =
+      param match {
+        case Some(param) => uri.withQuery(param)
+        case None        => uri
+      }
+
+  }
+
+  private[async] implicit class Req(val req: HttpRequest) extends AnyVal {
+
+    def <:<(headers: Iterable[(String, String)]): HttpRequest =
+      headers.foldLeft(req) {
+        case (acc, (name, value)) =>
+          acc ~> addHeader(name, value)
+      }
+
+  }
+
 }
+

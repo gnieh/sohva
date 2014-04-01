@@ -15,9 +15,6 @@
 */
 package gnieh.sohva
 
-import dispatch._
-import Defaults._
-
 import net.liftweb.json._
 
 import scala.collection.mutable.Map
@@ -52,18 +49,21 @@ abstract class ChangeStream {
   /** Indicates whether this stream is closed */
   def closed: Boolean
 
+  /** Closes this stream */
+  def close(): Unit
+
 }
 
 protected[sohva] object ChangeStream {
 
   object change {
-    def unapply(json: String)(implicit formats: Formats) =
-      parse(json).extractOpt[Change].flatMap(Change.unapply)
+    def unapply(json: JValue)(implicit formats: Formats) =
+      json.extractOpt[Change].flatMap(Change.unapply)
   }
 
   object last_seq {
-    def unapply(json: String)(implicit formats: Formats) =
-      parse(json).extractOpt[LastSeq].flatMap(LastSeq.unapply)
+    def unapply(json: JValue)(implicit formats: Formats) =
+      json.extractOpt[LastSeq].flatMap(LastSeq.unapply)
   }
 
 }

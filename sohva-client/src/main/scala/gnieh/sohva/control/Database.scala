@@ -25,7 +25,7 @@ import java.io.{
   InputStream
 }
 
-import net.liftweb.json.JObject
+import net.liftweb.json._
 
 import scala.util.Try
 
@@ -100,7 +100,7 @@ class Database private[sohva] (wrapped: ADatabase) extends gnieh.sohva.Database[
     synced(wrapped.getDocById(id, revision))
 
   @inline
-  def getRawDocById(id: String, revision: Option[String] = None): Try[Option[String]] =
+  def getRawDocById(id: String, revision: Option[String] = None): Try[Option[JValue]] =
     synced(wrapped.getRawDocById(id, revision))
 
   @inline
