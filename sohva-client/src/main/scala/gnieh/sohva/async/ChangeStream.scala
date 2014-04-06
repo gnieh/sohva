@@ -31,161 +31,160 @@ import scala.util.{
 }
 import scala.concurrent.duration.Duration
 
-/** The original change stream (meaning unfiltered) on the client side
- *  which contains the active connection to the database
+import rx.lang.scala._
+
+import java.util.concurrent.atomic.AtomicLong
+
+/** The original change stream which contains the active connection to the database.
+ *  this is the interface to subscribe to the observable, and to stop the stream.
  *
  *  @author Lucas Satabin
  */
-class OriginalChangeStream(database: Database,
-    filter: Option[String]) extends ChangeStream {
+class ChangeStream(database: Database, since: Option[Int], filter: Option[String]) extends gnieh.sohva.ChangeStream {
 
-  import database.couch.serializer.formats
+  implicit val system = database.couch.system
 
-  import database.ec
+  private val subscriptionId = new AtomicLong
 
-  import ChangeStream._
+  private val actor = system.actorOf(Props(new ChangeActor(database, filter)))
 
-  private[this] val uri = database.uri / "_changes"
-
-  private[this] var _closed = false
-
-  private[this] implicit def system = database.couch.system
-
-  private[this] val actor = system.actorOf(Props(new ChangeActor))
-
-  private[this] class ChangeActor extends Actor with ActorLogging {
-
-    override def preStart(): Unit = {
-      val couch = database.couch
-      val localSettings =
-        ClientConnectionSettings(system).copy(responseChunkAggregationLimit = 0, requestTimeout = Duration.Inf)
-      log.debug(s"change stream settings for database ${database.name}: $localSettings")
-      IO(Http) ! Http.Connect(couch.host, port = couch.port, sslEncryption = couch.ssl, settings = Some(localSettings))
+  val stream: Observable[(String, Option[JObject])] =
+    Observable { observer =>
+      val id = subscriptionId.getAndIncrement()
+      // send the subscription request
+      actor ! Subscribe(id, observer)
+      // this subscription allows the observe to unsubscribe any time it wants
+      Subscription {
+        actor ! Unsubscribe(id)
+      }
     }
 
-    def receive = connecting(sender, Map())
+  def subscribe(obs: ((String, Option[JObject])) => Unit): Subscription =
+    stream.subscribe(obs)
 
-    def connecting(commander: ActorRef, handlers: Map[Int, ((String, Option[JObject])) => Unit]): Receive = {
-      case _: Http.Connected =>
-        // connection has been established, send the change stream request
-        val params = {
-          val base = Map(
-            "feed" -> "continuous",
-            "since" -> "now",
-            "include_docs" -> "true"
-          )
-          filter match {
-            case Some(filter) => base + ("filter" -> filter)
-            case None         => base
-          }
-        }
-        val req = HttpRequest(uri = uri <<? params)
-
-        sender ! req
-
-        context.become(receiving(commander, handlers))
-
-      case Http.CommandFailed(Http.Connect(address, _, _, _, _)) =>
-        commander ! Status.Failure(new RuntimeException("Connection error"))
-        close()
-
-      case Register(handler) =>
-        context.become(connecting(commander, handlers + (handler.hashCode -> handler)))
-
-      case Unregister(id) =>
-        context.become(connecting(commander, handlers - id))
-
-    }
-
-    def receiving(commander: ActorRef, handlers: Map[Int, ((String, Option[JObject])) => Unit]): Receive = {
-      case MessageChunk(data, _) =>
-        Try(parse(data.asString)).map {
-          case change(seq, id, rev, deleted, doc) =>
-            for ((_, f) <- handlers)
-              f(id, doc)
-          case _ =>
-          // ignore other messages
-        }
-
-      case ChunkedMessageEnd(_, _) =>
-        sender ! Http.Close
-        close()
-
-      case Register(handler) =>
-        context.become(receiving(commander, handlers + (handler.hashCode -> handler)))
-
-      case Unregister(id) =>
-        context.become(receiving(commander, handlers - id))
-
-      case Http.SendFailed(_) | Timedout(_) =>
-        commander ! Status.Failure(new RuntimeException("Request error"))
-        close()
-
-      case CloseStream =>
-        commander ! Http.Close
-        context.stop(self)
-
-    }
-
-  }
-
-  def close(): Unit = synchronized {
-    // mark the stream as closed
-    _closed = true
+  def close(): Unit =
     actor ! CloseStream
-  }
-
-  def closed = _closed
-
-  def foreach(f: Tuple2[String, Option[JObject]] => Unit): Int = synchronized {
-    if (!closed) {
-      require(f != null, "Function must not be null")
-      actor ! Register(f)
-      f.hashCode
-    } else {
-      -1
-    }
-  }
-
-  def filter(p: Tuple2[String, Option[JObject]] => Boolean): ChangeStream =
-    new FilteredChangeStream(p, this)
-
-  def unregister(id: Int): Unit = synchronized {
-    if (!closed)
-      actor ! Unregister(id)
-  }
 
 }
 
-/** The filtered change stream
+/** This actor is responsible for managing the connection to the change stream
+ *  of the database.
+ *  It opens an endless update feed that gets notified by the database whenever some change
+ *  happens. It notifies the obervers that subscribed to the `Observable`.
  *
  *  @author Lucas Satabin
  */
-class FilteredChangeStream(p: Tuple2[String, Option[JObject]] => Boolean, original: ChangeStream) extends ChangeStream {
+private class ChangeActor(database: Database, filter: Option[String]) extends Actor with ActorLogging {
 
-  def foreach(f: Tuple2[String, Option[JObject]] => Unit) =
-    original.foreach {
-      case (id, doc) if p(id, doc) =>
-        f(id, doc)
-      case _ =>
-      // do nothing
-    }
+  implicit def system = context.system
 
-  def filter(p: Tuple2[String, Option[JObject]] => Boolean): ChangeStream =
-    new FilteredChangeStream(p, this)
+  import database.formats
 
-  def closed =
-    original.closed
+  private val uri = database.uri / "_changes"
 
-  def close() =
-    original.close()
+  override def preStart(): Unit = {
+    // ok so we just created a new change stream, connect to the `_changes` endpoint
+    // this connection expect a chunked response and no timeout
+    val couch = database.couch
+    val localSettings =
+      ClientConnectionSettings(system).copy(responseChunkAggregationLimit = 0, requestTimeout = Duration.Inf)
+    log.debug(s"change stream settings for database ${database.name}: $localSettings")
+    IO(Http) ! Http.Connect(couch.host, port = couch.port, sslEncryption = couch.ssl, settings = Some(localSettings))
+  }
 
-  def unregister(id: Int) =
-    original.unregister(id)
+  def receive = connecting(Map())
+
+  def connecting(observers: Map[Long, Observer[(String, Option[JObject])]]): Receive = {
+    case _: Http.Connected =>
+      // connection has been established, send the change stream request
+      val params = {
+        val base = Map(
+          "feed" -> "continuous",
+          "since" -> "now",
+          "include_docs" -> "true"
+        )
+        filter match {
+          case Some(filter) => base + ("filter" -> filter)
+          case None         => base
+        }
+      }
+      val req = HttpRequest(uri = uri <<? params)
+
+      sender ! req
+
+      // and now we are ready to receive update data
+      context.become(receiving(sender, observers))
+
+    case Http.CommandFailed(Http.Connect(address, _, _, _, _)) =>
+      val exn = new RuntimeException("Could not connect to $address")
+      // notify the already subscribed observers
+      for((_, o) <- observers)
+        o.onError(exn)
+      // and notify the commander that initiated the conncetion
+      sender ! Status.Failure(exn)
+      // finally, stop myself
+      context.stop(self)
+
+    case Subscribe(id, observer) =>
+      // not so fast new subscriber, connection has not been established yet!
+      // however, we are nice and still accept you
+      context.become(connecting(observers + (id -> observer)))
+
+    case Unsubscribe(id) =>
+      // oh, that was quick, but ok, if you wanna leave, just do it,
+      // we'll connect without you anyway
+      context.become(connecting(observers - id))
+
+  }
+
+  def receiving(commander: ActorRef, observers: Map[Long, Observer[(String, Option[JObject])]]): Receive = {
+    case MessageChunk(data, _) =>
+      Try(parse(data.asString)).map {
+        case Change(seq, id, rev, deleted, doc) =>
+          for ((_, o) <- observers)
+            o.onNext(id, doc)
+        case _ => // ignore other json messages
+      }
+
+    case ChunkedMessageEnd(_, _) =>
+      // notify the observers that the stream has ended
+      for ((_, o) <- observers)
+        o.onCompleted()
+      // and stop myself
+      context.stop(self)
+
+    case Subscribe(id, observer) =>
+      // we are pleased to welcome a new observer, let xour observations be successful
+      context.become(receiving(commander, observers + (id -> observer)))
+
+    case Unsubscribe(id) =>
+      // goodbye buddy!
+      context.become(receiving(commander, observers - id))
+
+    case Http.SendFailed(_) | Timedout(_) =>
+      // notify the observers that some error happened
+      val exn = new RuntimeException("The change stream request to $uri failed")
+      for((_, o) <- observers)
+        o.onError(exn)
+      // notify the commander that initiated the request
+      commander ! Status.Failure(exn)
+      // and stop myself
+      context.stop(self)
+
+    case CloseStream =>
+      // notify the observers that the stream has ended
+      for ((_, o) <- observers)
+        o.onCompleted()
+      // close the connection
+      commander ! Http.Close
+      // and stop myself
+      context.stop(self)
+
+  }
 
 }
 
-private case class Unregister(id: Int)
-private case class Register(handler: ((String, Option[JObject])) => Unit)
+private case class Unsubscribe(id: Long)
+private case class Subscribe(id: Long, observer: Observer[(String, Option[JObject])])
 private case object CloseStream
 

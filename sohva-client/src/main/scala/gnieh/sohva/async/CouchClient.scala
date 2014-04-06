@@ -77,7 +77,7 @@ class CouchClient(val host: String = "localhost",
   def startOAuthSession(consumerKey: String, consumerSecret: String, token: String, secret: String) =
     new OAuthSession(consumerKey, consumerSecret, token, secret, this)
 
-  def shutdown =
+  def shutdown() =
     IO(Http) ! Http.CloseAll
 
   // ========== internals ==========

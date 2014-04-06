@@ -56,8 +56,9 @@ class Database private[sohva] (wrapped: ADatabase) extends gnieh.sohva.Database[
   def exists: Try[Boolean] =
     synced(wrapped.exists)
 
-  def changes(filter: Option[String] = None): ChangeStream =
-    wrapped.changes(filter)
+  @inline
+  def changes(since: Option[Int] = None, filter: Option[String] = None): ChangeStream =
+    wrapped.changes(since, filter)
 
   @inline
   def create: Try[Boolean] =

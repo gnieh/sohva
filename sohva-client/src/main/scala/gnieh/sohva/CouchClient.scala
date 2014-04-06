@@ -37,6 +37,6 @@ trait CouchClient[Result[_]] extends CouchDB[Result] {
   def startOAuthSession(consumerKey: String, consumerSecret: String, token: String, secret: String): OAuthSession[Result]
 
   /** Shuts down this instance of couchdb client. */
-  def shutdown
+  def shutdown()
 
 }

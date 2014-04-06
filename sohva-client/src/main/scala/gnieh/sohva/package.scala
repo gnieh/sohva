@@ -21,6 +21,10 @@ import java.security.MessageDigest
 
 import scala.util.Random
 
+import rx.lang.scala._
+
+import net.liftweb.json._
+
 /** Contains all the classes needed to interact with a couchdb server.
  *  Classes in this package allows the user to:
  *  - create/delete new databases into a couchdb instance,
