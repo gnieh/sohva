@@ -20,3 +20,18 @@ class CouchException(val status: Int, val detail: Option[ErrorResult])
 
 class ConflictException(detail: Option[ErrorResult]) extends CouchException(409, detail)
 
+object CouchException {
+
+  def apply(status: Int, detail: Option[ErrorResult]): CouchException =
+    if (status == 409)
+      new ConflictException(detail)
+    else
+      new CouchException(status, detail)
+
+  def unapply(exn: Throwable): Option[(Int, Option[ErrorResult])] = exn match {
+    case exn: CouchException => Some(exn.status -> exn.detail)
+    case _                   => None
+  }
+
+}
+

@@ -20,6 +20,9 @@ import gnieh.sohva.async.{
   CouchClient => ACouchClient
 }
 
+import akka.actor.ActorSystem
+import akka.util.Timeout
+
 import scala.util.Try
 
 /** A CouchDB instance.
@@ -36,7 +39,9 @@ class CouchClient private[control] (wrapped: ACouchClient) extends CouchDB(wrapp
   def this(host: String = "localhost",
     port: Int = 5984,
     ssl: Boolean = false,
-    version: String = "1.4") =
+    version: String = "1.4")(
+      implicit system: ActorSystem,
+      timeout: Timeout) =
     this(new ACouchClient(host, port, ssl, version))
 
   def startCookieSession =

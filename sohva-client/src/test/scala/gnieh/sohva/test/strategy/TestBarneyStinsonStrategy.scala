@@ -24,8 +24,6 @@ import sync._
 
 object TestBarneyStinsonStrategy extends SohvaTestSpec with ShouldMatchers with BeforeAndAfterEach {
 
-  import SohvaTests._
-
   override val db = couch.database("sohva-tests", 1)
 
   override def afterEach {

@@ -16,26 +16,27 @@
 package gnieh.sohva
 package async
 
-import dispatch._
-import oauth._
+import akka.actor.ActorRef
 
-import com.ning.http.client.oauth._
-import com.ning.http.client.AsyncHandler
+import scala.concurrent.Future
+import spray.http._
 
 /** An instance of a Couch session that allows the user to perform authenticated
  *  operations using OAuth.
+ *  The request is prepared as per RFC-5849
  *
  *  @author Lucas Satabin
  */
 class OAuthSession protected[sohva] (
   val consumerKey: String,
-  val consumerSecret: String,
+  consumerSecret: String,
   val token: String,
-  val secret: String,
+  secret: String,
   val couch: CouchClient)
     extends CouchDB
     with Session
-    with gnieh.sohva.OAuthSession[AsyncResult] {
+    with gnieh.sohva.OAuthSession[Future]
+    with LiftMarshalling {
 
   val host =
     couch.host
@@ -43,23 +44,36 @@ class OAuthSession protected[sohva] (
   val port =
     couch.port
 
+  val ssl =
+    couch.ssl
+
   val version =
     couch.version
 
   val serializer =
     couch.serializer
 
+  val system =
+    couch.system
+
+  implicit def formats =
+    serializer.formats
+
+  implicit def ec = couch.ec
+
   // helper methods
 
-  private val consumer = new ConsumerKey(consumerKey, consumerSecret)
-  private val user = new RequestToken(token, secret)
+  protected[sohva] val pipeline =
+    couch.pipeline
 
-  protected[sohva] def _http[T](req: Req, handler: AsyncHandler[T]) =
-    couch._http(req.sign(consumer, user), handler)
+  private val oauth = OAuth.oAuthAuthorizer(consumerKey, consumerSecret, token, secret)
+
+  protected[sohva] def prepare(req: HttpRequest) =
+    oauth(req)
 
   // sign all requests sent to CouchDB
-  protected[sohva] def request =
-    couch.request
+  protected[sohva] def uri =
+    couch.uri
 
 }
 

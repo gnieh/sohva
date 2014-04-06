@@ -18,10 +18,17 @@ package test
 
 import sync._
 
+import akka.actor.ActorSystem
+import akka.util.Timeout
+import scala.concurrent.duration._
+
 /** @author Lucas Satabin
  *
  */
-object TestCreateUser extends App {
+class TestCreateUser extends App {
+
+  implicit val system = ActorSystem()
+  implicit val timeout = Timeout(5.seconds)
 
   val couch = new CouchClient
 

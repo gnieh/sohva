@@ -20,26 +20,23 @@ import strategy.Strategy
 
 import resource._
 
-import dispatch._
-import Defaults._
-import retry.{
-  CountingRetry,
-  Success
-}
-import stream.Strings
-
-import com.ning.http.client.Response
-
 import java.io.{
   File,
   InputStream,
   FileOutputStream,
+  ByteArrayInputStream,
   BufferedInputStream
 }
 
 import net.liftweb.json._
 
 import gnieh.diffson.JsonPatch
+
+import scala.concurrent.Future
+
+import spray.http._
+import spray.client.pipelining._
+import spray.httpx.marshalling._
 
 /** Gives the user access to the different operations available on a database.
  *  Among other operations this is the key class to get access to the documents
@@ -58,88 +55,72 @@ class Database private[sohva] (
   val couch: CouchDB,
   val credit: Int,
   val strategy: Strategy)
-    extends gnieh.sohva.Database[AsyncResult] {
+    extends gnieh.sohva.Database[Future]
+    with LiftMarshalling {
 
   import couch.serializer
 
+  implicit def ec =
+    couch.ec
+
+  implicit def formats =
+    couch.formats
+
   /* the resolver is responsible for applying the merging strategy on conflict and retrying
    * to save the document after resolution process */
-  private object resolver extends CountingRetry {
-    // only retry if a conflict occurred, other errors are considered as 'Success'
-    val saveOk = new Success[Either[(Int, Option[ErrorResult]), String]]({
-      case Left((409, _)) => false
-      case _              => true
-    })
-    def apply(credit: Int, docId: String, baseRev: Option[String], doc: String): AsyncResult[String] = {
-      def doit(count: Int): AsyncResult[String] =
+  private def resolver(credit: Int, docId: String, baseRev: Option[String], current: JValue): Future[JValue] =
+    couch.http(Put(uri / docId, current)).recoverWith {
+      case CouchException(409, _) if credit > 0 =>
+        // try to resolve the conflict and save again
         // get the base document if any
-        getRawDocById(docId, baseRev) flatMap {
-          case Right(base) =>
-            // get the last document from database
-            getRawDocById(docId) flatMap {
-              case Right(last) =>
-                // apply the merge strategy between base, last and current revision of the document
-                val baseDoc = base map (parse _)
-                val lastDoc = last map (parse _)
-                val lastRev = lastDoc map (d => (d \ "_rev").toString)
-                val currentDoc = parse(doc)
-                val resolvedDoc = strategy(baseDoc, lastDoc, currentDoc)
-                val resolved = compact(render(resolvedDoc))
-                resolver(count, docId, lastRev, resolved)
-              case Left(res) =>
-                // some other error occurred
-                Future.successful(Left(res))
-            }
-          case Left(res) =>
-            // some other error occurred
-            Future.successful(Left(res))
+        getRawDocById(docId, baseRev).flatMap { base =>
+          // get the last document
+          getRawDocById(docId).flatMap { last =>
+            // apply the merge strategy between base, last and current revision of the document
+            val lastRev = last map (d => (d \ "_rev").toString)
+            val resolved = strategy(base, last, current)
+            resolver(credit - 1, docId, lastRev, resolved)
+          }
         }
-
-      retry(credit,
-        () => couch.http((request / docId << doc).PUT),
-        saveOk,
-        doit)
     }
 
-  }
-
-  def info: AsyncResult[Option[InfoResult]] =
-    for(info <- couch.optHttp(request).right)
+  def info: Future[Option[InfoResult]] =
+    for (info <- couch.optHttp(Get(uri)))
       yield info.map(infoResult)
 
-  def exists: AsyncResult[Boolean] =
-    for(h <- couch.optHttp(request.HEAD).right)
+  def exists: Future[Boolean] =
+    for (h <- couch.optHttp(Head(uri)))
       yield h.isDefined
 
   def changes(filter: Option[String] = None): ChangeStream =
     new OriginalChangeStream(this, filter)
 
-  def create: AsyncResult[Boolean] =
+  def create: Future[Boolean] =
     for {
-      exist <- exists.right
+      exist <- exists
       ok <- create(exist)
     } yield ok
 
   private[this] def create(exist: Boolean) =
     if (exist) {
-      Future.successful(Right(false))
+      Future.successful(false)
     } else {
-      for (result <- couch.http(request.PUT).right)
+      for (result <- couch.http(Put(uri)))
         yield couch.ok(result)
     }
 
-  def delete: AsyncResult[Boolean] =
+  def delete: Future[Boolean] =
     for {
-      exist <- exists.right
+      exist <- exists
       ok <- delete(exist)
     } yield ok
 
   private[this] def delete(exist: Boolean) =
     if (exist) {
-      for (result <- couch.http(request.DELETE).right)
+      for (result <- couch.http(Delete(uri)))
         yield couch.ok(result)
     } else {
-      Future.successful(Right(false))
+      Future.successful(false)
     }
 
   def _all_docs(key: Option[String] = None,
@@ -152,7 +133,7 @@ class Database private[sohva] (
     stale: Option[String] = None,
     descending: Boolean = false,
     skip: Int = 0,
-    inclusive_end: Boolean = true): AsyncResult[List[String]] =
+    inclusive_end: Boolean = true): Future[List[String]] =
     for {
       res <- builtInView[String, Map[String, String], Any]("_all_docs").query(
         key = key,
@@ -166,111 +147,110 @@ class Database private[sohva] (
         descending = descending,
         skip = skip,
         inclusive_end = inclusive_end
-      ).right
+      )
     } yield for (Row(Some(id), _, _, _) <- res.rows) yield id
 
-  def getDocById[T: Manifest](id: String, revision: Option[String] = None): AsyncResult[Option[T]] =
-    for (raw <- getRawDocById(id, revision).right)
+  def getDocById[T: Manifest](id: String, revision: Option[String] = None): Future[Option[T]] =
+    for (raw <- getRawDocById(id, revision))
       yield raw.map(docResult[T])
 
-  def getDocsById[T: Manifest](ids: List[String]): AsyncResult[List[T]] =
+  def getDocsById[T: Manifest](ids: List[String]): Future[List[T]] =
     for {
-      res <- builtInView[String, Map[String, String], T]("_all_docs").query(keys = ids, include_docs = true).right
+      res <- builtInView[String, Map[String, String], T]("_all_docs").query(keys = ids, include_docs = true)
     } yield res.rows.flatMap { case Row(_, _, _, doc) => doc }
 
-  def getRawDocById(id: String, revision: Option[String] = None): AsyncResult[Option[String]] =
-    couch.optHttp(request / id <<? revision.map("rev" -> _).toList)
+  def getRawDocById(id: String, revision: Option[String] = None): Future[Option[JValue]] =
+    couch.optHttp(Get(uri / id <<? revision.map("rev" -> _)))
 
-  def getDocRevision(id: String): AsyncResult[Option[String]] =
-    couch._http((request / id).HEAD, new FunctionHandler(extractRev _))
+  def getDocRevision(id: String): Future[Option[String]] =
+    couch.pipeline(couch.prepare((Head(uri / id)))).flatMap(extractRev _)
 
-  def getDocRevisions(ids: List[String]): AsyncResult[List[(String, String)]] =
+  def getDocRevisions(ids: List[String]): Future[List[(String, String)]] =
     for {
-      res <- builtInView[String, Map[String, String], Any]("_all_docs").query(keys = ids).right
+      res <- builtInView[String, Map[String, String], Any]("_all_docs").query(keys = ids)
     } yield res.rows.map { case Row(Some(id), _, value, _) => (id, value("rev")) }
 
-  def saveDoc[T <% IdRev: Manifest](doc: T): AsyncResult[Option[T]] =
+  def saveDoc[T <% IdRev: Manifest](doc: T): Future[Option[T]] =
     for {
-      upd <- resolver(credit, doc._id, doc._rev, serializer.toJson(doc)).right
-      res <- update(docUpdateResult(upd))
+      upd <- resolver(credit, doc._id, doc._rev, serializer.toJson(doc))
+      res <- update(upd.extract[DocUpdate])
     } yield res
 
-  def saveRawDoc(doc: String): AsyncResult[Option[String]] = serializer.fromCouchJson(doc) match {
+  def saveRawDoc(doc: JValue): Future[Option[JValue]] = serializer.fromCouchJson(doc) match {
     case Some((id, rev)) =>
       for {
-        upd <- resolver(credit, id, rev, doc).right
+        upd <- resolver(credit, id, rev, doc)
         res <- updateRaw(docUpdateResult(upd))
       } yield res
     case None =>
-      Future.successful(Right(None))
+      Future.successful(None)
   }
 
   private[this] def update[T: Manifest](res: DocUpdate) = res match {
     case DocUpdate(true, id, _) =>
       getDocById[T](id)
     case DocUpdate(false, _, _) =>
-      Future.successful(Right(None))
+      Future.successful(None)
   }
 
   private[this] def updateRaw(res: DocUpdate) = res match {
     case DocUpdate(true, id, _) =>
       getRawDocById(id)
     case DocUpdate(false, _, _) =>
-      Future.successful(Right(None))
+      Future.successful(None)
   }
 
-  def saveDocs[T <% IdRev](docs: List[T], all_or_nothing: Boolean = false): AsyncResult[List[DbResult]] =
+  def saveDocs[T <% IdRev](docs: List[T], all_or_nothing: Boolean = false): Future[List[DbResult]] =
     for {
-      raw <- couch.http(request / "_bulk_docs" << serializer.toJson(BulkSave(all_or_nothing, docs))).right
+      raw <- couch.http(Post(uri / "_bulk_docs", serializer.toJson(BulkSave(all_or_nothing, docs))))
     } yield bulkSaveResult(raw)
 
-  private[this] def bulkSaveResult(json: String) =
+  private[this] def bulkSaveResult(json: JValue) =
     serializer.fromJson[List[DbResult]](json)
 
-  def copy(origin: String, target: String, originRev: Option[String] = None, targetRev: Option[String] = None): AsyncResult[Boolean] =
+  def copy(origin: String, target: String, originRev: Option[String] = None, targetRev: Option[String] = None): Future[Boolean] =
     for (
-      res <- couch.http((request / origin).subject.setMethod("COPY")
+      res <- couch.http(Copy(uri / origin <<? originRev.map("rev" -> _))
         <:< Map("Destination" -> (target + targetRev.map("?rev=" + _).getOrElse("")))
-        <<? originRev.map("rev" -> _).toList
-      ).right
+      )
     ) yield couch.ok(res)
 
-  def patchDoc[T <: IdRev: Manifest](id: String, rev: String, patch: JsonPatch): AsyncResult[Option[T]] =
+  def patchDoc[T <: IdRev: Manifest](id: String, rev: String, patch: JsonPatch): Future[Option[T]] =
     for {
-      doc <- getDocById[T](id, Some(rev)).right
-      res <- patchDoc(doc, patch).right
+      doc <- getDocById[T](id, Some(rev))
+      res <- patchDoc(doc, patch)
     } yield res
 
   private[this] def patchDoc[T <: IdRev: Manifest](doc: Option[T], patch: JsonPatch) = doc match {
     case Some(doc) => saveDoc(patch(doc).withRev(doc._rev))
-    case None      => Future.successful(Right(None))
+    case None      => Future.successful(None)
   }
 
-  def deleteDoc[T <% IdRev](doc: T): AsyncResult[Boolean] =
-    for (res <- couch.http((request / doc._id).DELETE <<? Map("rev" -> doc._rev.getOrElse(""))).right)
+  def deleteDoc[T <% IdRev](doc: T): Future[Boolean] =
+    for (res <- couch.http(Delete(uri / doc._id <<? Map("rev" -> doc._rev.getOrElse("")))))
       yield couch.ok(res)
 
-  def deleteDoc(id: String): AsyncResult[Boolean] =
+  def deleteDoc(id: String): Future[Boolean] =
     for {
-      rev <- getDocRevision(id).right
+      rev <- getDocRevision(id)
       res <- delete(rev, id)
     } yield res
 
   private[this] def delete(rev: Option[String], id: String) =
     rev match {
       case Some(rev) =>
-        for (res <- couch.http((request / id).DELETE <<? Map("rev" -> rev)).right)
+        for (res <- couch.http(Delete(uri / id <<? Map("rev" -> rev))))
           yield couch.ok(res)
       case None =>
-        Future.successful(Right(false))
+        Future.successful(false)
     }
 
-  def deleteDocs(ids: List[String], all_or_nothing: Boolean = false): AsyncResult[List[DbResult]] =
+  def deleteDocs(ids: List[String], all_or_nothing: Boolean = false): Future[List[DbResult]] =
     for {
-      revs <- getDocRevisions(ids).right
+      revs <- getDocRevisions(ids)
       raw <- couch.http(
-        request / "_bulk_docs"
-          << serializer.toJson(
+        Post(uri / "_bulk_docs",
+          serializer.toJson(
             Map(
               "all_or_nothing" -> all_or_nothing,
               "docs" -> revs.map {
@@ -278,30 +258,30 @@ class Database private[sohva] (
               }
             )
           )
-      ).right
+        )
+      )
     } yield bulkSaveResult(raw)
 
-  def attachTo(docId: String, file: File, contentType: String): AsyncResult[Boolean] =
+  def attachTo(docId: String, file: File, contentType: String): Future[Boolean] = {
+    import MultipartMarshallers._
     // first get the last revision of the document (if it exists)
     for {
-      rev <- getDocRevision(docId).right
-      res <- couch.http(request / docId / file.getName <<? attachParams(rev) <<< file, contentType).right
+      rev <- getDocRevision(docId)
+      res <- couch.http(
+        Put(uri / docId / file.getName <<? rev.map("rev" -> _),
+          HttpEntity(
+            ContentType(MediaType.custom(contentType)),
+            HttpData(file)
+          )
+        )
+      )
     } yield couch.ok(res)
-
-  private[this] def attachParams(rev: Option[String]) =
-    rev match {
-      case Some(r) =>
-        List("rev" -> r)
-      case None =>
-        // doc does not exist? well... good... does it matter? no!
-        // couchdb will create it for us, don't worry
-        Nil
-    }
+  }
 
   def attachTo(docId: String,
     attachment: String,
     stream: InputStream,
-    contentType: String): AsyncResult[Boolean] = {
+    contentType: String): Future[Boolean] = {
     // create a temporary file with the content of the input stream
     val file = File.createTempFile(attachment, null)
     for (fos <- managed(new FileOutputStream(file))) {
@@ -314,13 +294,13 @@ class Database private[sohva] (
     attachTo(docId, file, contentType)
   }
 
-  def getAttachment(docId: String, attachment: String): AsyncResult[Option[(String, InputStream)]] =
-    couch._http(request / docId / attachment, new FunctionHandler(readFile _))
+  def getAttachment(docId: String, attachment: String): Future[Option[(String, InputStream)]] =
+    couch.pipeline(couch.prepare(Get(uri / docId / attachment))).flatMap(readFile)
 
-  def deleteAttachment(docId: String, attachment: String): AsyncResult[Boolean] =
+  def deleteAttachment(docId: String, attachment: String): Future[Boolean] =
     for {
       // first get the last revision of the document (if it exists)
-      rev <- getDocRevision(docId).right
+      rev <- getDocRevision(docId)
       res <- deleteAttachment(docId, attachment, rev)
     } yield res
 
@@ -328,20 +308,20 @@ class Database private[sohva] (
     rev match {
       case Some(r) =>
         for (
-          res <- couch.http((request / docId / attachment <<?
-            List("rev" -> r)).DELETE).right
+          res <- couch.http(Delete(uri / docId / attachment <<?
+            Map("rev" -> r)))
         ) yield couch.ok(res)
       case None =>
         // doc does not exist? well... good... just do nothing
-        Future.successful(Right(false))
+        Future.successful(false)
     }
 
-  def securityDoc: AsyncResult[SecurityDoc] =
-    for (doc <- couch.http(request / "_security").right)
+  def securityDoc: Future[SecurityDoc] =
+    for (doc <- couch.http(Get(uri / "_security")))
       yield extractSecurityDoc(doc)
 
-  def saveSecurityDoc(doc: SecurityDoc): AsyncResult[Boolean] =
-    for (res <- couch.http((request / "_security" << serializer.toJson(doc)).PUT).right)
+  def saveSecurityDoc(doc: SecurityDoc): Future[Boolean] =
+    for (res <- couch.http(Put(uri / "_security", serializer.toJson(doc))))
       yield couch.ok(res)
 
   def design(designName: String, language: String = "javascript"): Design =
@@ -352,55 +332,56 @@ class Database private[sohva] (
 
   // helper methods
 
-  protected[sohva] def request =
-    couch.request / name
+  protected[sohva] def uri =
+    couch.uri / name
 
-  private def readFile(response: Response) = {
-    val code = response.getStatusCode
-    if (code == 404) {
-      Right(None)
-    } else if (code / 100 != 2) {
-      // something went wrong...
-      val error = serializer.fromJsonOpt[ErrorResult](as.String(response))
-      Left((code, error))
+  private def readFile(response: HttpResponse): Future[Option[(String, InputStream)]] = {
+    if (response.status.intValue == 404) {
+      Future.successful(None)
+    } else if (response.status.isSuccess) {
+      Future.successful(
+        Some(
+          response.headers.find(_.is("content-type")).map(_.value).getOrElse("application/json") ->
+            new ByteArrayInputStream(response.entity.data.toByteArray)))
     } else {
-      Right(Some(response.getContentType, response.getResponseBodyAsStream))
+      val code = response.status.intValue
+      // something went wrong...
+      val error = serializer.fromJsonOpt[ErrorResult](parse(response.entity.asString))
+      Future.failed(CouchException(code, error))
     }
   }
 
-  private def okResult(json: String) =
+  private def okResult(json: JValue) =
     serializer.fromJson[OkResult](json)
 
-  private def infoResult(json: String) =
+  private def infoResult(json: JValue) =
     serializer.fromJson[InfoResult](json)
 
-  private def docResult[T: Manifest](json: String) =
+  private def docResult[T: Manifest](json: JValue) =
     serializer.fromJson[T](json)
 
-  private def docResultOpt[T: Manifest](json: String) =
+  private def docResultOpt[T: Manifest](json: JValue) =
     serializer.fromJsonOpt[T](json)
 
-  private def docUpdateResult(json: String) =
+  private def docUpdateResult(json: JValue) =
     serializer.fromJson[DocUpdate](json)
 
-  private def extractRev(response: Response) = {
-    val code = response.getStatusCode
-    if (code == 404) {
-      Right(None)
-    } else if (code / 100 != 2) {
-      // something went wrong...
-      val error = serializer.fromJsonOpt[ErrorResult](as.String(response))
-      Left((code, error))
-    } else {
-      Right(response.getHeader("Etag") match {
-        case null | "" => None
-        case etags =>
-          Some(etags.stripPrefix("\"").stripSuffix("\""))
+  private def extractRev(response: HttpResponse) = {
+    if (response.status.intValue == 404) {
+      Future.successful(None)
+    } else if (response.status.isSuccess) {
+      Future.successful(response.headers.find(_.is("etag")) map { etags =>
+        etags.value.stripPrefix("\"").stripSuffix("\"")
       })
+    } else {
+      // something went wrong...
+      val code = response.status.intValue
+      val error = serializer.fromJsonOpt[ErrorResult](parse(response.entity.asString))
+      Future.failed(new CouchException(code, error))
     }
   }
 
-  private def extractSecurityDoc(json: String) =
+  private def extractSecurityDoc(json: JValue) =
     serializer.fromJson[SecurityDoc](json)
 
 }

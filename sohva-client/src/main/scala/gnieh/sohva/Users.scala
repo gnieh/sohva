@@ -15,9 +15,6 @@
 */
 package gnieh.sohva
 
-import dispatch._
-import Defaults._
-
 import java.util.Date
 
 /** The users database, exposing the interface for managing couchdb users.

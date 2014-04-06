@@ -20,6 +20,9 @@ import gnieh.sohva.async.{
   CouchClient => ACouchClient
 }
 
+import akka.actor.ActorSystem
+import akka.util.Timeout
+
 /** A CouchDB instance.
  *  Allows users to access the different databases and instance information.
  *  This is the key class to start with when one wants to work with couchdb.
@@ -34,7 +37,9 @@ class CouchClient private[sync] (wrapped: ACouchClient) extends CouchDB(wrapped)
   def this(host: String = "localhost",
     port: Int = 5984,
     ssl: Boolean = false,
-    version: String = "1.4") =
+    version: String = "1.4")(
+      implicit sysmte: ActorSystem,
+      timeout: Timeout) =
     this(new ACouchClient(host, port, ssl, version))
 
   def startCookieSession =

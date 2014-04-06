@@ -16,18 +16,19 @@
 package gnieh.sohva
 package async
 
-import dispatch._
-import Defaults._
+import scala.concurrent.Future
 
 import java.util.Date
 
 import net.liftweb.json._
 
+import spray.client.pipelining._
+
 /** The users database, exposing the interface for managing couchdb users.
  *
  *  @author Lucas Satabin
  */
-class Users(couch: CouchDB) extends gnieh.sohva.Users[AsyncResult] {
+class Users(couch: CouchDB) extends gnieh.sohva.Users[Future] {
 
   import couch._
 
@@ -37,22 +38,22 @@ class Users(couch: CouchDB) extends gnieh.sohva.Users[AsyncResult] {
 
   def add(name: String,
     password: String,
-    roles: List[String] = Nil): AsyncResult[Boolean] = {
+    roles: List[String] = Nil): Future[Boolean] = {
 
     val user = CouchUser(name, password, roles)
 
-    for (res <- http((request / dbName / user._id << serializer.toJson(user)).PUT).right)
+    for (res <- http(Put(uri / dbName / user._id, serializer.toJson(user))))
       yield ok(res)
 
   }
 
-  def delete(name: String): AsyncResult[Boolean] =
+  def delete(name: String): Future[Boolean] =
     database(dbName).deleteDoc("org.couchdb.user:" + name)
 
-  def generateResetToken(name: String, until: Date): AsyncResult[Option[String]] =
+  def generateResetToken(name: String, until: Date): Future[Option[String]] =
     for {
-      tok <- _uuid.right
-      user <- userDb.getDocById[JObject]("org.couchdb.user:" + name).right
+      tok <- _uuid
+      user <- userDb.getDocById[JObject]("org.couchdb.user:" + name)
       token <- generate(user, tok, until)
     } yield token
 
@@ -61,21 +62,20 @@ class Users(couch: CouchDB) extends gnieh.sohva.Users[AsyncResult] {
       case Some(user) =>
         // enrich the user document with password reset information
         val (token_salt, token_sha) = passwordSha(token)
-        val u = user ++
+        val doc = user ++
           JField("reset_token_sha", JString(token_sha)) ++
           JField("reset_token_salt", JString(token_salt)) ++
-          JField("reset_validity", JsonParser.parse(serializer.toJson(until)))
-        val doc = pretty(render(u))
+          JField("reset_validity", serializer.toJson(until))
         // save back the enriched user document
-        for (user <- userDb.saveRawDoc(doc).right)
+        for (user <- userDb.saveRawDoc(doc))
           yield user.map(_ => token)
       case None =>
-        Future.successful(Right(None))
+        Future.successful(None)
     }
 
-  def resetPassword(name: String, token: String, password: String): AsyncResult[Boolean] =
+  def resetPassword(name: String, token: String, password: String): Future[Boolean] =
     for {
-      user <- userDb.getDocById[JObject]("org.couchdb.user:" + name).right
+      user <- userDb.getDocById[JObject]("org.couchdb.user:" + name)
       ok <- reset(user, token, password)
     } yield ok
 
@@ -89,15 +89,15 @@ class Users(couch: CouchDB) extends gnieh.sohva.Users[AsyncResult] {
             if (new Date().before(validity) && savedToken == saltedToken) {
               // save the user with the new password
               val newUser = new CouchUser(name, password, roles = roles).withRev(_rev)
-              couch.http((request / dbName / _id << serializer.toJson(newUser)).PUT).right.map(ok _)
+              couch.http(Put(uri / dbName / _id, serializer.toJson(newUser))).map(ok _)
             } else {
-              Future.successful(Right(false))
+              Future.successful(false)
             }
           case _ =>
-            Future.successful(Right(false))
+            Future.successful(false)
         }
       case None =>
-        Future.successful(Right(false))
+        Future.successful(false)
     }
 
   private[sohva] object PasswordResetUser {

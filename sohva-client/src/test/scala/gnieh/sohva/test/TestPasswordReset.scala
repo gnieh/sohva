@@ -25,7 +25,7 @@ import scala.compat.Platform
 
 import sync._
 
-object TestPasswordReset extends SohvaTestSpec with ShouldMatchers with BeforeAndAfterEach {
+class TestPasswordReset extends SohvaTestSpec with ShouldMatchers with BeforeAndAfterEach {
 
   override def beforeEach() {
     session.users.add("test_user", "test_password")
