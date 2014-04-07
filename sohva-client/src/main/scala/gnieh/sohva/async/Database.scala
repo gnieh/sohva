@@ -38,6 +38,8 @@ import spray.http._
 import spray.client.pipelining._
 import spray.httpx.marshalling._
 
+import akka.actor._
+
 /** Gives the user access to the different operations available on a database.
  *  Among other operations this is the key class to get access to the documents
  *  of this database.
@@ -72,16 +74,16 @@ class Database private[sohva] (
     couch.http(Put(uri / docId, current)).recoverWith {
       case CouchException(409, _) if credit > 0 =>
         // try to resolve the conflict and save again
-        // get the base document if any
-        getRawDocById(docId, baseRev).flatMap { base =>
+        for {
+          // get the base document if any
+          base <- getRawDocById(docId, baseRev)
           // get the last document
-          getRawDocById(docId).flatMap { last =>
-            // apply the merge strategy between base, last and current revision of the document
-            val lastRev = last map (d => (d \ "_rev").toString)
-            val resolved = strategy(base, last, current)
-            resolver(credit - 1, docId, lastRev, resolved)
-          }
-        }
+          last <- getRawDocById(docId)
+          // apply the merge strategy between base, last and current revision of the document
+          lastRev = last map (d => (d \ "_rev").toString)
+          resolved = strategy(base, last, current)
+          res <- resolver(credit - 1, docId, lastRev, resolved)
+        } yield res
     }
 
   def info: Future[Option[InfoResult]] =
@@ -92,8 +94,8 @@ class Database private[sohva] (
     for (h <- couch.optHttp(Head(uri)))
       yield h.isDefined
 
-  def changes(filter: Option[String] = None): ChangeStream =
-    new OriginalChangeStream(this, filter)
+  def changes(since: Option[Int] = None, filter: Option[String] = None): ChangeStream =
+    new ChangeStream(this, since, filter)
 
   def create: Future[Boolean] =
     for {

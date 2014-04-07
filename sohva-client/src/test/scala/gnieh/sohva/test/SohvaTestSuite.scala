@@ -47,6 +47,7 @@ abstract class SohvaTestSpec extends FlatSpec with ShouldMatchers with BeforeAnd
     db.delete
     // logout
     session.logout
+    couch.shutdown()
     system.shutdown()
   }
 

@@ -105,7 +105,8 @@ object SohvaBuild extends Build {
     "org.gnieh" %% "diffson" % "0.2",
     "com.jsuereth" %% "scala-arm" % "1.3",
     "net.liftweb" %% "lift-json" % "2.5",
-    "org.slf4j" % "slf4j-api" % "1.7.2"
+    "org.slf4j" % "slf4j-api" % "1.7.2",
+    "com.netflix.rxjava" % "rxjava-scala" % "0.17.4"
   )
 
   lazy val testing = Project(id = "sohva-testing",

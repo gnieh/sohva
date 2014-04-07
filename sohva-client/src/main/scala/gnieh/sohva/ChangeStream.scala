@@ -17,66 +17,41 @@ package gnieh.sohva
 
 import net.liftweb.json._
 
-import scala.collection.mutable.Map
+import rx.lang.scala._
 
-/** A stream that gets the changes from a database and notifies a registered handler
- *  when any change is received.
+/** A stream that represents a connection to the `_changes` stream of a database.
  *
- *  @author Lucas Satabin
+ *  @autor Lucas Satabin
  */
-abstract class ChangeStream {
+trait ChangeStream {
 
-  /** Calls the function for each received change. If the document was added or updated,
-   *  it is passed along with its identifier, if it was deleted, only the identifier is
-   *  given.
-   *  The identifier of the registered handler is immediately returned to allow for later
-   *  unregistration.
-   *  If the stream is closed, the handler is not registered and the function returns `-1`
+  /** The `Observable` to subscribe to to be notified about changes over this stream.
+   *  This `Observable` can be combined with other ones, filtered, mapped, ...
+   *  See the [documentation](http://rxscala.github.io/scaladoc/index.html#rx.lang.scala.Observable) for more details. */
+  def stream: Observable[(String, Option[JObject])]
+
+  /** Subscribe to the original change stream initiated with the database.
+   *  this is equivalent to calling `changes.stream.subscribe(obs)`
    */
-  def foreach(f: Tuple2[String, Option[JObject]] => Unit): Int
+  def subscribe(obs: ((String, Option[JObject])) => Unit): Subscription
 
-  /** Alias for `filter(f)`. this is intended to be used in for-comprehensions */
-  def withFilter(f: Tuple2[String, Option[JObject]] => Boolean): ChangeStream = {
-    require(f != null, "Function must not be null")
-    filter(f)
-  }
-  /** Returns a change stream that is filtered by the given predicate */
-  def filter(p: Tuple2[String, Option[JObject]] => Boolean): ChangeStream
-
-  /** Unregisters the change handler identifier by the given identifier */
-  def unregister(id: Int)
-
-  /** Indicates whether this stream is closed */
-  def closed: Boolean
-
-  /** Closes this stream */
+  /** Closes this stream and the underlying `Observable`. Subscriber will receive a terminatio
+   *  message */
   def close(): Unit
 
 }
 
-protected[sohva] object ChangeStream {
-
-  object change {
-    def unapply(json: JValue)(implicit formats: Formats) =
-      json.extractOpt[Change].flatMap(Change.unapply)
-  }
-
-  object last_seq {
-    def unapply(json: JValue)(implicit formats: Formats) =
-      json.extractOpt[LastSeq].flatMap(LastSeq.unapply)
-  }
-
+object Change {
+  def unapply(json: JValue)(implicit formats: Formats): Option[(Int, String, String, Boolean, Option[JObject])] =
+    json.extractOpt[Change].flatMap(Change.unapply)
 }
 
-/** A change that occurred in the database.
- *
- *  @author Lucas Satabin
- */
-protected[sohva] case class Change(seq: Int, id: String, rev: String, deleted: Boolean, doc: Option[JObject])
+object LastSeq {
+  def unapply(json: JValue)(implicit formats: Formats): Option[Int] =
+    json.extractOpt[LastSeq].flatMap(LastSeq.unapply)
+}
 
-/** Last update sequence sent by the server
- *
- *  @author Lucas Satabin
- */
-protected[sohva] case class LastSeq(last_seq: Int)
+case class Change(seq: Int, id: String, rev: String, deleted: Boolean, doc: Option[JObject])
+
+case class LastSeq(last_seq: Int)
 

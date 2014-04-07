@@ -55,8 +55,10 @@ trait Database[Result[_]] {
   /** Indicates whether this database exists */
   def exists: Result[Boolean]
 
-  /** Registers to the change stream of this database with potential filter */
-  def changes(filter: Option[String] = None): ChangeStream
+  /** Registers to the change stream of this database with potential filter and
+   *  since some revision. If no revision is given changes that occurred before the
+   *  connection was established are not sent */
+  def changes(since: Option[Int] = None, filter: Option[String] = None): ChangeStream
 
   /** Creates this database in the couchdb instance if it does not already exist.
    *  Returns <code>true</code> iff the database was actually created.
