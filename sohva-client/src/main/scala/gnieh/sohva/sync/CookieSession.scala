@@ -44,11 +44,6 @@ class CookieSession private[sync] (wrapped: ACouchSession) extends CouchDB(wrapp
     synced(wrapped.currentUser)
 
   @inline
-  @deprecated(message = "This method has been deprecated and will be removed in the next version. Please user isAuthenticated instead", since = "0.5")
-  def isLoggedIn: Boolean =
-    isAuthenticated
-
-  @inline
   def isAuthenticated: Boolean =
     synced(wrapped.isAuthenticated)
 

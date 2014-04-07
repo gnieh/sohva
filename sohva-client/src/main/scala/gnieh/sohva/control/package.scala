@@ -26,9 +26,6 @@ import duration._
 
 package object control {
 
-  @deprecated(message = "This type has been deprecated and will be removed in the next version. Please use type CookieSession instead", since = "0.5")
-  type CouchSession = CookieSession
-
   private[control] def synced[T](result: Future[T]): Try[T] = Try(Await.result(result, Duration.Inf))
 
 }

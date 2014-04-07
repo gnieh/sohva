@@ -23,9 +23,6 @@ import java.io.File
 
 package object async {
 
-  @deprecated(message = "This type has been deprecated and will be removed in the next version. Please use type CookieSession instead", since = "0.5")
-  type CouchSession = CookieSession
-
   // register the COPY method
   val COPY = HttpMethod.custom("COPY", true, true, false)
   HttpMethods.register(COPY)

@@ -39,10 +39,6 @@ trait CookieSession[Result[_]] extends CouchDB[Result] with Session[Result] {
   /** Returns the user associated to the current session, if any */
   def currentUser: Result[Option[UserInfo]]
 
-  /** Indicates whether the current session is logged in to the couch server */
-  @deprecated(message = "This method has been deprecated and will be removed in the next version. Please user isAuthenticated instead", since = "0.5")
-  def isLoggedIn: Result[Boolean]
-
 }
 
 /** Result of the authentication request */

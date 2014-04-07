@@ -70,10 +70,6 @@ class CouchClient(val host: String = "localhost",
   def startCookieSession =
     new CookieSession(this)
 
-  @deprecated(message = "This method has been deprecated and will be removed in the next version. Please use startCookieSession instead", since = "0.5")
-  def startSession =
-    startCookieSession
-
   def startOAuthSession(consumerKey: String, consumerSecret: String, token: String, secret: String) =
     new OAuthSession(consumerKey, consumerSecret, token, secret, this)
 

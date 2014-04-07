@@ -46,9 +46,6 @@ package object sohva {
     val _rev: Option[String]
   }
 
-  @deprecated(message = "Use type CookieSession instead", since = "0.5")
-  type CouchSession[Result[_]] = CookieSession[Result]
-
   implicit def doc2idrev(d: Doc): IdRev =
     new IdRev {
       val _id = d._id
