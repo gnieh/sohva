@@ -179,7 +179,7 @@ trait Database[Result[_]] {
   /** Returns a built-in view of this database, identified by its name.
    *  E.g. `_all_docs`.
    */
-  def builtInView[Key: Manifest, Value: Manifest, Doc: Manifest](view: String): View[Result, Key, Value, Doc]
+  def builtInView(view: String): View[Result]
 
 }
 

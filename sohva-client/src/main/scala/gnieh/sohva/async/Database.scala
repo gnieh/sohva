@@ -137,7 +137,7 @@ class Database private[sohva] (
     skip: Int = 0,
     inclusive_end: Boolean = true): Future[List[String]] =
     for {
-      res <- builtInView[String, Map[String, String], Any]("_all_docs").query(
+      res <- builtInView("_all_docs").query[String, Map[String, String], Any](
         key = key,
         keys = keys,
         startkey = startkey,
@@ -158,7 +158,7 @@ class Database private[sohva] (
 
   def getDocsById[T: Manifest](ids: List[String]): Future[List[T]] =
     for {
-      res <- builtInView[String, Map[String, String], T]("_all_docs").query(keys = ids, include_docs = true)
+      res <- builtInView("_all_docs").query[String, Map[String, String], T](keys = ids, include_docs = true)
     } yield res.rows.flatMap { case Row(_, _, _, doc) => doc }
 
   def getRawDocById(id: String, revision: Option[String] = None): Future[Option[JValue]] =
@@ -169,7 +169,7 @@ class Database private[sohva] (
 
   def getDocRevisions(ids: List[String]): Future[List[(String, String)]] =
     for {
-      res <- builtInView[String, Map[String, String], Any]("_all_docs").query(keys = ids)
+      res <- builtInView("_all_docs").query[String, Map[String, String], Any](keys = ids)
     } yield res.rows.map { case Row(Some(id), _, value, _) => (id, value("rev")) }
 
   def saveDoc[T <% IdRev: Manifest](doc: T): Future[Option[T]] =
@@ -329,8 +329,8 @@ class Database private[sohva] (
   def design(designName: String, language: String = "javascript"): Design =
     new Design(this, designName, language)
 
-  def builtInView[Key: Manifest, Value: Manifest, Doc: Manifest](view: String): View[Key, Value, Doc] =
-    new BuiltInView[Key, Value, Doc](this, view)
+  def builtInView(view: String): View =
+    new BuiltInView(this, view)
 
   // helper methods
 

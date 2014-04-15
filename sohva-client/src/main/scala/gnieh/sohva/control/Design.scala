@@ -55,8 +55,8 @@ class Design(wrapped: ADesign) extends gnieh.sohva.Design[Try] {
   def deleteView(viewName: String): Try[Boolean] =
     synced(wrapped.deleteView(viewName))
 
-  def view[Key: Manifest, Value: Manifest, Doc: Manifest](viewName: String): View[Key, Value, Doc] =
-    new View[Key, Value, Doc](wrapped.view(viewName))
+  def view(viewName: String): View =
+    new View(wrapped.view(viewName))
 
   @inline
   def saveValidateFunction(validateFun: String): Try[Boolean] =

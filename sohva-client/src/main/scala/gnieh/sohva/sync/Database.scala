@@ -175,7 +175,7 @@ class Database private[sohva] (wrapped: ADatabase) extends gnieh.sohva.Database[
   def design(designName: String, language: String = "javascript"): Design =
     new Design(wrapped.design(designName, language))
 
-  def builtInView[Key: Manifest, Value: Manifest, Doc: Manifest](view: String): View[Key, Value, Doc] =
+  def builtInView(view: String): View =
     new View(wrapped.builtInView(name))
 
 }

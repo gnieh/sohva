@@ -49,13 +49,8 @@ trait Design[Result[_]] {
   /** Deletes the view with the given name from the design */
   def deleteView(viewName: String): Result[Boolean]
 
-  /** Returns the (typed) view in this design document.
-   *  The different types are:
-   *  - Key: type of the key for this view
-   *  - Value: Type of the value returned in the result
-   *  - Doc: Type of the full document in the case where the view is queried with `include_docs` set to `true`
-   */
-  def view[Key: Manifest, Value: Manifest, Doc: Manifest](viewName: String): View[Result, Key, Value, Doc]
+  /** Returns the view in this design document. */
+  def view(viewName: String): View[Result]
 
   /** Creates or updates the document validation function.
    *  If the design does not exist yet, it is created.
