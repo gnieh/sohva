@@ -26,8 +26,7 @@ import spray.client.pipelining._
  *
  *  @author Lucas Satabin
  */
-trait Session extends gnieh.sohva.Session[Future] {
-  this: CouchDB =>
+trait Session extends CouchDB with gnieh.sohva.Session[Future] {
 
   def currentUser: Future[Option[UserInfo]] = userContext.flatMap {
     case UserCtx(name, _) if name != null =>

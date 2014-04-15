@@ -26,6 +26,7 @@ import scala.concurrent.{
   Future,
   ExecutionContext
 }
+
 import akka.actor._
 import akka.util.Timeout
 import akka.io.IO
@@ -72,6 +73,15 @@ class CouchClient(val host: String = "localhost",
 
   def startOAuthSession(consumerKey: String, consumerSecret: String, token: String, secret: String) =
     new OAuthSession(consumerKey, consumerSecret, token, secret, this)
+
+  def withCredentials(credentials: CouchCredentials): Future[Session] = credentials match {
+    case LoginPasswordCredentials(username, password) =>
+      val session = startCookieSession
+      for(true <- session.login(username, password))
+        yield session
+    case OAuthCredentials(consumerKey, consumerSecret, token, secret) =>
+      Future.successful(startOAuthSession(consumerKey, consumerSecret, token, secret))
+  }
 
   def shutdown() =
     IO(Http) ! Http.CloseAll
