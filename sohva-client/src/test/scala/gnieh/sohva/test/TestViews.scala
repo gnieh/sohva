@@ -50,17 +50,20 @@ class TestViews extends SohvaTestSpec with ShouldMatchers with BeforeAndAfterEac
 
     val design = db.design("test_design")
 
-    val saved = design.saveView("test_view", "function(doc) { if(doc._id.indexOf('view_doc') == 0) emit(doc._id, null); }")
+    design.saveView("test_view", "function(doc) { if(doc._id.indexOf('view_doc') == 0) emit(doc._id, null); }")
 
-    saved should be(true)
+    val updated = design.getDesignDocument
+    updated should be('defined)
+
+    updated.value.views.contains("test_view") should be(true)
 
   }
 
   "querying a view with no parameter" should "result in all emitted key/values to be returned" in {
 
-    val view = db.design("test_design").view[String, Null, TestDoc]("test_view")
+    val view = db.design("test_design").view("test_view")
 
-    val viewResult = view.query()
+    val viewResult = view.query[String, Null, TestDoc]()
 
     viewResult.total_rows should be(docs.size)
     viewResult.offset should be(0)
@@ -70,9 +73,9 @@ class TestViews extends SohvaTestSpec with ShouldMatchers with BeforeAndAfterEac
 
   "querying a view with start and end key parameters" should "result in filtered emitted key/values to be returned" in {
 
-    val view = db.design("test_design").view[String, Null, TestDoc]("test_view")
+    val view = db.design("test_design").view("test_view")
 
-    val viewResult = view.query(startkey = Some("view_doc7"), endkey = Some("view_doc9"))
+    val viewResult = view.query[String, Null, TestDoc](startkey = Some("view_doc7"), endkey = Some("view_doc9"))
 
     val filtered =
       for {
@@ -102,7 +105,7 @@ class TestViews extends SohvaTestSpec with ShouldMatchers with BeforeAndAfterEac
     val saved =
       design.saveView("test_complex_key", "function(doc) { if(doc._id.indexOf('view_doc') == 0) emit([ doc.toto - 1, doc.toto] , null); }")
 
-    val view = design.view[List[Int], Null, TestDoc]("test_complex_key")
+    val view = design.view("test_complex_key")
 
     val filtered =
       for {
@@ -110,7 +113,7 @@ class TestViews extends SohvaTestSpec with ShouldMatchers with BeforeAndAfterEac
         j <- math.max(5, i) to 10
       } yield Row(Some("view_doc" + i + j), List(j - 1, j), null)
 
-    val viewResult = view.query(startkey = Some(List(3, 5)))
+    val viewResult = view.query[List[Int], Null, TestDoc](startkey = Some(List(3, 5)))
 
     viewResult.total_rows should be(docs.size)
     viewResult.offset should be(10)
@@ -134,9 +137,9 @@ class TestViews extends SohvaTestSpec with ShouldMatchers with BeforeAndAfterEac
 
     val design = db.design("reduce_design")
     design.saveView("counts", "function(doc) { if(doc.name && doc.count) emit(doc.name, doc.count); }", Some("_sum"))
-    val view = design.view[String, Int, TestReduce]("counts")
+    val view = design.view("counts")
 
-    val result = view.query(group_level = 2)
+    val result = view.query[String, Int, TestReduce](group_level = 2)
 
     result.rows should be(List(Row(None, "A", 6), Row(None, "B", 9)))
 

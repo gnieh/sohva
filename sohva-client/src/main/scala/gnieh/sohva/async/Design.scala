@@ -46,14 +46,14 @@ class Design(val db: Database,
 
   def saveView(viewName: String,
     mapFun: String,
-    reduceFun: Option[String] = None): Future[Boolean] =
+    reduceFun: Option[String] = None): Future[Unit] =
     saveView(viewName, ViewDoc(mapFun, reduceFun))
 
-  def saveView(viewName: String, view: ViewDoc): Future[Boolean] =
+  def saveView(viewName: String, view: ViewDoc): Future[Unit] =
     for {
       design <- getDesignDocument
       doc <- db.saveDoc(newDoc(design, viewName, view))
-    } yield doc.isDefined
+    } yield ()
 
   private[this] def newDoc(design: Option[DesignDoc], viewName: String, view: ViewDoc) =
     design match {
@@ -65,27 +65,27 @@ class Design(val db: Database,
         DesignDoc("_design/" + name, language, Map(viewName -> view), None)
     }
 
-  def deleteView(viewName: String): Future[Boolean] =
+  def deleteView(viewName: String): Future[Unit] =
     for {
       design <- getDesignDocument
-      res <- deleteView(design, viewName)
-    } yield res
+      _ <- deleteView(design, viewName)
+    } yield ()
 
   private[this] def deleteView(design: Option[DesignDoc], viewName: String) =
     design match {
       case Some(design) =>
-        db.saveDoc(design.copy(views = design.views - viewName)).map(_.isDefined)
-      case None => Future.successful(false)
+        db.saveDoc(design.copy(views = design.views - viewName))
+      case None => Future.failed(new SohvaException("Unable to deleted view " + viewName + " for unknown design " + name))
     }
 
-  def view[Key: Manifest, Value: Manifest, Doc: Manifest](viewName: String): View[Key, Value, Doc] =
-    new View[Key, Value, Doc](this.name, db, viewName)
+  def view(viewName: String): View =
+    new View(this.name, db, viewName)
 
-  def saveValidateFunction(validateFun: String): Future[Boolean] =
+  def saveValidateFunction(validateFun: String): Future[Unit] =
     for {
       design <- getDesignDocument
-      res <- db.saveDoc(newDoc(design, validateFun))
-    } yield res.isDefined
+      _ <- db.saveDoc(newDoc(design, validateFun))
+    } yield ()
 
   private[this] def newDoc(design: Option[DesignDoc], validateFun: String) =
     design match {
@@ -97,25 +97,25 @@ class Design(val db: Database,
         DesignDoc("_design/" + name, language, Map(), Some(validateFun))
     }
 
-  def deleteValidateFunction: Future[Boolean] =
+  def deleteValidateFunction: Future[Unit] =
     for {
       design <- getDesignDocument
-      res <- deleteValidateFunction(design)
-    } yield res
+      _ <- deleteValidateFunction(design)
+    } yield ()
 
   private[this] def deleteValidateFunction(design: Option[DesignDoc]) =
     design match {
       case Some(design) =>
         for (doc <- db.saveDoc(design.copy(validate_doc_update = None)))
-          yield doc.isDefined
-      case None => Future.successful(false)
+          yield doc
+      case None => Future.failed(new SohvaException("Unable to delete validate function for unknown design: " + name))
     }
 
-  def saveFilter(name: String, filterFun: String): Future[Boolean] =
+  def saveFilter(name: String, filterFun: String): Future[Unit] =
     for {
       design <- getDesignDocument
-      res <- db.saveDoc(withFilterDoc(design, name, filterFun))
-    } yield res.isDefined
+      _ <- db.saveDoc(withFilterDoc(design, name, filterFun))
+    } yield ()
 
   private[this] def withFilterDoc(design: Option[DesignDoc], filterName: String, filterFun: String) =
     design match {
@@ -127,19 +127,19 @@ class Design(val db: Database,
         DesignDoc("_design/" + name, language, Map(), None, filters = Map(filterName -> filterFun))
     }
 
-  def deleteFilter(name: String): Future[Boolean] =
+  def deleteFilter(name: String): Future[Unit] =
     for {
       design <- getDesignDocument
-      res <- deleteFilter(design, name)
-    } yield res
+      _ <- deleteFilter(design, name)
+    } yield ()
 
   private[this] def deleteFilter(design: Option[DesignDoc], filterName: String) =
     design match {
       case Some(design) =>
         for (doc <- db.saveDoc(design.copy(filters = design.filters - filterName)))
-          yield doc.isDefined
+          yield doc
       case None =>
-        Future.successful(false)
+        Future.failed(new SohvaException("Unable to delete filter " + filterName + " for uknown design " + name))
     }
 
   // helper methods

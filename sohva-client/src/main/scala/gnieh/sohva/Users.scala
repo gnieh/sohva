@@ -36,7 +36,7 @@ trait Users[Result[_]] {
   def delete(name: String): Result[Boolean]
 
   /** Generates a password reset token for the given user with the given validity and returns it */
-  def generateResetToken(name: String, until: Date): Result[Option[String]]
+  def generateResetToken(name: String, until: Date): Result[String]
 
   /** Resets the user password to the given one if:
    *   - a password reset token exists in the database

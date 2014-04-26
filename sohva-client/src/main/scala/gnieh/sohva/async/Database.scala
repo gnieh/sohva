@@ -137,7 +137,7 @@ class Database private[sohva] (
     skip: Int = 0,
     inclusive_end: Boolean = true): Future[List[String]] =
     for {
-      res <- builtInView[String, Map[String, String], Any]("_all_docs").query(
+      res <- builtInView("_all_docs").query[String, Map[String, String], Any](
         key = key,
         keys = keys,
         startkey = startkey,
@@ -158,7 +158,7 @@ class Database private[sohva] (
 
   def getDocsById[T: Manifest](ids: List[String]): Future[List[T]] =
     for {
-      res <- builtInView[String, Map[String, String], T]("_all_docs").query(keys = ids, include_docs = true)
+      res <- builtInView("_all_docs").query[String, Map[String, String], T](keys = ids, include_docs = true)
     } yield res.rows.flatMap { case Row(_, _, _, doc) => doc }
 
   def getRawDocById(id: String, revision: Option[String] = None): Future[Option[JValue]] =
@@ -169,38 +169,38 @@ class Database private[sohva] (
 
   def getDocRevisions(ids: List[String]): Future[List[(String, String)]] =
     for {
-      res <- builtInView[String, Map[String, String], Any]("_all_docs").query(keys = ids)
+      res <- builtInView("_all_docs").query[String, Map[String, String], Any](keys = ids)
     } yield res.rows.map { case Row(Some(id), _, value, _) => (id, value("rev")) }
 
-  def saveDoc[T <% IdRev: Manifest](doc: T): Future[Option[T]] =
+  def saveDoc[T <% IdRev: Manifest](doc: T): Future[T] =
     for {
       upd <- resolver(credit, doc._id, doc._rev, serializer.toJson(doc)) recover
         { case e: Exception => throw new Exception(f"Unable to update document with ID $doc._id at revision $doc._rev", e) }
       res <- update(upd.extract[DocUpdate])
     } yield res
 
-  def saveRawDoc(doc: JValue): Future[Option[JValue]] = serializer.fromCouchJson(doc) match {
+  def saveRawDoc(doc: JValue): Future[JValue] = serializer.fromCouchJson(doc) match {
     case Some((id, rev)) =>
       for {
         upd <- resolver(credit, id, rev, doc)
         res <- updateRaw(docUpdateResult(upd))
       } yield res
     case None =>
-      Future.successful(None)
+      Future.failed(new SohvaException("Not a couchdb document: " + pretty(render(doc))))
   }
 
   private[this] def update[T: Manifest](res: DocUpdate) = res match {
-    case DocUpdate(true, id, _) =>
-      getDocById[T](id)
-    case DocUpdate(false, _, _) =>
-      Future.successful(None)
+    case DocUpdate(true, id, rev) =>
+      getDocById[T](id, Some(rev)).map(_.get)
+    case DocUpdate(false, id, _) =>
+      Future.failed(new SohvaException("Document " + id + " could not be saved"))
   }
 
   private[this] def updateRaw(res: DocUpdate) = res match {
-    case DocUpdate(true, id, _) =>
-      getRawDocById(id)
-    case DocUpdate(false, _, _) =>
-      Future.successful(None)
+    case DocUpdate(true, id, rev) =>
+      getRawDocById(id, Some(rev)).map(_.get)
+    case DocUpdate(false, id, _) =>
+      Future.failed(new SohvaException("Document " + id + " could not be saved"))
   }
 
   def saveDocs[T <% IdRev](docs: List[T], all_or_nothing: Boolean = false): Future[List[DbResult]] =
@@ -218,15 +218,15 @@ class Database private[sohva] (
       )
     ) yield couch.ok(res)
 
-  def patchDoc[T <: IdRev: Manifest](id: String, rev: String, patch: JsonPatch): Future[Option[T]] =
+  def patchDoc[T <: IdRev: Manifest](id: String, rev: String, patch: JsonPatch): Future[T] =
     for {
       doc <- getDocById[T](id, Some(rev))
-      res <- patchDoc(doc, patch)
+      res <- patchDoc(id, doc, patch)
     } yield res
 
-  private[this] def patchDoc[T <: IdRev: Manifest](doc: Option[T], patch: JsonPatch) = doc match {
+  private[this] def patchDoc[T <: IdRev: Manifest](id: String, doc: Option[T], patch: JsonPatch) = doc match {
     case Some(doc) => saveDoc(patch(doc).withRev(doc._rev))
-    case None      => Future.successful(None)
+    case None      => Future.failed(new SohvaException("Uknown document to patch: " + id))
   }
 
   def deleteDoc[T <% IdRev](doc: T): Future[Boolean] =
@@ -330,8 +330,8 @@ class Database private[sohva] (
   def design(designName: String, language: String = "javascript"): Design =
     new Design(this, designName, language)
 
-  def builtInView[Key: Manifest, Value: Manifest, Doc: Manifest](view: String): View[Key, Value, Doc] =
-    new BuiltInView[Key, Value, Doc](this, view)
+  def builtInView(view: String): View =
+    new BuiltInView(this, view)
 
   // helper methods
 

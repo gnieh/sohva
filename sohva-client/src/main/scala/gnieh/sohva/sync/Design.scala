@@ -45,34 +45,34 @@ class Design(wrapped: ADesign) extends gnieh.sohva.Design[Identity] {
   @inline
   def saveView(viewName: String,
     mapFun: String,
-    reduceFun: Option[String] = None): Boolean =
+    reduceFun: Option[String] = None): Unit =
     synced(wrapped.saveView(viewName, mapFun, reduceFun))
 
   @inline
-  def saveView(viewName: String, view: ViewDoc): Boolean =
+  def saveView(viewName: String, view: ViewDoc): Unit =
     synced(wrapped.saveView(viewName, view))
 
   @inline
-  def deleteView(viewName: String): Boolean =
+  def deleteView(viewName: String): Unit =
     synced(wrapped.deleteView(viewName))
 
-  def view[Key: Manifest, Value: Manifest, Doc: Manifest](viewName: String): View[Key, Value, Doc] =
-    new View[Key, Value, Doc](wrapped.view(viewName))
+  def view(viewName: String): View =
+    new View(wrapped.view(viewName))
 
   @inline
-  def saveValidateFunction(validateFun: String): Boolean =
+  def saveValidateFunction(validateFun: String): Unit =
     synced(wrapped.saveValidateFunction(validateFun))
 
   @inline
-  def deleteValidateFunction: Boolean =
+  def deleteValidateFunction: Unit =
     synced(wrapped.deleteValidateFunction)
 
   @inline
-  def saveFilter(name: String, filterFun: String): Boolean =
+  def saveFilter(name: String, filterFun: String): Unit =
     synced(wrapped.saveFilter(name, filterFun))
 
   @inline
-  def deleteFilter(name: String): Boolean =
+  def deleteFilter(name: String): Unit =
     synced(wrapped.deleteFilter(name))
 
 }

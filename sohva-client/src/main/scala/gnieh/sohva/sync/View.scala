@@ -23,15 +23,52 @@ import gnieh.sohva.async.{
 import scala.concurrent._
 import duration._
 
+import net.liftweb.json.JValue
+
 /** A view can be queried to get the result.
  *
  *  @author Lucas Satabin
  */
-class View[Key: Manifest, Value: Manifest, Doc: Manifest](wrapped: AView[Key, Value, Doc])
-    extends gnieh.sohva.View[Identity, Key, Value, Doc] {
+class View(wrapped: AView)
+    extends gnieh.sohva.View[Identity] {
 
   @inline
-  def query(key: Option[Key] = None,
+  def queryRaw(
+    key: Option[JValue] = None,
+    keys: List[JValue] = Nil,
+    startkey: Option[JValue] = None,
+    startkey_docid: Option[String] = None,
+    endkey: Option[JValue] = None,
+    endkey_docid: Option[String] = None,
+    limit: Int = -1,
+    stale: Option[String] = None,
+    descending: Boolean = false,
+    skip: Int = 0,
+    group: Boolean = false,
+    group_level: Int = -1,
+    reduce: Boolean = true,
+    include_docs: Boolean = false,
+    inclusive_end: Boolean = true,
+    update_seq: Boolean = false): RawViewResult =
+    synced(wrapped.queryRaw(key = key,
+      keys = keys,
+      startkey = startkey,
+      startkey_docid = startkey_docid,
+      endkey = endkey,
+      endkey_docid = endkey_docid,
+      limit = limit,
+      stale = stale,
+      descending = descending,
+      skip = skip,
+      group = group,
+      group_level = group_level,
+      reduce = reduce,
+      include_docs = include_docs,
+      inclusive_end = inclusive_end,
+      update_seq = update_seq))
+
+  @inline
+  def query[Key: Manifest, Value: Manifest, Doc: Manifest](key: Option[Key] = None,
     keys: List[Key] = Nil,
     startkey: Option[Key] = None,
     startkey_docid: Option[String] = None,
@@ -48,7 +85,7 @@ class View[Key: Manifest, Value: Manifest, Doc: Manifest](wrapped: AView[Key, Va
     inclusive_end: Boolean = true,
     update_seq: Boolean = false): ViewResult[Key, Value, Doc] =
 
-    synced(wrapped.query(key = key,
+    synced(wrapped.query[Key, Value, Doc](key = key,
       keys = keys,
       startkey = startkey,
       startkey_docid = startkey_docid,

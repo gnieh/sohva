@@ -34,24 +34,24 @@ object TestBarneyStinsonStrategy extends SohvaTestSpec with ShouldMatchers with 
     val baseDoc = TestDoc("conflicting_doc", 3)()
     val firstSaved = db.saveDoc(baseDoc)
 
-    firstSaved.value should have(
+    firstSaved should have(
       '_id("conflicting_doc"),
       'toto(3))
 
-    val conflictDoc = TestDoc("conflicting_doc", 17)(firstSaved.flatMap(_._rev))
+    val conflictDoc = TestDoc("conflicting_doc", 17)(firstSaved._rev)
 
     val secondSaved = db.saveDoc(conflictDoc)
 
-    secondSaved.value should have(
+    secondSaved should have(
       '_id("conflicting_doc"),
       'toto(17))
 
     // try to save a new document based on the base revision (not the last one)
-    val newDoc = TestDoc("conflicting_doc", 42)(firstSaved.flatMap(_._rev))
+    val newDoc = TestDoc("conflicting_doc", 42)(firstSaved._rev)
 
     val thirdSaved = db.saveDoc(newDoc)
 
-    thirdSaved.value should have(
+    thirdSaved should have(
       '_id("conflicting_doc"),
       'toto(42))
 
@@ -62,18 +62,18 @@ object TestBarneyStinsonStrategy extends SohvaTestSpec with ShouldMatchers with 
     val baseDoc = TestDoc("conflicting_doc", 3)()
     val firstSaved = db.saveDoc(baseDoc)
 
-    firstSaved.value should have(
+    firstSaved should have(
       '_id("conflicting_doc"),
       'toto(3))
 
     // delete the document
     db.deleteDoc("conflicting_doc") should be(true)
 
-    val newDoc = TestDoc("conflicting_doc", 42)(firstSaved.flatMap(_._rev))
+    val newDoc = TestDoc("conflicting_doc", 42)(firstSaved._rev)
 
     val secondSaved = db.saveDoc(newDoc)
 
-    secondSaved.value should have(
+    secondSaved should have(
       '_id("conflicting_doc"),
       'toto(42))
 
@@ -84,7 +84,7 @@ object TestBarneyStinsonStrategy extends SohvaTestSpec with ShouldMatchers with 
     val baseDoc = TestDoc("conflicting_doc", 3)()
     val firstSaved = db.saveDoc(baseDoc)
 
-    firstSaved.value should have(
+    firstSaved should have(
       '_id("conflicting_doc"),
       'toto(3))
 
@@ -92,7 +92,7 @@ object TestBarneyStinsonStrategy extends SohvaTestSpec with ShouldMatchers with 
 
     val secondSaved = db.saveDoc(newDoc)
 
-    secondSaved.value should have(
+    secondSaved should have(
       '_id("conflicting_doc"),
       'toto(42))
 
@@ -103,7 +103,7 @@ object TestBarneyStinsonStrategy extends SohvaTestSpec with ShouldMatchers with 
     val baseDoc = ComplexDoc("conflicting_doc", "test", 3)
     val firstSaved = db.saveDoc(baseDoc)
 
-    firstSaved.value should have(
+    firstSaved should have(
       '_id("conflicting_doc"),
       'f1("test"),
       'f2(3))
@@ -112,7 +112,7 @@ object TestBarneyStinsonStrategy extends SohvaTestSpec with ShouldMatchers with 
 
     val secondSaved = db.saveDoc(newDoc)
 
-    secondSaved.value should have(
+    secondSaved should have(
       '_id("conflicting_doc"),
       'toto(42))
 

@@ -50,14 +50,14 @@ class Users(couch: CouchDB) extends gnieh.sohva.Users[Future] {
   def delete(name: String): Future[Boolean] =
     database(dbName).deleteDoc("org.couchdb.user:" + name)
 
-  def generateResetToken(name: String, until: Date): Future[Option[String]] =
+  def generateResetToken(name: String, until: Date): Future[String] =
     for {
       tok <- _uuid
       user <- userDb.getDocById[JObject]("org.couchdb.user:" + name)
-      token <- generate(user, tok, until)
+      token <- generate(name, user, tok, until)
     } yield token
 
-  private[this] def generate(user: Option[JObject], token: String, until: Date) =
+  private[this] def generate(name: String, user: Option[JObject], token: String, until: Date) =
     user match {
       case Some(user) =>
         // enrich the user document with password reset information
@@ -67,10 +67,10 @@ class Users(couch: CouchDB) extends gnieh.sohva.Users[Future] {
           JField("reset_token_salt", JString(token_salt)) ++
           JField("reset_validity", serializer.toJson(until))
         // save back the enriched user document
-        for (user <- userDb.saveRawDoc(doc))
-          yield user.map(_ => token)
+        for (_ <- userDb.saveRawDoc(doc))
+          yield token
       case None =>
-        Future.successful(None)
+        Future.failed(new SohvaException("Cannot generate password reset token for unknown user " + name))
     }
 
   def resetPassword(name: String, token: String, password: String): Future[Boolean] =

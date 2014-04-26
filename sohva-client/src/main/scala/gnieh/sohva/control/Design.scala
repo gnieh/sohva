@@ -44,34 +44,34 @@ class Design(wrapped: ADesign) extends gnieh.sohva.Design[Try] {
   @inline
   def saveView(viewName: String,
     mapFun: String,
-    reduceFun: Option[String] = None): Try[Boolean] =
+    reduceFun: Option[String] = None): Try[Unit] =
     synced(wrapped.saveView(viewName, mapFun, reduceFun))
 
   @inline
-  def saveView(viewName: String, view: ViewDoc): Try[Boolean] =
+  def saveView(viewName: String, view: ViewDoc): Try[Unit] =
     synced(wrapped.saveView(viewName, view))
 
   @inline
-  def deleteView(viewName: String): Try[Boolean] =
+  def deleteView(viewName: String): Try[Unit] =
     synced(wrapped.deleteView(viewName))
 
-  def view[Key: Manifest, Value: Manifest, Doc: Manifest](viewName: String): View[Key, Value, Doc] =
-    new View[Key, Value, Doc](wrapped.view(viewName))
+  def view(viewName: String): View =
+    new View(wrapped.view(viewName))
 
   @inline
-  def saveValidateFunction(validateFun: String): Try[Boolean] =
+  def saveValidateFunction(validateFun: String): Try[Unit] =
     synced(wrapped.saveValidateFunction(validateFun))
 
   @inline
-  def deleteValidateFunction: Try[Boolean] =
+  def deleteValidateFunction: Try[Unit] =
     synced(wrapped.deleteValidateFunction)
 
   @inline
-  def saveFilter(name: String, filterFun: String): Try[Boolean] =
+  def saveFilter(name: String, filterFun: String): Try[Unit] =
     synced(wrapped.saveFilter(name, filterFun))
 
   @inline
-  def deleteFilter(name: String): Try[Boolean] =
+  def deleteFilter(name: String): Try[Unit] =
     synced(wrapped.deleteFilter(name))
 
 }
