@@ -130,5 +130,8 @@ abstract class CouchDB private[sync] (wrapped: ACouchDB) extends gnieh.sohva.Cou
 
   }
 
+  override def toString =
+    wrapped.toString
+
 }
 

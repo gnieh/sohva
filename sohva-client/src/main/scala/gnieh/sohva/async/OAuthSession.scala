@@ -68,10 +68,10 @@ class OAuthSession protected[sohva] (
 
   private val oauth = OAuth.oAuthAuthorizer(consumerKey, consumerSecret, token, secret)
 
+  // sign all requests sent to CouchDB
   protected[sohva] def prepare(req: HttpRequest) =
     oauth(req)
 
-  // sign all requests sent to CouchDB
   protected[sohva] def uri =
     couch.uri
 

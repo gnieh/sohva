@@ -147,5 +147,8 @@ class Design(val db: Database,
   private def designDoc(json: JValue) =
     serializer.fromJson[DesignDoc](json)
 
+  override def toString =
+    uri.toString
+
 }
 

@@ -386,6 +386,9 @@ class Database private[sohva] (
   private def extractSecurityDoc(json: JValue) =
     serializer.fromJson[SecurityDoc](json)
 
+  override def toString =
+    uri.toString
+
 }
 
 protected[sohva] final case class BulkDocRow[T](id: String, rev: String, doc: Option[T])
