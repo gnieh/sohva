@@ -88,6 +88,7 @@ class View[Key: Manifest, Value: Manifest, Doc: Manifest](
 
   private def viewResult[Key: Manifest, Value: Manifest, Doc: Manifest](json: JValue) = {
     val offset = (json \ "offset").extractOpt[Int].getOrElse(0)
+    val update_seq = (json \ "update_seq").extractOpt[Int]
     val rows = (json \ "rows") match {
       case JArray(rows) =>
         rows.flatMap { row =>
@@ -102,7 +103,7 @@ class View[Key: Manifest, Value: Manifest, Doc: Manifest](
         Nil
     }
     val total_rows = (json \ "total_rows").extractOpt[Int].getOrElse(rows.size)
-    ViewResult(total_rows, offset, rows)
+    ViewResult(total_rows, offset, update_seq, rows)
   }
 
 }

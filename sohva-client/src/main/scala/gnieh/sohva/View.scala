@@ -50,6 +50,7 @@ case class ViewDoc(map: String, reduce: Option[String])
 final case class ViewResult[Key, Value, Doc](
     total_rows: Int,
     offset: Int,
+    update_seq: Option[Int],
     rows: List[Row[Key, Value, Doc]]) {
 
   self =>
@@ -68,11 +69,11 @@ final case class ViewResult[Key, Value, Doc](
     rows.foreach(f)
 
   def map[Key1, Value1, Doc1](f: Row[Key, Value, Doc] => Row[Key1, Value1, Doc1]): ViewResult[Key1, Value1, Doc1] =
-    ViewResult(total_rows, offset, rows.map(f))
+    ViewResult(total_rows, offset, update_seq, rows.map(f))
 
   def flatMap[Key1, Value1, Doc1](f: Row[Key, Value, Doc] => ViewResult[Key1, Value1, Doc1]): ViewResult[Key1, Value1, Doc1] = {
     val results = rows.map(f)
-    ViewResult(results.map(_.total_rows).sum, offset, results.flatMap(_.rows))
+    ViewResult(results.map(_.total_rows).sum, offset, update_seq, results.flatMap(_.rows))
   }
 
   def withFilter(p: Row[Key, Value, Doc] => Boolean): WithFilter =
@@ -87,7 +88,7 @@ final case class ViewResult[Key, Value, Doc](
       } f(row)
 
     def map[Key1, Value1, Doc1](f: Row[Key, Value, Doc] => Row[Key1, Value1, Doc1]): ViewResult[Key1, Value1, Doc1] =
-      ViewResult(rows.size, offset, for {
+      ViewResult(rows.size, offset, update_seq, for {
         row <- rows
         if p(row)
       } yield f(row))
@@ -98,7 +99,7 @@ final case class ViewResult[Key, Value, Doc](
         if p(row)
         row1 <- f(row).rows
       } yield row1
-      ViewResult(rows1.size, offset, rows1)
+      ViewResult(rows1.size, offset, update_seq, rows1)
     }
 
     def withFilter(q: Row[Key, Value, Doc] => Boolean): WithFilter =
