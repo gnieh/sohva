@@ -61,8 +61,7 @@ class TestSecurity extends SohvaTestSpec with ShouldMatchers with BeforeAndAfter
 
     val saved = secDb.saveDoc(TestDoc("some_doc", 17)())
 
-    saved should be('defined)
-    saved.value should have(
+    saved should have(
       '_id("some_doc"),
       'toto(17))
 

@@ -14,32 +14,5 @@
 * limitations under the License.
 */
 package gnieh.sohva
-package control
 
-import strategy._
-
-import gnieh.sohva.async.{
-  Replicator => AReplicator
-}
-
-import scala.util.Try
-
-import java.net.URL
-
-/** A replicator database that allows people to manage replications:
- *   - start replication
- *   - cancel or stop replications
- *   - list current replications
- *
- *  @author Lucas Satabin
- */
-class Replicator(wrapped: AReplicator)
-    extends Database(wrapped) with gnieh.sohva.Replicator[Try] {
-
-  def start(replication: Replication): Try[Replication] =
-    synced(wrapped.start(replication))
-
-  def stop(id: String): Try[Boolean] =
-    synced(wrapped.stop(id))
-
-}
+class SohvaException(msg: String) extends Exception(msg)

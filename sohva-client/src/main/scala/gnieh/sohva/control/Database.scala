@@ -117,7 +117,7 @@ class Database private[sohva] (wrapped: ADatabase) extends gnieh.sohva.Database[
     synced(wrapped.getDocRevisions(ids))
 
   @inline
-  def saveDoc[T <% IdRev: Manifest](doc: T): Try[Option[T]] =
+  def saveDoc[T <% IdRev: Manifest](doc: T): Try[T] =
     synced(wrapped.saveDoc(doc))
 
   @inline
@@ -129,7 +129,7 @@ class Database private[sohva] (wrapped: ADatabase) extends gnieh.sohva.Database[
     synced(wrapped.copy(origin, target, originRev, targetRev))
 
   @inline
-  def patchDoc[T <: IdRev: Manifest](id: String, rev: String, patch: JsonPatch): Try[Option[T]] =
+  def patchDoc[T <: IdRev: Manifest](id: String, rev: String, patch: JsonPatch): Try[T] =
     synced(wrapped.patchDoc(id, rev, patch))
 
   @inline

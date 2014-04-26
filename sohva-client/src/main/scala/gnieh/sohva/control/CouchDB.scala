@@ -120,7 +120,7 @@ abstract class CouchDB private[control] (wrapped: ACouchDB) extends gnieh.sohva.
       synced(wrapped.users.delete(name))
 
     @inline
-    def generateResetToken(name: String, until: Date): Try[Option[String]] =
+    def generateResetToken(name: String, until: Date): Try[String] =
       synced(wrapped.users.generateResetToken(name, until))
 
     @inline

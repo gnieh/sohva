@@ -28,8 +28,6 @@ class TestCopy extends SohvaTestSpec with ShouldMatchers {
     val doc = TestDoc2("my-doc", 4)
     val saved = db.saveDoc(doc)
 
-    saved should be('defined)
-
     val targetUnknown = db.getDocById[TestDoc2]("my-doc-copy")
 
     targetUnknown should not be('defined)
@@ -54,19 +52,17 @@ class TestCopy extends SohvaTestSpec with ShouldMatchers {
 
     val targetSaved = db.saveDoc(target)
 
-    targetSaved should be('defined)
-    targetSaved.value.toto should be(5432)
-    targetSaved.value._rev should be('defined)
+    targetSaved.toto should be(5432)
+    targetSaved._rev should be('defined)
 
-    val ok = db.copy("my-doc", "my-doc-target", targetRev = targetSaved.value._rev)
+    val ok = db.copy("my-doc", "my-doc-target", targetRev = targetSaved._rev)
 
     ok should be(true)
 
     val targetUpdated = db.getDocById[TestDoc2]("my-doc-target")
 
-    targetUpdated should be('defined)
     targetUpdated.value.toto should be(4)
-    targetUpdated.value._rev should not be(targetSaved.value._rev)
+    targetUpdated.value._rev should not be(targetSaved._rev)
 
   }
 

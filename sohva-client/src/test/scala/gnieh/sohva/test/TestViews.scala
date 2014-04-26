@@ -50,9 +50,12 @@ class TestViews extends SohvaTestSpec with ShouldMatchers with BeforeAndAfterEac
 
     val design = db.design("test_design")
 
-    val saved = design.saveView("test_view", "function(doc) { if(doc._id.indexOf('view_doc') == 0) emit(doc._id, null); }")
+    design.saveView("test_view", "function(doc) { if(doc._id.indexOf('view_doc') == 0) emit(doc._id, null); }")
 
-    saved should be(true)
+    val updated = design.getDesignDocument
+    updated should be('defined)
+
+    updated.value.views.contains("test_view") should be(true)
 
   }
 

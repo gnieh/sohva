@@ -37,15 +37,14 @@ class TestPasswordReset extends SohvaTestSpec with ShouldMatchers with BeforeAnd
 
   "an administrator" should "be able to require a password reset for any user" in {
     // one hour validity
-    session.users.generateResetToken("test_user", new Date(Platform.currentTime + 3600000l)) should be('defined)
+    session.users.generateResetToken("test_user", new Date(Platform.currentTime + 3600000l)) should not be(null)
   }
 
   it should "be able to reset the password if a valid token exists" in {
     // one hour validity
     val token = session.users.generateResetToken("test_user", new Date(Platform.currentTime + 3600000l))
-    token should be('defined)
 
-    session.users.resetPassword("test_user", token.get, "new_password") should be(true)
+    session.users.resetPassword("test_user", token, "new_password") should be(true)
 
     couch.startCookieSession.login("test_user", "new_password") should be(true)
   }
@@ -58,9 +57,8 @@ class TestPasswordReset extends SohvaTestSpec with ShouldMatchers with BeforeAnd
   it should "not be able to reset password if the token is not valid anymore" in {
     // one hour before validity
     val token = session.users.generateResetToken("test_user", new Date(Platform.currentTime - 3600000l))
-    token should be('defined)
 
-    session.users.resetPassword("test_user", token.get, "new_password") should be(false)
+    session.users.resetPassword("test_user", token, "new_password") should be(false)
 
     couch.startCookieSession.login("test_user", "new_password") should be(false)
   }
@@ -68,9 +66,8 @@ class TestPasswordReset extends SohvaTestSpec with ShouldMatchers with BeforeAnd
   it should "not be able to reset password if a wrong token is given" in {
     // one hour validity
     val token = session.users.generateResetToken("test_user", new Date(Platform.currentTime + 3600000l))
-    token should be('defined)
 
-    session.users.resetPassword("test_user", token.get + "wrong", "new_password") should be(false)
+    session.users.resetPassword("test_user", token + "wrong", "new_password") should be(false)
 
     couch.startCookieSession.login("test_user", "new_password") should be(false)
   }

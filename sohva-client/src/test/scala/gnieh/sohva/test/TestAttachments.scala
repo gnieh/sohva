@@ -38,8 +38,7 @@ class TestAttachments extends SohvaTestSpec with ShouldMatchers {
     val doc = TestDoc("doc-with-attachments", 4)
     val saved = db.saveDoc(doc)
 
-    saved should be('defined)
-    saved.value._attachments should be('empty)
+    saved._attachments should be('empty)
 
   }
 
