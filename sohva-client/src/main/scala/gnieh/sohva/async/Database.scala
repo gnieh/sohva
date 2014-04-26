@@ -174,7 +174,8 @@ class Database private[sohva] (
 
   def saveDoc[T <% IdRev: Manifest](doc: T): Future[Option[T]] =
     for {
-      upd <- resolver(credit, doc._id, doc._rev, serializer.toJson(doc))
+      upd <- resolver(credit, doc._id, doc._rev, serializer.toJson(doc)) recover
+        { case e: Exception => throw new Exception(f"Unable to update document with ID $doc._id at revision $doc._rev", e) }
       res <- update(upd.extract[DocUpdate])
     } yield res
 
