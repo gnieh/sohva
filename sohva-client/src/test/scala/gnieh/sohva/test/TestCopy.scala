@@ -22,7 +22,7 @@ import org.scalatest.OptionValues._
 
 import sync._
 
-class TestCopy extends SohvaTestSpec with ShouldMatchers {
+class TestCopy extends SohvaTestSpec with Matchers {
 
   "the target document" should "be created if it does not exist yet" in {
     val doc = TestDoc2("my-doc", 4)
