@@ -100,7 +100,6 @@ class CouchClient(val host: String = "localhost",
       Uri("https", Uri.Authority(Uri.Host(host), port))
     else
       Uri("http", Uri.Authority(Uri.Host(host), port))
-
 }
 
 private case class CouchVersion(raw: String) {

@@ -38,7 +38,8 @@ class Design(val db: Database,
   protected[sohva] def uri = db.uri / "_design" / name.trim
 
   def getDesignDocument: Future[Option[DesignDoc]] =
-    for (design <- db.couch.optHttp(Get(uri)))
+    for (design <- db.couch.optHttp(Get(uri)) withFailureMessage
+      f"Failed to fetch design document from $uri")
       yield design.map(designDoc)
 
   def delete: Future[Boolean] =

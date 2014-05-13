@@ -80,7 +80,8 @@ class View(
       .map { case (name, value) => (name, value.toString) }
       .toMap
 
-    for (res <- db.couch.http(Get(uri <<? options)))
+    for (res <- db.couch.http(Get(uri <<? options)) withFailureMessage
+      f"Raw query failed for view `$view' in design `$design' at $db")
       yield rawViewResult(res)
 
   }
@@ -126,7 +127,8 @@ class View(
       .map { case (name, value) => (name, value.toString) }
       .toMap
 
-    for (res <- db.couch.http(Get(uri <<? options)))
+    for (res <- db.couch.http(Get(uri <<? options)) withFailureMessage
+      f"Query failed for view `$view' in design `$design' at $db")
       yield viewResult[Key, Value, Doc](res)
 
   }

@@ -62,11 +62,11 @@ class CookieSession protected[sohva] (val couch: CouchClient) extends CouchDB wi
     for (
       res <- pipeline(prepare(Post(uri / "_session",
         FormData(Map("name" -> name, "password" -> password))) <:<
-        Map("Accept" -> "application/json, text/javascript, */*")))
+        Map("Accept" -> "application/json, text/javascript, */*"))) withFailureMessage f"Problem logging in to $uri"
     ) yield res.status.isSuccess
 
   def logout: Future[Boolean] =
-    for (res <- pipeline(prepare(Delete(uri / "_session"))))
+    for (res <- pipeline(prepare(Delete(uri / "_session"))) withFailureMessage f"Problem logging out from $uri")
       yield res.status.isSuccess
 
   def isLoggedIn: Future[Boolean] =
