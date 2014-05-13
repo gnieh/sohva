@@ -68,7 +68,7 @@ class JsonSerializer(version: String, custom: List[SohvaSerializer[_]]) {
       json.extract[T]
     } catch {
       case e: Exception =>
-        throw SohvaJsonException("Unable to extract from the json string \"" + json + "\"", e)
+        throw SohvaJsonException("Unable to extract from the json value \"" + json + "\"", e)
     }
 
   def fromCouchJson(json: JValue) =
