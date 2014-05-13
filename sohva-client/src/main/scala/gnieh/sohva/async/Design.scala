@@ -31,8 +31,6 @@ class Design(val db: Database,
     val name: String,
     val language: String) extends gnieh.sohva.Design[Future] {
 
-  import db.couch.serializer
-
   import db.ec
 
   protected[sohva] def uri = db.uri / "_design" / name.trim
@@ -146,7 +144,7 @@ class Design(val db: Database,
   // helper methods
 
   private def designDoc(json: JValue) =
-    serializer.fromJson[DesignDoc](json)
+    db.serializer.fromJson[DesignDoc](json)
 
   override def toString =
     uri.toString

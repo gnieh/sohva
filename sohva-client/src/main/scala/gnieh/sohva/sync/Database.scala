@@ -50,6 +50,9 @@ class Database private[sohva] (wrapped: ADatabase) extends gnieh.sohva.Database[
   val strategy = wrapped.strategy
 
   @inline
+  val serializer = wrapped.serializer
+
+  @inline
   def info: Option[InfoResult] =
     synced(wrapped.info)
 

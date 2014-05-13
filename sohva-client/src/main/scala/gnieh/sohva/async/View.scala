@@ -32,9 +32,8 @@ class View(
   val view: String)
     extends gnieh.sohva.View[Future] {
 
-  import db.couch.serializer
   import db.ec
-  import serializer.formats
+  import db.serializer.formats
 
   protected[this] def uri = db.uri / "_design" / design / "_view" / view
 
@@ -58,11 +57,11 @@ class View(
 
     // build options
     val options = List(
-      key.map(k => "key" -> compact(render(serializer.toJson(k)))),
-      if (keys.nonEmpty) Some("keys" -> compact(render(serializer.toJson(keys)))) else None,
-      startkey.map(k => "startkey" -> compact(render(serializer.toJson(k)))),
+      key.map(k => "key" -> compact(render(db.serializer.toJson(k)))),
+      if (keys.nonEmpty) Some("keys" -> compact(render(db.serializer.toJson(keys)))) else None,
+      startkey.map(k => "startkey" -> compact(render(db.serializer.toJson(k)))),
       startkey_docid.map("startkey_docid" -> _),
-      endkey.map(k => "endkey" -> compact(render(serializer.toJson(k)))),
+      endkey.map(k => "endkey" -> compact(render(db.serializer.toJson(k)))),
       endkey_docid.map("endkey_docid" -> _),
       if (limit > 0) Some("limit" -> limit) else None,
       stale.map("stale" -> _),
@@ -105,11 +104,11 @@ class View(
 
     // build options
     val options = List(
-      key.map(k => "key" -> compact(render(serializer.toJson(k)))),
-      if (keys.nonEmpty) Some("keys" -> compact(render(serializer.toJson(keys)))) else None,
-      startkey.map(k => "startkey" -> compact(render(serializer.toJson(k)))),
+      key.map(k => "key" -> compact(render(db.serializer.toJson(k)))),
+      if (keys.nonEmpty) Some("keys" -> compact(render(db.serializer.toJson(keys)))) else None,
+      startkey.map(k => "startkey" -> compact(render(db.serializer.toJson(k)))),
       startkey_docid.map("startkey_docid" -> _),
-      endkey.map(k => "endkey" -> compact(render(serializer.toJson(k)))),
+      endkey.map(k => "endkey" -> compact(render(db.serializer.toJson(k)))),
       endkey_docid.map("endkey_docid" -> _),
       if (limit > 0) Some("limit" -> limit) else None,
       stale.map("stale" -> _),

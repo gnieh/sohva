@@ -55,12 +55,11 @@ import akka.actor._
 class Database private[sohva] (
   val name: String,
   val couch: CouchDB,
+  val serializer: JsonSerializer,
   val credit: Int,
   val strategy: Strategy)
     extends gnieh.sohva.Database[Future]
     with LiftMarshalling {
-
-  import couch.serializer
 
   implicit def ec =
     couch.ec
