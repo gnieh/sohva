@@ -90,10 +90,8 @@ class TestSecurity extends SohvaTestSpec with Matchers with BeforeAndAfterEach {
       secDb.getDocById("some_doc")
     }
 
-    thrown.printStackTrace()
-
     val ce = CauseMatchers.findExpectedExceptionRecursively[CouchException](thrown)
-    ce should not be('empty)
+    withClue("CouchException should be present in the stack trace: ") { ce should not be('empty) }
     ce.get.status should be (401)
 
   }
@@ -102,11 +100,13 @@ class TestSecurity extends SohvaTestSpec with Matchers with BeforeAndAfterEach {
 
     adminSecDb.saveSecurityDoc(secDoc3) should be(true)
 
-    val thrown = the [CouchException] thrownBy {
+    val thrown = the [SohvaException] thrownBy {
       secDb.saveDoc(TestDoc("some_doc", 13)())
     }
 
-    thrown.status should be(401)
+    val ce = CauseMatchers.findExpectedExceptionRecursively[CouchException](thrown)
+    withClue("CouchException should be present in the stack trace: ") { ce should not be('empty) }
+    ce.get.status should be (401)
 
   }
 

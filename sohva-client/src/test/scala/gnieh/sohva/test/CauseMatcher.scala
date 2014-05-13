@@ -42,7 +42,9 @@ object CauseMatchers {
         Some(clazz.cast(v))
       } else if (v.getCause == null) {
         None
-      } else check(v.getCause)
+      } else {
+        check(v.getCause)
+      }
     }
 
     check(e)
