@@ -29,7 +29,7 @@ object SohvaBuild extends Build {
     scalacOptions in ThisBuild ++= Seq("-deprecation", "-feature", "-language:higherKinds,implicitConversions,reflectiveCalls"))
     settings(publishSettings: _*)
     settings(unidocSettings: _*)
-  ) aggregate(client, testing)
+  ) aggregate(client, testing, entities)
 
   lazy val scalariformSettings = defaultScalariformSettings ++ Seq(
     ScalariformKeys.preferences :=
@@ -117,6 +117,28 @@ object SohvaBuild extends Build {
 
   lazy val testingDependencies = Seq(
     "org.scalatest" %% "scalatest" % "2.0.M5b"
+  )
+
+  lazy val entities = Project(id = "sohva-entities",
+    base = file("sohva-entities")) settings(
+      description := "Entity Component System storing entities in a couchdb instance",
+      libraryDependencies ++= entitiesDependencies,
+      resourceDirectories in Compile := List()
+    ) settings(osgiSettings: _*) settings(scalariformSettings: _*) settings(
+      OsgiKeys.exportPackage := Seq(
+        "gnieh.sohva",
+        "gnieh.sohva.entities"
+      ),
+      OsgiKeys.additionalHeaders := Map (
+        "Bundle-Name" -> "Sohva Entity Component System"
+      ),
+      OsgiKeys.bundleSymbolicName := "org.gnieh.sohva.entities",
+      OsgiKeys.privatePackage := Seq()
+    ) dependsOn(client)
+
+  lazy val entitiesDependencies = clientDependencies ++ Seq(
+    "com.github.scala-incubator.io" %% "scala-io-core" % "0.4.3",
+    "ch.qos.logback" % "logback-classic" % "1.1.2"
   )
 
 }
