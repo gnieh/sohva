@@ -65,6 +65,9 @@ class ChangeStream(database: Database, since: Option[Int], filter: Option[String
   def close(): Unit =
     actor ! CloseStream
 
+  override def toString =
+    (database.uri / "_changes").toString
+
 }
 
 /** This actor is responsible for managing the connection to the change stream
@@ -80,7 +83,7 @@ private class ChangeActor(database: Database, filter: Option[String]) extends Ac
 
   import database.formats
 
-  private val uri = database.uri / "_changes"
+  private def uri = database.uri / "_changes"
 
   override def preStart(): Unit = {
     // ok so we just created a new change stream, connect to the `_changes` endpoint

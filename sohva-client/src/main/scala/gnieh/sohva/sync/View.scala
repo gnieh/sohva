@@ -102,5 +102,8 @@ class View(wrapped: AView)
       inclusive_end = inclusive_end,
       update_seq = update_seq))
 
+  override def toString =
+    wrapped.toString
+
 }
 

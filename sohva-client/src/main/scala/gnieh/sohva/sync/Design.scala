@@ -75,4 +75,7 @@ class Design(wrapped: ADesign) extends gnieh.sohva.Design[Identity] {
   def deleteFilter(name: String): Unit =
     synced(wrapped.deleteFilter(name))
 
+  override def toString =
+    wrapped.toString
+
 }

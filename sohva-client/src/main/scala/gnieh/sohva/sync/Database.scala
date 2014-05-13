@@ -178,5 +178,8 @@ class Database private[sohva] (wrapped: ADatabase) extends gnieh.sohva.Database[
   def builtInView(view: String): View =
     new View(wrapped.builtInView(name))
 
+  override def toString =
+    wrapped.toString
+
 }
 

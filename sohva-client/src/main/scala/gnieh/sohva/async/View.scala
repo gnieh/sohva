@@ -175,6 +175,9 @@ class View(
     ViewResult(total_rows, offset, rows, update_seq)
   }
 
+  override def toString =
+    uri.toString
+
 }
 
 /** Used to query built-in view such as `_all_docs`.

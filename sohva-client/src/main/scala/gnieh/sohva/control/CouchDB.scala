@@ -129,5 +129,8 @@ abstract class CouchDB private[control] (wrapped: ACouchDB) extends gnieh.sohva.
 
   }
 
+  override def toString =
+    wrapped.toString
+
 }
 

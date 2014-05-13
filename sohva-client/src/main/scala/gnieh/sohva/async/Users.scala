@@ -113,4 +113,7 @@ class Users(couch: CouchDB) extends gnieh.sohva.Users[Future] {
 
   }
 
+  override def toString =
+    userDb.toString
+
 }

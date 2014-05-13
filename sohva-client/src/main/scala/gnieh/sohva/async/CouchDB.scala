@@ -162,4 +162,6 @@ abstract class CouchDB extends gnieh.sohva.CouchDB[Future] with LiftMarshalling 
   private def asConfiguration(json: JValue) =
     serializer.fromJson[Configuration](json)
 
+  override def toString =
+    uri.toString
 }
