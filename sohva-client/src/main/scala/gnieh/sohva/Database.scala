@@ -49,6 +49,9 @@ trait Database[Result[_]] {
   /** The merge strategy */
   val strategy: Strategy
 
+  /** The serializer used by this database */
+  def serializer: JsonSerializer
+
   /** Returns the information about this database */
   def info: Result[Option[InfoResult]]
 
