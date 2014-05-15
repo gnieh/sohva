@@ -17,14 +17,13 @@ package gnieh.sohva
 package test
 
 import org.scalatest._
-import OptionValues._
 
 import sync._
 
 /** @author satabin
  *
  */
-class TestSecurity extends SohvaTestSpec with ShouldMatchers with BeforeAndAfterEach {
+class TestSecurity extends SohvaTestSpec with Matchers with BeforeAndAfterEach {
 
   var secDb: Database = couch.database("sohva_test_security")
   var adminSecDb: Database = _
@@ -61,8 +60,7 @@ class TestSecurity extends SohvaTestSpec with ShouldMatchers with BeforeAndAfter
 
     val saved = secDb.saveDoc(TestDoc("some_doc", 17)())
 
-    saved should be('defined)
-    saved.value should have(
+    saved should have(
       '_id("some_doc"),
       'toto(17))
 
@@ -88,11 +86,13 @@ class TestSecurity extends SohvaTestSpec with ShouldMatchers with BeforeAndAfter
     secDb.saveDoc(TestDoc("some_doc", 13)())
     adminSecDb.saveSecurityDoc(secDoc3) should be(true)
 
-    val thrown = evaluating {
+    val thrown = the [SohvaException] thrownBy {
       secDb.getDocById("some_doc")
-    } should produce[CouchException]
+    }
 
-    thrown.status should be(401)
+    val ce = CauseMatchers.findExpectedExceptionRecursively[CouchException](thrown)
+    withClue("CouchException should be present in the stack trace: ") { ce should not be('empty) }
+    ce.get.status should be (401)
 
   }
 
@@ -100,11 +100,13 @@ class TestSecurity extends SohvaTestSpec with ShouldMatchers with BeforeAndAfter
 
     adminSecDb.saveSecurityDoc(secDoc3) should be(true)
 
-    val thrown = evaluating {
+    val thrown = the [SohvaException] thrownBy {
       secDb.saveDoc(TestDoc("some_doc", 13)())
-    } should produce[CouchException]
+    }
 
-    thrown.status should be(401)
+    val ce = CauseMatchers.findExpectedExceptionRecursively[CouchException](thrown)
+    withClue("CouchException should be present in the stack trace: ") { ce should not be('empty) }
+    ce.get.status should be (401)
 
   }
 

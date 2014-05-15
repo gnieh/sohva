@@ -33,7 +33,7 @@ trait Replicator[Result[_]] extends Database[Result] {
    *  but the replication is not started again. The result only contains the identifier
    *  of the actual replication task, not its state.
    */
-  def start(replication: Replication): Result[Option[Replication]]
+  def start(replication: Replication): Result[Replication]
 
   /** Stops the replication identified by the given replication document id.
    *  if the identifier does not describe the document that started the replication,

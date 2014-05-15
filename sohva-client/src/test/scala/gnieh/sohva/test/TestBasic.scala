@@ -17,14 +17,13 @@ package gnieh.sohva
 package test
 
 import org.scalatest._
-import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.OptionValues._
 
 import sync._
 
 import gnieh.diffson._
 
-class TestBasic extends SohvaTestSpec with ShouldMatchers {
+class TestBasic extends SohvaTestSpec with Matchers {
 
   "an unknown document" should "not be retrieved" in {
     db.getDocById[TestDoc]("unknown-doc") should be(None)
@@ -34,10 +33,11 @@ class TestBasic extends SohvaTestSpec with ShouldMatchers {
     val doc = TestDoc2("new-doc", 4)
     val saved = db.saveDoc(doc)
 
-    saved.value should have(
+    saved should have(
       '_id("new-doc"),
       'toto(4))
-    db.getDocById[TestDoc2]("new-doc") should be(saved)
+
+    db.getDocById[TestDoc2]("new-doc") should be(Some(saved))
   }
 
   "an existing document" should "have a revision" in {
@@ -50,9 +50,12 @@ class TestBasic extends SohvaTestSpec with ShouldMatchers {
   it should "not be saved if we have an outdated version" in {
     db.getDocById[TestDoc2]("new-doc") match {
       case Some(doc) =>
-        evaluating {
+        val thrown = the [SohvaException] thrownBy {
           db.saveDoc(doc.copy(toto = 1).withRev(Some("0-0")))
-        } should produce[ConflictException]
+        }
+
+        val cause = CauseMatchers.findExpectedExceptionRecursively[ConflictException](thrown)
+
       case None =>
         fail("The document with id `new-doc` should exist")
     }
@@ -62,9 +65,8 @@ class TestBasic extends SohvaTestSpec with ShouldMatchers {
     db.getDocById[TestDoc2]("new-doc") match {
       case Some(doc) =>
         val newest = db.saveDoc(doc.copy(toto = 1).withRev(doc._rev))
-        newest should be('defined)
-        newest.map(_.toto).value should be(1)
-        newest.map(_._rev).value should not be (doc._rev.get)
+        newest.toto should be(1)
+        newest._rev.value should not be (doc._rev.get)
       case None =>
         fail("The document with id `new-doc` should exist")
     }
@@ -75,9 +77,8 @@ class TestBasic extends SohvaTestSpec with ShouldMatchers {
       case Some(rev) =>
         val patch = JsonPatch.parse("""[{ "op": "replace", "path": "/toto", "value": 453 }]""")
         val newest = db.patchDoc[TestDoc2]("new-doc", rev, patch)
-        newest should be('defined)
-        newest.map(_.toto).value should be(453)
-        newest.map(_._rev).value should not be (rev)
+        newest.toto should be(453)
+        newest._rev.value should not be (rev)
       case None =>
         fail("The document with id `new-doc` should exist")
     }
@@ -91,9 +92,8 @@ class TestBasic extends SohvaTestSpec with ShouldMatchers {
 
     val saved = db.saveDoc(doc)
 
-    saved should be('defined)
-    saved.value._rev should be('defined)
-    saved.value.value should be(doc.value)
+    saved._rev should be('defined)
+    saved.value should be(doc.value)
 
   }
 

@@ -32,7 +32,7 @@ import scala.concurrent.Future
 class Replicator(name: String, couch: CouchDB, credit: Int, strategy: Strategy)
     extends Database(name, couch, credit, strategy) with gnieh.sohva.Replicator[Future] {
 
-  def start(replication: Replication): Future[Option[Replication]] =
+  def start(replication: Replication): Future[Replication] =
     saveDoc(replication)
 
   def stop(id: String): Future[Boolean] =

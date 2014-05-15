@@ -19,7 +19,7 @@ package gnieh.sohva
  *
  *  @author Lucas Satabin
  */
-trait Session[Result[_]] {
+trait Session[Result[_]] extends CouchDB[Result] {
 
   /** Returns the user associated to the current session, if any */
   def currentUser: Result[Option[UserInfo]]

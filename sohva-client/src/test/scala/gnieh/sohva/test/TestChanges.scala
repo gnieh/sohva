@@ -24,6 +24,8 @@ import time.SpanSugar._
 import sync._
 
 import net.liftweb.json.DefaultFormats
+import java.util.concurrent.atomic.AtomicBoolean
+import rx.lang.scala.Subscription
 
 class TestChanges extends SohvaTestSpec with ShouldMatchers with AsyncAssertions with BeforeAndAfterEach {
 
@@ -72,8 +74,6 @@ class TestChanges extends SohvaTestSpec with ShouldMatchers with AsyncAssertions
 
     val saved = db.saveDoc(TestDoc("new-doc", 17)())
 
-    saved should be('defined)
-
     val sub = changes.subscribe { case (id, doc) =>
       w {
         id should be("new-doc")
@@ -84,9 +84,7 @@ class TestChanges extends SohvaTestSpec with ShouldMatchers with AsyncAssertions
       w.dismiss()
     }
 
-    saved map { saved =>
-      db.saveDoc(saved.copy(toto = 5)(saved._rev))
-    }
+    db.saveDoc(saved.copy(toto = 5)(saved._rev))
 
     w.await(timeout(5.seconds))
 
@@ -99,8 +97,6 @@ class TestChanges extends SohvaTestSpec with ShouldMatchers with AsyncAssertions
 
     val saved = db.saveDoc(TestDoc("new-doc", 17)())
 
-    saved should be('defined)
-
     val sub = changes.subscribe { case (id, doc) =>
       w {
         id should be("new-doc")
@@ -109,9 +105,7 @@ class TestChanges extends SohvaTestSpec with ShouldMatchers with AsyncAssertions
       w.dismiss()
     }
 
-    saved map { saved =>
-      db.deleteDoc(saved)
-    }
+    db.deleteDoc(saved)
 
     w.await(timeout(5.seconds))
 
@@ -128,17 +122,9 @@ class TestChanges extends SohvaTestSpec with ShouldMatchers with AsyncAssertions
 
     val saved = db.saveDoc(TestDoc("new-doc", 17)())
 
-    saved should be('defined)
+    val changed = db.saveDoc(saved.copy(toto = 5)(saved._rev))
 
-    val changed = saved flatMap { saved =>
-      db.saveDoc(saved.copy(toto = 5)(saved._rev))
-    }
-
-    changed should be('defined)
-
-    changed map { saved =>
-      db.deleteDoc(saved)
-    }
+    db.deleteDoc(changed)
 
     w.await(timeout(5.seconds), dismissals(3))
 
@@ -148,26 +134,34 @@ class TestChanges extends SohvaTestSpec with ShouldMatchers with AsyncAssertions
   it should "not be notified if unregistered" in withChanges { changes =>
 
     val w = new Waiter
+    val unsub = new AtomicBoolean(false)
 
-    val sub = changes.subscribe { case (id, doc) =>
+    lazy val sub: Subscription = changes.subscribe { case (id, doc) =>
+      println(f"Dismissing: ${unsub.get()}")
+      w {
+        withClue(f"Unsubscription status did not match expected state: ") {
+          sub.isUnsubscribed should equal (unsub.get())
+        }
+      }
       w.dismiss()
     }
+    println(f"sub: $sub")
 
+    println("saveDoc")
     val saved = db.saveDoc(TestDoc("new-doc", 17)())
 
-    saved should be('defined)
+    println("changeDoc")
+    val changed = db.saveDoc(saved.copy(toto = 5)(saved._rev))
 
-    val changed = saved flatMap { saved =>
-      db.saveDoc(saved.copy(toto = 5)(saved._rev))
-    }
-
-    changed should be('defined)
+    println(f"Is unsubscribed: ${sub.isUnsubscribed}")
 
     sub.unsubscribe()
+    unsub.set(true)
 
-    changed map { saved =>
-      db.deleteDoc(saved)
-    }
+    println(f"Is unsubscribed: ${sub.isUnsubscribed}")
+
+    println("deleteDoc")
+    db.deleteDoc(changed)
 
     w.await(timeout(5.seconds), dismissals(2))
 
@@ -179,8 +173,6 @@ class TestChanges extends SohvaTestSpec with ShouldMatchers with AsyncAssertions
     val design = db.design("test")
 
     val ok = design.saveFilter("my_filter", "function(doc, req) { if(doc.toto > 10) { return true; } else { return false; } }")
-
-    ok should be(true)
 
     val w = new Waiter
 
@@ -195,15 +187,9 @@ class TestChanges extends SohvaTestSpec with ShouldMatchers with AsyncAssertions
 
       val d1 = db.saveDoc(TestDoc("doc1", 8)())
 
-      d1 should be('defined)
-
       val d2 = db.saveDoc(TestDoc("doc2", 17)())
 
-      d2 should be('defined)
-
-      val d3 = db.saveDoc(d1.get.copy(toto = 14)(_rev = d1.get._rev))
-
-      d3 should be('defined)
+      val d3 = db.saveDoc(d1.copy(toto = 14)(_rev = d1._rev))
 
       val deleted = db.deleteDoc("doc1")
 
@@ -264,9 +250,7 @@ class TestChanges extends SohvaTestSpec with ShouldMatchers with AsyncAssertions
 
     val saved = db.saveDoc(TestDoc("doc", 23)())
 
-    saved should be('defined)
-
-    val ok = db.deleteDoc(saved.get)
+    val ok = db.deleteDoc(saved)
 
     ok should be(true)
 

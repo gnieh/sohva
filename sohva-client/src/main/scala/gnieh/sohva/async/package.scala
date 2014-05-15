@@ -20,6 +20,7 @@ import spray.httpx._
 import spray.client.pipelining._
 
 import java.io.File
+import scala.concurrent.{ExecutionContext, Future}
 
 package object async {
 
@@ -55,6 +56,15 @@ package object async {
           acc ~> addHeader(name, value)
       }
 
+  }
+
+
+  private[async] implicit class EnhancedFuture[T](val f: Future[T]) {
+
+    def withFailureMessage[U](msg: String)(implicit ec: ExecutionContext) = f.recover {
+      case e: Exception =>
+        throw new SohvaException(msg, e)
+    }
   }
 
 }

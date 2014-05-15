@@ -39,39 +39,34 @@ trait Design[Result[_]] {
    */
   def saveView(viewName: String,
     mapFun: String,
-    reduceFun: Option[String] = None): Result[Boolean]
+    reduceFun: Option[String] = None): Result[Unit]
 
   /** Creates or updates the view in this design with the given name.
    *  If the design does not exist yet, it is created.
    */
-  def saveView(viewName: String, view: ViewDoc): Result[Boolean]
+  def saveView(viewName: String, view: ViewDoc): Result[Unit]
 
   /** Deletes the view with the given name from the design */
-  def deleteView(viewName: String): Result[Boolean]
+  def deleteView(viewName: String): Result[Unit]
 
-  /** Returns the (typed) view in this design document.
-   *  The different types are:
-   *  - Key: type of the key for this view
-   *  - Value: Type of the value returned in the result
-   *  - Doc: Type of the full document in the case where the view is queried with `include_docs` set to `true`
-   */
-  def view[Key: Manifest, Value: Manifest, Doc: Manifest](viewName: String): View[Result, Key, Value, Doc]
+  /** Returns the view in this design document. */
+  def view(viewName: String): View[Result]
 
   /** Creates or updates the document validation function.
    *  If the design does not exist yet, it is created.
    */
-  def saveValidateFunction(validateFun: String): Result[Boolean]
+  def saveValidateFunction(validateFun: String): Result[Unit]
 
   /** Deletes the document validation function from the design */
-  def deleteValidateFunction: Result[Boolean]
+  def deleteValidateFunction: Result[Unit]
 
   /** Creates or updates a filter function.
    *  If the design does not exist yet, it is created.
    */
-  def saveFilter(name: String, filterFun: String): Result[Boolean]
+  def saveFilter(name: String, filterFun: String): Result[Unit]
 
   /** Deletes the filter identified by its name from the design document */
-  def deleteFilter(name: String): Result[Boolean]
+  def deleteFilter(name: String): Result[Unit]
 
 }
 

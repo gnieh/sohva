@@ -14,32 +14,16 @@
 * limitations under the License.
 */
 package gnieh.sohva
-package control
 
-import strategy._
+sealed trait CouchCredentials
 
-import gnieh.sohva.async.{
-  Replicator => AReplicator
-}
+final case class LoginPasswordCredentials(
+  username: String,
+  password: String) extends CouchCredentials
 
-import scala.util.Try
+final case class OAuthCredentials(
+  consumerKey: String,
+  consumerSecret: String,
+  token: String,
+  secret: String) extends CouchCredentials
 
-import java.net.URL
-
-/** A replicator database that allows people to manage replications:
- *   - start replication
- *   - cancel or stop replications
- *   - list current replications
- *
- *  @author Lucas Satabin
- */
-class Replicator(wrapped: AReplicator)
-    extends Database(wrapped) with gnieh.sohva.Replicator[Try] {
-
-  def start(replication: Replication): Try[Replication] =
-    synced(wrapped.start(replication))
-
-  def stop(id: String): Try[Boolean] =
-    synced(wrapped.stop(id))
-
-}

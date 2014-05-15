@@ -50,6 +50,14 @@ class CouchClient private[control] (wrapped: ACouchClient) extends CouchDB(wrapp
   def startOAuthSession(consumerKey: String, consumerSecret: String, token: String, secret: String) =
     new OAuthSession(consumerKey, consumerSecret, token, secret, wrapped)
 
+  def withCredentials(credentials: CouchCredentials) = credentials match {
+    case LoginPasswordCredentials(username, password) =>
+      val session = startCookieSession
+      session.login(username, password).filter(_ == true).map(_ => session)
+    case OAuthCredentials(consumerKey, consumerSecret, token, secret) =>
+      Try(startOAuthSession(consumerKey, consumerSecret, token, secret))
+  }
+
   def shutdown =
     wrapped.shutdown
 

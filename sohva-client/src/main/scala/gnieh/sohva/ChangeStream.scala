@@ -21,7 +21,7 @@ import rx.lang.scala._
 
 /** A stream that represents a connection to the `_changes` stream of a database.
  *
- *  @autor Lucas Satabin
+ *  @author Lucas Satabin
  */
 trait ChangeStream {
 

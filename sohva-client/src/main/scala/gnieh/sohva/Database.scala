@@ -104,8 +104,9 @@ trait Database[Result[_]] {
   /** Creates or updates the given object as a document into this database
    *  The given object must have an `_id` and an optional `_rev` fields
    *  to conform to the couchdb document structure.
+   *  The saved revision is returned. If something went wrong, an exception is raised
    */
-  def saveDoc[T <% IdRev: Manifest](doc: T): Result[Option[T]]
+  def saveDoc[T <% IdRev: Manifest](doc: T): Result[T]
 
   /** Creates or updates a bunch of documents into the database.
    */
@@ -119,9 +120,10 @@ trait Database[Result[_]] {
 
   /** Patches the document identified by the given identifier in the given revision.
    *  This will work if the revision is the last one, or if it is not but the automatic
-   *  conflict manager manages to solve the potential conflicts
+   *  conflict manager manages to solve the potential conflicts.
+   *  The patched revision is returned. If something went wrong, an exception is raised
    */
-  def patchDoc[T <: IdRev: Manifest](id: String, rev: String, patch: JsonPatch): Result[Option[T]]
+  def patchDoc[T <: IdRev: Manifest](id: String, rev: String, patch: JsonPatch): Result[T]
 
   /** Deletes the document from the database.
    *  The document will only be deleted if the caller provided the last revision
@@ -179,7 +181,7 @@ trait Database[Result[_]] {
   /** Returns a built-in view of this database, identified by its name.
    *  E.g. `_all_docs`.
    */
-  def builtInView[Key: Manifest, Value: Manifest, Doc: Manifest](view: String): View[Result, Key, Value, Doc]
+  def builtInView(view: String): View[Result]
 
 }
 
