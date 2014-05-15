@@ -17,14 +17,13 @@ package gnieh.sohva
 package test
 
 import org.scalatest._
-import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.OptionValues._
 
 import sync._
 
 import gnieh.diffson._
 
-class TestBasic extends SohvaTestSpec with ShouldMatchers {
+class TestBasic extends SohvaTestSpec with Matchers {
 
   "an unknown document" should "not be retrieved" in {
     db.getDocById[TestDoc]("unknown-doc") should be(None)
@@ -51,9 +50,12 @@ class TestBasic extends SohvaTestSpec with ShouldMatchers {
   it should "not be saved if we have an outdated version" in {
     db.getDocById[TestDoc2]("new-doc") match {
       case Some(doc) =>
-        evaluating {
+        val thrown = the [SohvaException] thrownBy {
           db.saveDoc(doc.copy(toto = 1).withRev(Some("0-0")))
-        } should produce[ConflictException]
+        }
+
+        val cause = CauseMatchers.findExpectedExceptionRecursively[ConflictException](thrown)
+
       case None =>
         fail("The document with id `new-doc` should exist")
     }

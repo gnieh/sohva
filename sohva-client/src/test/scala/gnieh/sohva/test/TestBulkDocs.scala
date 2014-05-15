@@ -22,7 +22,7 @@ import org.scalatest.OptionValues._
 
 import sync._
 
-class TestBulkDocs extends SohvaTestSpec with ShouldMatchers {
+class TestBulkDocs extends SohvaTestSpec with Matchers {
 
   val docs: List[TestDoc] =
     (for(i <- 1 to 10)

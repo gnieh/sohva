@@ -84,42 +84,42 @@ class Database private[sohva] (
           resolved = strategy(base, last, current)
           res <- resolver(credit - 1, docId, lastRev, resolved)
         } yield res
-    }
+    } withFailureMessage f"Unable to resolve document with ID $docId at revision $baseRev"
 
   def info: Future[Option[InfoResult]] =
-    for (info <- couch.optHttp(Get(uri)))
+    for (info <- couch.optHttp(Get(uri)) withFailureMessage f"info failed for $uri")
       yield info.map(infoResult)
 
   def exists: Future[Boolean] =
-    for (h <- couch.optHttp(Head(uri)))
+    for (h <- couch.optHttp(Head(uri)) withFailureMessage f"exists failed for $uri")
       yield h.isDefined
 
   def changes(since: Option[Int] = None, filter: Option[String] = None): ChangeStream =
     new ChangeStream(this, since, filter)
 
   def create: Future[Boolean] =
-    for {
+    (for {
       exist <- exists
       ok <- create(exist)
-    } yield ok
+    } yield ok) withFailureMessage f"Failed while creating database at $uri"
 
   private[this] def create(exist: Boolean) =
     if (exist) {
       Future.successful(false)
     } else {
-      for (result <- couch.http(Put(uri)))
+      for (result <- couch.http(Put(uri)) withFailureMessage f"Failed while creating database at $uri")
         yield couch.ok(result)
     }
 
   def delete: Future[Boolean] =
-    for {
+    (for {
       exist <- exists
       ok <- delete(exist)
-    } yield ok
+    } yield ok) withFailureMessage "Failed to delete database"
 
   private[this] def delete(exist: Boolean) =
     if (exist) {
-      for (result <- couch.http(Delete(uri)))
+      for (result <- couch.http(Delete(uri)) withFailureMessage f"Failed to delete database at $uri")
         yield couch.ok(result)
     } else {
       Future.successful(false)
@@ -149,12 +149,13 @@ class Database private[sohva] (
         descending = descending,
         skip = skip,
         inclusive_end = inclusive_end
-      )
+      ) withFailureMessage f"Failed to access _all_docs view for $uri"
     } yield for (Row(Some(id), _, _, _) <- res.rows) yield id
 
   def getDocById[T: Manifest](id: String, revision: Option[String] = None): Future[Option[T]] =
-    for (raw <- getRawDocById(id, revision))
+    (for (raw <- getRawDocById(id, revision))
       yield raw.map(docResult[T])
+      ) withFailureMessage f"Failed to fetch document by ID $id and revision $revision"
 
   def getDocsById[T: Manifest](ids: List[String]): Future[List[T]] =
     for {
@@ -162,49 +163,53 @@ class Database private[sohva] (
     } yield res.rows.flatMap { case Row(_, _, _, doc) => doc }
 
   def getRawDocById(id: String, revision: Option[String] = None): Future[Option[JValue]] =
-    couch.optHttp(Get(uri / id <<? revision.map("rev" -> _)))
+    couch.optHttp(Get(uri / id <<? revision.map("rev" -> _))) withFailureMessage
+      f"Failed to fetch the raw document by ID $id at revision $revision from $uri"
 
   def getDocRevision(id: String): Future[Option[String]] =
-    couch.pipeline(couch.prepare((Head(uri / id)))).flatMap(extractRev _)
+    couch.pipeline(couch.prepare((Head(uri / id)))).flatMap(extractRev _) withFailureMessage
+      f"Failed to fetch document revision by ID $id from $uri"
 
   def getDocRevisions(ids: List[String]): Future[List[(String, String)]] =
     for {
-      res <- builtInView("_all_docs").query[String, Map[String, String], Any](keys = ids)
+      res <- builtInView("_all_docs").query[String, Map[String, String], Any](keys = ids) withFailureMessage
+        f"Failed to fetch document revisions by IDs $ids from $uri"
     } yield res.rows.map { case Row(Some(id), _, value, _) => (id, value("rev")) }
 
   def saveDoc[T <% IdRev: Manifest](doc: T): Future[T] =
-    for {
+    (for {
       upd <- resolver(credit, doc._id, doc._rev, serializer.toJson(doc))
       res <- update(upd.extract[DocUpdate])
-    } yield res
+    } yield res) withFailureMessage f"Unable to save document with ID ${doc._id} at revision ${doc._rev}"
 
   def saveRawDoc(doc: JValue): Future[JValue] = serializer.fromCouchJson(doc) match {
     case Some((id, rev)) =>
-      for {
+      (for {
         upd <- resolver(credit, id, rev, doc)
         res <- updateRaw(docUpdateResult(upd))
-      } yield res
+      } yield res) withFailureMessage f"Failed to update raw document with ID $id and revision $rev"
     case None =>
-      Future.failed(new SohvaException("Not a couchdb document: " + pretty(render(doc))))
+      Future.failed(new SohvaException(f"Not a couchdb document: ${pretty(render(doc))}"))
   }
 
   private[this] def update[T: Manifest](res: DocUpdate) = res match {
     case DocUpdate(true, id, rev) =>
       getDocById[T](id, Some(rev)).map(_.get)
     case DocUpdate(false, id, _) =>
-      Future.failed(new SohvaException("Document " + id + " could not be saved"))
+      Future.failed(new SohvaException(f"Document $id could not be saved"))
   }
 
   private[this] def updateRaw(res: DocUpdate) = res match {
     case DocUpdate(true, id, rev) =>
       getRawDocById(id, Some(rev)).map(_.get)
     case DocUpdate(false, id, _) =>
-      Future.failed(new SohvaException("Document " + id + " could not be saved"))
+      Future.failed(new SohvaException("Document $id could not be saved"))
   }
 
   def saveDocs[T <% IdRev](docs: List[T], all_or_nothing: Boolean = false): Future[List[DbResult]] =
     for {
-      raw <- couch.http(Post(uri / "_bulk_docs", serializer.toJson(BulkSave(all_or_nothing, docs))))
+      raw <- couch.http(Post(uri / "_bulk_docs", serializer.toJson(BulkSave(all_or_nothing, docs)))) withFailureMessage
+        f"Failed to bulk save documents to $uri"
     } yield bulkSaveResult(raw)
 
   private[this] def bulkSaveResult(json: JValue) =
@@ -214,14 +219,14 @@ class Database private[sohva] (
     for (
       res <- couch.http(Copy(uri / origin <<? originRev.map("rev" -> _))
         <:< Map("Destination" -> (target + targetRev.map("?rev=" + _).getOrElse("")))
-      )
+      ) withFailureMessage f"Failed to copy from $origin at $originRev to $target at $targetRev from $uri"
     ) yield couch.ok(res)
 
   def patchDoc[T <: IdRev: Manifest](id: String, rev: String, patch: JsonPatch): Future[T] =
-    for {
+    (for {
       doc <- getDocById[T](id, Some(rev))
       res <- patchDoc(id, doc, patch)
-    } yield res
+    } yield res) withFailureMessage "Failed to patch document with ID $id at revision $rev"
 
   private[this] def patchDoc[T <: IdRev: Manifest](id: String, doc: Option[T], patch: JsonPatch) = doc match {
     case Some(doc) => saveDoc(patch(doc).withRev(doc._rev))
@@ -229,19 +234,21 @@ class Database private[sohva] (
   }
 
   def deleteDoc[T <% IdRev](doc: T): Future[Boolean] =
-    for (res <- couch.http(Delete(uri / doc._id <<? Map("rev" -> doc._rev.getOrElse("")))))
+    for (res <- couch.http(Delete(uri / doc._id <<? Map("rev" -> doc._rev.getOrElse("")))) withFailureMessage
+      f"Failed to delete document with ID ${doc._id} at revision ${doc._rev} from $uri")
       yield couch.ok(res)
 
   def deleteDoc(id: String): Future[Boolean] =
-    for {
+    (for {
       rev <- getDocRevision(id)
       res <- delete(rev, id)
-    } yield res
+    } yield res) withFailureMessage f"Failed to delete document with ID $id"
 
   private[this] def delete(rev: Option[String], id: String) =
     rev match {
       case Some(rev) =>
-        for (res <- couch.http(Delete(uri / id <<? Map("rev" -> rev))))
+        for (res <- couch.http(Delete(uri / id <<? Map("rev" -> rev))) withFailureMessage
+          f"Failed to delete document with ID $id from $uri")
           yield couch.ok(res)
       case None =>
         Future.successful(false)
@@ -261,7 +268,7 @@ class Database private[sohva] (
             )
           )
         )
-      )
+      ) withFailureMessage f"Failed to bulk delete docs $ids from $uri"
     } yield bulkSaveResult(raw)
 
   def attachTo(docId: String, file: File, contentType: String): Future[Boolean] = {
@@ -276,7 +283,7 @@ class Database private[sohva] (
             HttpData(file)
           )
         )
-      )
+      ) withFailureMessage f"Failed to attach file ${file.getName} to document with ID $docId at $uri"
     } yield couch.ok(res)
   }
 
@@ -297,7 +304,8 @@ class Database private[sohva] (
   }
 
   def getAttachment(docId: String, attachment: String): Future[Option[(String, InputStream)]] =
-    couch.pipeline(couch.prepare(Get(uri / docId / attachment))).flatMap(readFile)
+    couch.pipeline(couch.prepare(Get(uri / docId / attachment))).flatMap(readFile) withFailureMessage
+      f"Failed to get attachment $attachment for document ID $docId from $uri"
 
   def deleteAttachment(docId: String, attachment: String): Future[Boolean] =
     for {
@@ -311,7 +319,8 @@ class Database private[sohva] (
       case Some(r) =>
         for (
           res <- couch.http(Delete(uri / docId / attachment <<?
-            Map("rev" -> r)))
+            Map("rev" -> r))) withFailureMessage
+              f"Failed to delete attachment $attachment for document ID $docId at revision $rev from $uri"
         ) yield couch.ok(res)
       case None =>
         // doc does not exist? well... good... just do nothing
@@ -319,11 +328,13 @@ class Database private[sohva] (
     }
 
   def securityDoc: Future[SecurityDoc] =
-    for (doc <- couch.http(Get(uri / "_security")))
+    for (doc <- couch.http(Get(uri / "_security")) withFailureMessage
+      f"Failed to fetch security doc from $uri")
       yield extractSecurityDoc(doc)
 
   def saveSecurityDoc(doc: SecurityDoc): Future[Boolean] =
-    for (res <- couch.http(Put(uri / "_security", serializer.toJson(doc))))
+    for (res <- couch.http(Put(uri / "_security", serializer.toJson(doc))) withFailureMessage
+      f"failed to save security document for $uri")
       yield couch.ok(res)
 
   def design(designName: String, language: String = "javascript"): Design =
