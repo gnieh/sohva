@@ -24,6 +24,8 @@ import time.SpanSugar._
 import sync._
 
 import net.liftweb.json.DefaultFormats
+import java.util.concurrent.atomic.AtomicBoolean
+import rx.lang.scala.Subscription
 
 class TestChanges extends SohvaTestSpec with ShouldMatchers with AsyncAssertions with BeforeAndAfterEach {
 
@@ -132,17 +134,33 @@ class TestChanges extends SohvaTestSpec with ShouldMatchers with AsyncAssertions
   it should "not be notified if unregistered" in withChanges { changes =>
 
     val w = new Waiter
+    val unsub = new AtomicBoolean(false)
 
-    val sub = changes.subscribe { case (id, doc) =>
+    lazy val sub: Subscription = changes.subscribe { case (id, doc) =>
+      println(f"Dismissing: ${unsub.get()}")
+      w {
+        withClue(f"Unsubscription status did not match expected state: ") {
+          sub.isUnsubscribed should equal (unsub.get())
+        }
+      }
       w.dismiss()
     }
+    println(f"sub: $sub")
 
+    println("saveDoc")
     val saved = db.saveDoc(TestDoc("new-doc", 17)())
 
+    println("changeDoc")
     val changed = db.saveDoc(saved.copy(toto = 5)(saved._rev))
 
-    sub.unsubscribe()
+    println(f"Is unsubscribed: ${sub.isUnsubscribed}")
 
+    sub.unsubscribe()
+    unsub.set(true)
+
+    println(f"Is unsubscribed: ${sub.isUnsubscribed}")
+
+    println("deleteDoc")
     db.deleteDoc(changed)
 
     w.await(timeout(5.seconds), dismissals(2))
