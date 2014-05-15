@@ -100,6 +100,7 @@ private class ChangeActor(database: Database, filter: Option[String]) extends Ac
   def connecting(observers: Map[Long, Observer[(String, Option[JObject])]]): Receive = {
     case _: Http.Connected =>
       // connection has been established, send the change stream request
+      log.debug(f"Connected to changes stream at $uri")
       val params = {
         val base = Map(
           "feed" -> "continuous",
@@ -119,7 +120,8 @@ private class ChangeActor(database: Database, filter: Option[String]) extends Ac
       context.become(receiving(sender, observers))
 
     case Http.CommandFailed(Http.Connect(address, _, _, _, _)) =>
-      val exn = new RuntimeException("Could not connect to $address")
+      log.debug(f"Could not connect to $address")
+      val exn = new RuntimeException(f"Could not connect to $address")
       // notify the already subscribed observers
       for((_, o) <- observers)
         o.onError(exn)
@@ -150,11 +152,10 @@ private class ChangeActor(database: Database, filter: Option[String]) extends Ac
       }
 
     case ChunkedMessageEnd(_, _) =>
-      // notify the observers that the stream has ended
-      for ((_, o) <- observers)
-        o.onCompleted()
-      // and stop myself
-      context.stop(self)
+      log.debug(f"Change feed has reached the end of its chunks")
+      // try to reconnect
+      preStart()
+      context.become(connecting(observers))
 
     case Subscribe(id, observer) =>
       // we are pleased to welcome a new observer, let xour observations be successful
@@ -175,6 +176,7 @@ private class ChangeActor(database: Database, filter: Option[String]) extends Ac
       context.stop(self)
 
     case CloseStream =>
+      log.debug("Closing change feed as requested")
       // notify the observers that the stream has ended
       for ((_, o) <- observers)
         o.onCompleted()
