@@ -104,7 +104,8 @@ private class ChangeActor(database: Database, filter: Option[String]) extends Ac
         val base = Map(
           "feed" -> "continuous",
           "since" -> "now",
-          "include_docs" -> "true"
+          "include_docs" -> "true",
+          "heartbeat" -> "true"
         )
         filter match {
           case Some(filter) => base + ("filter" -> filter)
@@ -142,6 +143,7 @@ private class ChangeActor(database: Database, filter: Option[String]) extends Ac
 
   def receiving(commander: ActorRef, observers: Map[Long, Observer[(String, Option[JObject])]]): Receive = {
     case MessageChunk(data, _) =>
+      log.debug(s"Change stream for database ${database.name} received a message")
       Try(parse(data.asString)).map {
         case Change(seq, id, rev, deleted, doc) =>
           for ((_, o) <- observers)
@@ -150,6 +152,7 @@ private class ChangeActor(database: Database, filter: Option[String]) extends Ac
       }
 
     case ChunkedMessageEnd(_, _) =>
+      log.debug(s"Change stream for database ${database.name} received the end of stream message")
       // notify the observers that the stream has ended
       for ((_, o) <- observers)
         o.onCompleted()
@@ -157,10 +160,12 @@ private class ChangeActor(database: Database, filter: Option[String]) extends Ac
       context.stop(self)
 
     case Subscribe(id, observer) =>
+      log.debug(s"Subscription received for observer $id and database ${database.name}")
       // we are pleased to welcome a new observer, let xour observations be successful
       context.become(receiving(commander, observers + (id -> observer)))
 
     case Unsubscribe(id) =>
+      log.debug(s"Unsubscription received for observer $id and database ${database.name}")
       // goodbye buddy!
       context.become(receiving(commander, observers - id))
 
@@ -175,6 +180,7 @@ private class ChangeActor(database: Database, filter: Option[String]) extends Ac
       context.stop(self)
 
     case CloseStream =>
+      log.debug(s"Change stream of database ${database.name} was closed")
       // notify the observers that the stream has ended
       for ((_, o) <- observers)
         o.onCompleted()
