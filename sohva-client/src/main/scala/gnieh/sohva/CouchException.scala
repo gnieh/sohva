@@ -35,3 +35,11 @@ object CouchException {
 
 }
 
+object ConflictException {
+
+  def unapply(exn: Throwable): Option[Option[ErrorResult]] = exn match {
+    case CouchException(409, detail) => Some(detail)
+    case _                           => None
+  }
+
+}

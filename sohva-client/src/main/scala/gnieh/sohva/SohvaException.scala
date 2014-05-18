@@ -15,4 +15,4 @@
 */
 package gnieh.sohva
 
-class SohvaException(msg: String, cause: Throwable = null) extends Exception(msg, cause)
+case class SohvaException(msg: String, cause: Throwable = null) extends Exception(msg, cause)
