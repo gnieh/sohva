@@ -34,6 +34,12 @@ class Design(wrapped: ADesign) extends gnieh.sohva.Design[Try] {
   val language = wrapped.language
 
   @inline
+  def exists: Try[Boolean] = synced(wrapped.exists)
+
+  @inline
+  def create: Try[DesignDoc] = synced(wrapped.create)
+
+  @inline
   def getDesignDocument: Try[Option[DesignDoc]] =
     synced(wrapped.getDesignDocument)
 
