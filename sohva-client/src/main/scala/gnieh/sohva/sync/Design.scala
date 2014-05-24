@@ -34,6 +34,12 @@ class Design(wrapped: ADesign) extends gnieh.sohva.Design[Identity] {
 
   val language = wrapped.language
 
+  def exists: Boolean =
+    synced(wrapped.exists)
+
+  def create: DesignDoc =
+    synced(wrapped.create)
+
   @inline
   def getDesignDocument: Option[DesignDoc] =
     synced(wrapped.getDesignDocument)

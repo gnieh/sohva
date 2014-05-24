@@ -35,6 +35,16 @@ class Design(val db: Database,
 
   protected[sohva] def uri = db.uri / "_design" / name.trim
 
+  def exists: Future[Boolean] =
+    getDesignDocument map (_.isDefined)
+
+  def create: Future[DesignDoc] =
+    for {
+      ex <- exists
+      cr <- if(ex) throw new SohvaException(f"Failed to create design. A design with the name $name already exists.")
+      else db.saveDoc(DesignDoc("_design/" + name, language))
+    } yield cr
+
   def getDesignDocument: Future[Option[DesignDoc]] =
     for (design <- db.couch.optHttp(Get(uri)) withFailureMessage
       f"Failed to fetch design document from $uri")
@@ -138,7 +148,7 @@ class Design(val db: Database,
         for (doc <- db.saveDoc(design.copy(filters = design.filters - filterName)))
           yield doc
       case None =>
-        Future.failed(new SohvaException("Unable to delete filter " + filterName + " for uknown design " + name))
+        Future.failed(new SohvaException("Unable to delete filter " + filterName + " for unknown design " + name))
     }
 
   // helper methods

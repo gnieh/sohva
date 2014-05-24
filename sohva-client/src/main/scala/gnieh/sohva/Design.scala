@@ -25,6 +25,19 @@ trait Design[Result[_]] {
   val name: String
   val language: String
 
+  /** Check if the design exists.
+    *
+    * @return true if it does, false otherwise
+    */
+  def exists: Result[Boolean]
+
+  /** Create an empty design document if none exists.
+    * Raises an exception if the design already exists.
+    *
+    * @return the design document if created..
+    */
+  def create: Result[DesignDoc]
+
   /** Returns the design document from the couchdb instance.
    *  Returns `None` if the design document does not exist.
    */
