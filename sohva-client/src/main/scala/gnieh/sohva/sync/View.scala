@@ -33,6 +33,10 @@ class View(wrapped: AView)
     extends gnieh.sohva.View[Identity] {
 
   @inline
+  def exists: Boolean =
+    synced(wrapped.exists)
+
+  @inline
   def queryRaw(
     key: Option[JValue] = None,
     keys: List[JValue] = Nil,

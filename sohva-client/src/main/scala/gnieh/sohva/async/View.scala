@@ -37,6 +37,10 @@ class View(
 
   protected[this] def uri = db.uri / "_design" / design / "_view" / view
 
+  def exists: Future[Boolean] =
+    for(h <- db.couch.optHttp(Head(uri)))
+      yield h.isDefined
+
   def queryRaw(
     key: Option[JValue] = None,
     keys: List[JValue] = Nil,

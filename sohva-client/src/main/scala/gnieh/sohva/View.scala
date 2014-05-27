@@ -26,6 +26,9 @@ import net.liftweb.json.{
  */
 trait View[Result[_]] {
 
+  /** Indicates whether this view exists */
+  def exists: Result[Boolean]
+
   /** Queries the view on the server and returned the untyped result. */
   def queryRaw(
     key: Option[JValue] = None,
