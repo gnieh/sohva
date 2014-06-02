@@ -18,6 +18,8 @@ class BasicTest extends FlatSpec with ShouldMatchers with BeforeAndAfterAll {
   implicit val system = ActorSystem()
   implicit val timeout = Timeout(5.seconds)
 
+  def synced[T](f: Future[T]) = Await.result(f, Duration.Inf)
+
   val couch = new CouchClient
   val session = couch.startCookieSession
   val db =  session.database("sohva-entities-tests")
@@ -25,17 +27,15 @@ class BasicTest extends FlatSpec with ShouldMatchers with BeforeAndAfterAll {
   "It" should "be possible to create and manage entities with a manager" in {
     val comp = Component1("gruik", 3, "my first component")
 
+    val manager = new EntityManager(db)
     val f = for {
-      _ <- db.create
-      manager = new EntityManager(db)
       entity <- manager.createTagged("Test Entity")
       comp1 = Component1("gruik", 3, "my first component")
       true <- manager.addComponent(entity, comp1)
       comp2 <- manager.getComponent[Component1](entity)
-      true <- db.delete
     } yield comp2
 
-    val res = Await.result(f, Duration.Inf)
+    val res = synced(f)
 
     res should be('defined)
     val result = res.get
@@ -46,16 +46,18 @@ class BasicTest extends FlatSpec with ShouldMatchers with BeforeAndAfterAll {
 
   override def beforeAll() {
     // login
-    session.login("admin", "admin")
+    synced(session.login("admin", "admin"))
     // create database
-    db.create
+    if(!synced(db.exists))
+      synced(db.create)
   }
 
   override def afterAll() {
     // cleanup database
-    db.delete
+    if(synced(db.exists))
+      synced(db.delete)
     // logout
-    session.logout
+    synced(session.logout)
     couch.shutdown()
     system.shutdown()
   }
