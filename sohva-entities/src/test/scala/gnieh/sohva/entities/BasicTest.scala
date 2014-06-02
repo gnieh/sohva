@@ -48,8 +48,9 @@ class BasicTest extends FlatSpec with ShouldMatchers with BeforeAndAfterAll {
     // login
     synced(session.login("admin", "admin"))
     // create database
-    if(!synced(db.exists))
-      synced(db.create)
+    if(synced(db.exists))
+      synced(db.delete)
+    synced(db.create)
   }
 
   override def afterAll() {
