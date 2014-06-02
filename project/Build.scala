@@ -41,7 +41,7 @@ object SohvaBuild extends Build {
   )
 
   lazy val globalDependencies = Seq(
-    "org.scalatest" %% "scalatest" % "2.1.6" % "test",
+    "org.scalatest" %% "scalatest" % "2.1.7" % "test",
     "com.jsuereth" %% "scala-arm" % "1.3" % "test",
     "com.typesafe.akka" %% "akka-osgi" % "2.3.0" % "test"
   )
