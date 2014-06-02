@@ -29,7 +29,7 @@ import net.liftweb.json.JValue
  *
  *  @author Lucas Satabin
  */
-class View(wrapped: AView)
+class View(val wrapped: AView)
     extends gnieh.sohva.View[Identity] {
 
   @inline

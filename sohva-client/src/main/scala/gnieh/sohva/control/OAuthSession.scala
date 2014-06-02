@@ -26,7 +26,7 @@ import gnieh.sohva.async.{
  *
  *  @author Lucas Satabin
  */
-class OAuthSession private[sync] (val wrapped: AOAuthSession) extends CouchDB(wrapped) with gnieh.sohva.OAuthSession[Identity] {
+class OAuthSession private[sync] (wrapped: AOAuthSession) extends CouchDB(wrapped) with gnieh.sohva.OAuthSession[Identity] {
 
   def this(
     consumerKey: String,

@@ -28,7 +28,7 @@ import duration._
  *
  *  @author Lucas Satabin
  */
-class Design(wrapped: ADesign) extends gnieh.sohva.Design[Identity] {
+class Design(val wrapped: ADesign) extends gnieh.sohva.Design[Identity] {
 
   val name = wrapped.name
 

@@ -28,7 +28,7 @@ import scala.util.Try
  *
  *  @author Lucas Satabin
  */
-class OAuthSession private[control] (val wrapped: AOAuthSession) extends CouchDB(wrapped) with gnieh.sohva.OAuthSession[Try] {
+class OAuthSession private[control] (wrapped: AOAuthSession) extends CouchDB(wrapped) with gnieh.sohva.OAuthSession[Try] {
 
   def this(
     consumerKey: String,

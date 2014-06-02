@@ -36,7 +36,7 @@ import duration._
  *  @author Lucas Satabin
  *
  */
-abstract class CouchDB private[sync] (wrapped: ACouchDB) extends gnieh.sohva.CouchDB[Identity] {
+abstract class CouchDB private[sync] (val wrapped: ACouchDB) extends gnieh.sohva.CouchDB[Identity] {
 
   @inline
   val host = wrapped.host

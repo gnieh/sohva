@@ -35,7 +35,7 @@ import scala.util.Try
  *  @author Lucas Satabin
  *
  */
-abstract class CouchDB private[control] (wrapped: ACouchDB) extends gnieh.sohva.CouchDB[Try] {
+abstract class CouchDB private[control] (val wrapped: ACouchDB) extends gnieh.sohva.CouchDB[Try] {
 
   @inline
   val host = wrapped.host

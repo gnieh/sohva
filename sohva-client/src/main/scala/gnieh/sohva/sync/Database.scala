@@ -38,7 +38,7 @@ import gnieh.diffson.JsonPatch
  *
  *  @author Lucas Satabin
  */
-class Database private[sohva] (wrapped: ADatabase) extends gnieh.sohva.Database[Identity] {
+class Database private[sohva] (val wrapped: ADatabase) extends gnieh.sohva.Database[Identity] {
 
   @inline
   val name = wrapped.name
