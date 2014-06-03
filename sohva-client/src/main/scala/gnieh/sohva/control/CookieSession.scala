@@ -32,7 +32,7 @@ import scala.util.Try
  *
  */
 class CookieSession private[control] (wrapped: ACouchSession)
-    extends CouchDB(wrapped) with gnieh.sohva.CookieSession[Try] with Session[Try] {
+    extends Session(wrapped) with gnieh.sohva.CookieSession[Try] {
 
   @inline
   def login(name: String, password: String): Try[Boolean] =
@@ -41,25 +41,5 @@ class CookieSession private[control] (wrapped: ACouchSession)
   @inline
   def logout: Try[Boolean] =
     synced(wrapped.logout)
-
-  @inline
-  def currentUser: Try[Option[UserInfo]] =
-    synced(wrapped.currentUser)
-
-  @inline
-  def isAuthenticated: Try[Boolean] =
-    synced(wrapped.isLoggedIn)
-
-  @inline
-  def hasRole(role: String): Try[Boolean] =
-    synced(wrapped.hasRole(role))
-
-  @inline
-  def isServerAdmin: Try[Boolean] =
-    synced(wrapped.isServerAdmin)
-
-  @inline
-  def userContext: Try[UserCtx] =
-    synced(wrapped.userContext)
 
 }

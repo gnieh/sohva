@@ -17,30 +17,31 @@ package gnieh.sohva
 package sync
 
 import gnieh.sohva.async.{
-  OAuthSession => AOAuthSession,
-  CouchClient => ACouchClient
+  Session => ASession
 }
 
-/** An instance of a Couch session that allows the user to perform authenticated
- *  operations using OAuth.
- *
- *  @author Lucas Satabin
- */
-class OAuthSession private[sync] (wrapped: AOAuthSession)
-    extends Session(wrapped) with gnieh.sohva.OAuthSession[Identity] {
+abstract class Session private[sync] (wrapped: ASession)
+    extends CouchDB(wrapped) with gnieh.sohva.Session[Identity] {
 
-  def this(
-    consumerKey: String,
-    consumerSecret: String,
-    token: String,
-    secret: String,
-    couch: ACouchClient) =
-    this(new AOAuthSession(consumerKey, consumerSecret, token, secret, couch))
+  @inline
+  def currentUser: Option[UserInfo] =
+    synced(wrapped.currentUser)
 
-  val consumerKey =
-    wrapped.consumerKey
+  @inline
+  def isAuthenticated: Boolean =
+    synced(wrapped.isAuthenticated)
 
-  val token =
-    wrapped.token
+  @inline
+  def hasRole(role: String): Boolean =
+    synced(wrapped.hasRole(role))
+
+  @inline
+  def isServerAdmin: Boolean =
+    synced(wrapped.isServerAdmin)
+
+  @inline
+  def userContext: UserCtx =
+    synced(wrapped.userContext)
 
 }
+

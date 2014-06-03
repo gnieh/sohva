@@ -30,7 +30,7 @@ import gnieh.sohva.async.{
  *
  */
 class CookieSession private[sync] (wrapped: ACouchSession)
-    extends CouchDB(wrapped) with gnieh.sohva.CookieSession[Identity] with Session[Identity] {
+    extends Session(wrapped) with gnieh.sohva.CookieSession[Identity] {
 
   @inline
   def login(name: String, password: String): Boolean =
@@ -39,25 +39,5 @@ class CookieSession private[sync] (wrapped: ACouchSession)
   @inline
   def logout: Boolean =
     synced(wrapped.logout)
-
-  @inline
-  def currentUser: Option[UserInfo] =
-    synced(wrapped.currentUser)
-
-  @inline
-  def isAuthenticated: Boolean =
-    synced(wrapped.isAuthenticated)
-
-  @inline
-  def hasRole(role: String): Boolean =
-    synced(wrapped.hasRole(role))
-
-  @inline
-  def isServerAdmin: Boolean =
-    synced(wrapped.isServerAdmin)
-
-  @inline
-  def userContext: UserCtx =
-    synced(wrapped.userContext)
 
 }
