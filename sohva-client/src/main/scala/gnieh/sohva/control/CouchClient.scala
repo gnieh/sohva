@@ -34,7 +34,7 @@ import scala.util.Try
  *  @author Lucas Satabin
  *
  */
-class CouchClient private[control] (wrapped: ACouchClient) extends CouchDB(wrapped) with gnieh.sohva.CouchClient[Try] {
+class CouchClient private[control] (override val wrapped: ACouchClient) extends CouchDB(wrapped) with gnieh.sohva.CouchClient[Try] {
 
   def this(host: String = "localhost",
     port: Int = 5984,

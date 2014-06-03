@@ -28,7 +28,7 @@ import scala.util.Try
  *
  *  @author Lucas Satabin
  */
-class OAuthSession private[control] (wrapped: AOAuthSession)
+class OAuthSession private[control] (override val wrapped: AOAuthSession)
     extends Session(wrapped) with gnieh.sohva.OAuthSession[Try] {
 
   def this(

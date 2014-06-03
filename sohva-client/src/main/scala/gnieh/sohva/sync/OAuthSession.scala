@@ -26,7 +26,7 @@ import gnieh.sohva.async.{
  *
  *  @author Lucas Satabin
  */
-class OAuthSession private[sync] (wrapped: AOAuthSession)
+class OAuthSession private[sync] (override val wrapped: AOAuthSession)
     extends Session(wrapped) with gnieh.sohva.OAuthSession[Identity] {
 
   def this(

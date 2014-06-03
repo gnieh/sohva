@@ -32,7 +32,7 @@ import akka.util.Timeout
  *  @author Lucas Satabin
  *
  */
-class CouchClient private[sync] (wrapped: ACouchClient) extends CouchDB(wrapped) with gnieh.sohva.CouchClient[Identity] {
+class CouchClient private[sync] (override val wrapped: ACouchClient) extends CouchDB(wrapped) with gnieh.sohva.CouchClient[Identity] {
 
   def this(host: String = "localhost",
     port: Int = 5984,

@@ -22,7 +22,7 @@ import gnieh.sohva.async.{
 
 import scala.util.Try
 
-abstract class Session private[control] (wrapped: ASession)
+abstract class Session private[control] (override val wrapped: ASession)
     extends CouchDB(wrapped) with gnieh.sohva.Session[Try] {
 
   @inline

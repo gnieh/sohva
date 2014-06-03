@@ -29,7 +29,7 @@ import gnieh.sohva.async.{
  *  @author Lucas Satabin
  *
  */
-class CookieSession private[sync] (wrapped: ACouchSession)
+class CookieSession private[sync] (override val wrapped: ACouchSession)
     extends Session(wrapped) with gnieh.sohva.CookieSession[Identity] {
 
   @inline

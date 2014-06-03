@@ -31,7 +31,7 @@ import scala.util.Try
  *  @author Lucas Satabin
  *
  */
-class CookieSession private[control] (wrapped: ACouchSession)
+class CookieSession private[control] (override val wrapped: ACouchSession)
     extends Session(wrapped) with gnieh.sohva.CookieSession[Try] {
 
   @inline

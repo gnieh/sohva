@@ -20,7 +20,7 @@ import gnieh.sohva.async.{
   Session => ASession
 }
 
-abstract class Session private[sync] (wrapped: ASession)
+abstract class Session private[sync] (override val wrapped: ASession)
     extends CouchDB(wrapped) with gnieh.sohva.Session[Identity] {
 
   @inline
