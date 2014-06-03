@@ -20,7 +20,7 @@ import spray.httpx._
 import spray.client.pipelining._
 
 import java.io.File
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.{ ExecutionContext, Future }
 
 package object async {
 
@@ -57,7 +57,6 @@ package object async {
       }
 
   }
-
 
   private[async] implicit class EnhancedFuture[T](val f: Future[T]) {
 

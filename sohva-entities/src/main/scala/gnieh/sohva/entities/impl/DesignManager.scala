@@ -48,7 +48,7 @@ private[entities] class DesignManager(database: Database) {
         Future.successful(view)
 
       case false =>
-        if(logger.isDebugEnabled)
+        if (logger.isDebugEnabled)
           logger.debug(s"Add unknown managed view $name.")
         // the view does not exist, create it
         // read the map function
@@ -59,6 +59,5 @@ private[entities] class DesignManager(database: Database) {
         } yield view
     }
   }
-
 
 }

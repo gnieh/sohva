@@ -41,14 +41,15 @@ class Design(val db: Database,
   def create: Future[DesignDoc] =
     for {
       ex <- exists
-      cr <- if(ex) throw new SohvaException(f"Failed to create design. A design with the name $name already exists.")
+      cr <- if (ex) throw new SohvaException(f"Failed to create design. A design with the name $name already exists.")
       else db.saveDoc(DesignDoc("_design/" + name, language))
     } yield cr
 
   def getDesignDocument: Future[Option[DesignDoc]] =
-    for (design <- db.couch.optHttp(Get(uri)) withFailureMessage
-      f"Failed to fetch design document from $uri")
-      yield design.map(designDoc)
+    for (
+      design <- db.couch.optHttp(Get(uri)) withFailureMessage
+        f"Failed to fetch design document from $uri"
+    ) yield design.map(designDoc)
 
   def delete: Future[Boolean] =
     db.deleteDoc("_design/" + name.trim)

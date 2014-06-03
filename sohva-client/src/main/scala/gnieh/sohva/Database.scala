@@ -60,7 +60,8 @@ trait Database[Result[_]] {
 
   /** Registers to the change stream of this database with potential filter and
    *  since some revision. If no revision is given changes that occurred before the
-   *  connection was established are not sent */
+   *  connection was established are not sent
+   */
   def changes(since: Option[Int] = None, filter: Option[String] = None): ChangeStream
 
   /** Creates this database in the couchdb instance if it does not already exist.

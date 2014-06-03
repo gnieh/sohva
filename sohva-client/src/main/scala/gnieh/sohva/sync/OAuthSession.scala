@@ -14,21 +14,20 @@
 * limitations under the License.
 */
 package gnieh.sohva
-package control
+package sync
 
 import gnieh.sohva.async.{
   OAuthSession => AOAuthSession,
   CouchClient => ACouchClient
 }
 
-import scala.util.Try
-
 /** An instance of a Couch session that allows the user to perform authenticated
  *  operations using OAuth.
  *
  *  @author Lucas Satabin
  */
-class OAuthSession private[control] (wrapped: AOAuthSession) extends CouchDB(wrapped) with gnieh.sohva.OAuthSession[Try] {
+class OAuthSession private[sync] (wrapped: AOAuthSession)
+    extends CouchDB(wrapped) with gnieh.sohva.OAuthSession[Identity] with Session[Identity] {
 
   def this(
     consumerKey: String,
@@ -45,23 +44,23 @@ class OAuthSession private[control] (wrapped: AOAuthSession) extends CouchDB(wra
     wrapped.token
 
   @inline
-  def currentUser: Try[Option[UserInfo]] =
+  def currentUser: Option[UserInfo] =
     synced(wrapped.currentUser)
 
   @inline
-  def isAuthenticated: Try[Boolean] =
+  def isAuthenticated: Boolean =
     synced(wrapped.isAuthenticated)
 
   @inline
-  def hasRole(role: String): Try[Boolean] =
+  def hasRole(role: String): Boolean =
     synced(wrapped.hasRole(role))
 
   @inline
-  def isServerAdmin: Try[Boolean] =
+  def isServerAdmin: Boolean =
     synced(wrapped.isServerAdmin)
 
   @inline
-  def userContext: Try[UserCtx] =
+  def userContext: UserCtx =
     synced(wrapped.userContext)
 
 }

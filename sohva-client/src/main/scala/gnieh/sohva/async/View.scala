@@ -38,7 +38,7 @@ class View(
   protected[this] def uri = db.uri / "_design" / design / "_view" / view
 
   def exists: Future[Boolean] =
-    for(h <- db.couch.optHttp(Head(uri)))
+    for (h <- db.couch.optHttp(Head(uri)))
       yield h.isDefined
 
   def queryRaw(
@@ -83,9 +83,10 @@ class View(
       .map { case (name, value) => (name, value.toString) }
       .toMap
 
-    for (res <- db.couch.http(Get(uri <<? options)) withFailureMessage
-      f"Raw query failed for view `$view' in design `$design' at $db")
-      yield rawViewResult(res)
+    for (
+      res <- db.couch.http(Get(uri <<? options)) withFailureMessage
+        f"Raw query failed for view `$view' in design `$design' at $db"
+    ) yield rawViewResult(res)
 
   }
 
@@ -130,9 +131,10 @@ class View(
       .map { case (name, value) => (name, value.toString) }
       .toMap
 
-    for (res <- db.couch.http(Get(uri <<? options)) withFailureMessage
-      f"Query failed for view `$view' in design `$design' at $db")
-      yield viewResult[Key, Value, Doc](res)
+    for (
+      res <- db.couch.http(Get(uri <<? options)) withFailureMessage
+        f"Query failed for view `$view' in design `$design' at $db"
+    ) yield viewResult[Key, Value, Doc](res)
 
   }
 
@@ -142,14 +144,13 @@ class View(
     val offset = (json \ "offset").extractOpt[Long].getOrElse(0l)
     val rows = (json \ "rows") match {
       case JArray(rows) =>
-        for(row <- rows)
-          yield {
-            val key = row \ "key"
-            val id = (row \ "id").extractOpt[String]
-            val value = row \ "value"
-            val doc = (row \ "doc").extractOpt[JObject]
-            RawRow(id, key, value, doc)
-          }
+        for (row <- rows) yield {
+          val key = row \ "key"
+          val id = (row \ "id").extractOpt[String]
+          val value = row \ "value"
+          val doc = (row \ "doc").extractOpt[JObject]
+          RawRow(id, key, value, doc)
+        }
       case _ =>
         Nil
     }

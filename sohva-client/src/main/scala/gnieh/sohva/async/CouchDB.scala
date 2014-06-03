@@ -50,9 +50,10 @@ abstract class CouchDB extends gnieh.sohva.CouchDB[Future] with LiftMarshalling 
   val ssl: Boolean
 
   def info: Future[CouchInfo] =
-    for (json <- http(Get(uri)) withFailureMessage
-      f"Unable to fetch info from $uri")
-      yield asCouchInfo(json)
+    for (
+      json <- http(Get(uri)) withFailureMessage
+        f"Unable to fetch info from $uri"
+    ) yield asCouchInfo(json)
 
   def database(name: String, credit: Int = 0, strategy: Strategy = BarneyStinsonStrategy): Database =
     new Database(name, this, serializer, credit, strategy)
@@ -61,43 +62,50 @@ abstract class CouchDB extends gnieh.sohva.CouchDB[Future] with LiftMarshalling 
     new Replicator(name, this, credit, strategy)
 
   def _all_dbs: Future[List[String]] =
-    for (dbs <- http(Get(uri / "_all_dbs")) withFailureMessage
-      f"Unable to fetch databases list from $uri")
-      yield asStringList(dbs)
+    for (
+      dbs <- http(Get(uri / "_all_dbs")) withFailureMessage
+        f"Unable to fetch databases list from $uri"
+    ) yield asStringList(dbs)
 
   def _uuid: Future[String] =
     for (uuid <- _uuids(1))
       yield uuid.head
 
   def _uuids(count: Int = 1): Future[List[String]] =
-    for (uuids <- http(Get(uri / "_uuids" <<? Map("count" -> count.toString))) withFailureMessage
-      f"Failed to fetch $count uuids from $uri")
-      yield asUuidsList(uuids)
+    for (
+      uuids <- http(Get(uri / "_uuids" <<? Map("count" -> count.toString))) withFailureMessage
+        f"Failed to fetch $count uuids from $uri"
+    ) yield asUuidsList(uuids)
 
   def _config: Future[Configuration] =
-    for (config <- http(Get(uri / "_config")) withFailureMessage
-      f"Failed to fetch config from $uri")
-      yield serializer.fromJson[Configuration](config)
+    for (
+      config <- http(Get(uri / "_config")) withFailureMessage
+        f"Failed to fetch config from $uri"
+    ) yield serializer.fromJson[Configuration](config)
 
   def _config(section: String): Future[Map[String, String]] =
-    for (section <- http(Get(uri / "_config" / section)) withFailureMessage
-      f"Failed to fetch config for $section from $uri")
-      yield serializer.fromJson[Map[String, String]](section)
+    for (
+      section <- http(Get(uri / "_config" / section)) withFailureMessage
+        f"Failed to fetch config for $section from $uri"
+    ) yield serializer.fromJson[Map[String, String]](section)
 
   def _config(section: String, key: String): Future[Option[String]] =
-    for (section <- _config(section) withFailureMessage
-      f"Failed to fetch config for $section with key `$key' from $uri")
-      yield section.get(key)
+    for (
+      section <- _config(section) withFailureMessage
+        f"Failed to fetch config for $section with key `$key' from $uri"
+    ) yield section.get(key)
 
   def saveConfigValue(section: String, key: String, value: String): Future[Boolean] =
-    for (res <- http(Put(uri / "_config" / section / key, serializer.toJson(value))) withFailureMessage
-      f"Failed to save config $section with key `$key' and value `$value' to $uri")
-      yield ok(res)
+    for (
+      res <- http(Put(uri / "_config" / section / key, serializer.toJson(value))) withFailureMessage
+        f"Failed to save config $section with key `$key' and value `$value' to $uri"
+    ) yield ok(res)
 
   def deleteConfigValue(section: String, key: String): Future[Boolean] =
-    for (res <- http(Delete(uri / "_config" / section / key)) withFailureMessage
-      f"Failed to delete config $section with key `$key' from $uri")
-      yield ok(res)
+    for (
+      res <- http(Delete(uri / "_config" / section / key)) withFailureMessage
+        f"Failed to delete config $section with key `$key' from $uri"
+    ) yield ok(res)
 
   def contains(dbName: String): Future[Boolean] =
     for (dbs <- _all_dbs)

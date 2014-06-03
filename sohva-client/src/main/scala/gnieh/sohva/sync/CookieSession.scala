@@ -29,7 +29,8 @@ import gnieh.sohva.async.{
  *  @author Lucas Satabin
  *
  */
-class CookieSession private[sync] (wrapped: ACouchSession) extends CouchDB(wrapped) with gnieh.sohva.CookieSession[Identity] {
+class CookieSession private[sync] (wrapped: ACouchSession)
+    extends CouchDB(wrapped) with gnieh.sohva.CookieSession[Identity] with Session[Identity] {
 
   @inline
   def login(name: String, password: String): Boolean =

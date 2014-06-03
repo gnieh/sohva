@@ -27,7 +27,8 @@ trait ChangeStream {
 
   /** The `Observable` to subscribe to to be notified about changes over this stream.
    *  This `Observable` can be combined with other ones, filtered, mapped, ...
-   *  See the [documentation](http://rxscala.github.io/scaladoc/index.html#rx.lang.scala.Observable) for more details. */
+   *  See the [documentation](http://rxscala.github.io/scaladoc/index.html#rx.lang.scala.Observable) for more details.
+   */
   def stream: Observable[(String, Option[JObject])]
 
   /** Subscribe to the original change stream initiated with the database.
@@ -36,7 +37,8 @@ trait ChangeStream {
   def subscribe(obs: ((String, Option[JObject])) => Unit): Subscription
 
   /** Closes this stream and the underlying `Observable`. Subscriber will receive a terminatio
-   *  message */
+   *  message
+   */
   def close(): Unit
 
 }

@@ -154,7 +154,7 @@ class Database private[sohva] (
   def getDocById[T: Manifest](id: String, revision: Option[String] = None): Future[Option[T]] =
     (for (raw <- getRawDocById(id, revision))
       yield raw.map(docResult[T])
-      ) withFailureMessage f"Failed to fetch document by ID $id and revision $revision"
+    ) withFailureMessage f"Failed to fetch document by ID $id and revision $revision"
 
   def getDocsById[T: Manifest](ids: List[String]): Future[List[T]] =
     for {
@@ -233,9 +233,10 @@ class Database private[sohva] (
   }
 
   def deleteDoc[T <% IdRev](doc: T): Future[Boolean] =
-    for (res <- couch.http(Delete(uri / doc._id <<? Map("rev" -> doc._rev.getOrElse("")))) withFailureMessage
-      f"Failed to delete document with ID ${doc._id} at revision ${doc._rev} from $uri")
-      yield couch.ok(res)
+    for (
+      res <- couch.http(Delete(uri / doc._id <<? Map("rev" -> doc._rev.getOrElse("")))) withFailureMessage
+        f"Failed to delete document with ID ${doc._id} at revision ${doc._rev} from $uri"
+    ) yield couch.ok(res)
 
   def deleteDoc(id: String): Future[Boolean] =
     (for {
@@ -246,9 +247,10 @@ class Database private[sohva] (
   private[this] def delete(rev: Option[String], id: String) =
     rev match {
       case Some(rev) =>
-        for (res <- couch.http(Delete(uri / id <<? Map("rev" -> rev))) withFailureMessage
-          f"Failed to delete document with ID $id from $uri")
-          yield couch.ok(res)
+        for (
+          res <- couch.http(Delete(uri / id <<? Map("rev" -> rev))) withFailureMessage
+            f"Failed to delete document with ID $id from $uri"
+        ) yield couch.ok(res)
       case None =>
         Future.successful(false)
     }
@@ -319,7 +321,7 @@ class Database private[sohva] (
         for (
           res <- couch.http(Delete(uri / docId / attachment <<?
             Map("rev" -> r))) withFailureMessage
-              f"Failed to delete attachment $attachment for document ID $docId at revision $rev from $uri"
+            f"Failed to delete attachment $attachment for document ID $docId at revision $rev from $uri"
         ) yield couch.ok(res)
       case None =>
         // doc does not exist? well... good... just do nothing
@@ -327,14 +329,16 @@ class Database private[sohva] (
     }
 
   def securityDoc: Future[SecurityDoc] =
-    for (doc <- couch.http(Get(uri / "_security")) withFailureMessage
-      f"Failed to fetch security doc from $uri")
-      yield extractSecurityDoc(doc)
+    for (
+      doc <- couch.http(Get(uri / "_security")) withFailureMessage
+        f"Failed to fetch security doc from $uri"
+    ) yield extractSecurityDoc(doc)
 
   def saveSecurityDoc(doc: SecurityDoc): Future[Boolean] =
-    for (res <- couch.http(Put(uri / "_security", serializer.toJson(doc))) withFailureMessage
-      f"failed to save security document for $uri")
-      yield couch.ok(res)
+    for (
+      res <- couch.http(Put(uri / "_security", serializer.toJson(doc))) withFailureMessage
+        f"failed to save security document for $uri"
+    ) yield couch.ok(res)
 
   def design(designName: String, language: String = "javascript"): Design =
     new Design(this, designName, language)

@@ -31,7 +31,8 @@ import scala.util.Try
  *  @author Lucas Satabin
  *
  */
-class CookieSession private[control] (wrapped: ACouchSession) extends CouchDB(wrapped) with gnieh.sohva.CookieSession[Try] {
+class CookieSession private[control] (wrapped: ACouchSession)
+    extends CouchDB(wrapped) with gnieh.sohva.CookieSession[Try] with Session[Try] {
 
   @inline
   def login(name: String, password: String): Try[Boolean] =

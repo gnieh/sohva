@@ -122,7 +122,7 @@ private class ChangeActor(database: Database, filter: Option[String]) extends Ac
     case Http.CommandFailed(Http.Connect(address, _, _, _, _)) =>
       val exn = new RuntimeException("Could not connect to $address")
       // notify the already subscribed observers
-      for((_, o) <- observers)
+      for ((_, o) <- observers)
         o.onError(exn)
       // and notify the commander that initiated the conncetion
       sender ! Status.Failure(exn)
@@ -172,7 +172,7 @@ private class ChangeActor(database: Database, filter: Option[String]) extends Ac
     case Http.SendFailed(_) | Timedout(_) =>
       // notify the observers that some error happened
       val exn = new RuntimeException("The change stream request to $uri failed")
-      for((_, o) <- observers)
+      for ((_, o) <- observers)
         o.onError(exn)
       // notify the commander that initiated the request
       commander ! Status.Failure(exn)

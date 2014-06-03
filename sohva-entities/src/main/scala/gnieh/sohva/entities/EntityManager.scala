@@ -64,14 +64,15 @@ class EntityManager(val database: Database) {
     } yield res
 
   /** Adds the component to the given entity. If the entity is unknown, does nothing.
-   *  Returns `true` iff the component was actually saved. */
+   *  Returns `true` iff the component was actually saved.
+   */
   def addComponent[T <: IdRev: Manifest](entity: Entity, component: T): Future[Boolean] =
     database.getDocRevision(entity).flatMap {
       case Some(_) =>
         // the entity is known
-        if(logger.isDebugEnabled)
+        if (logger.isDebugEnabled)
           logger.debug(s"Add component ${component._id} to entity $entity")
-        for(_ <- database.saveRawDoc(serializeComponent(entity, component)))
+        for (_ <- database.saveRawDoc(serializeComponent(entity, component)))
           yield true
       case None =>
         // the entity is unknown
@@ -95,17 +96,16 @@ class EntityManager(val database: Database) {
   def getComponent[T: Manifest](entity: Entity): Future[Option[T]] =
     for {
       view <- manager.components
-      ViewResult(_, _, List(Row(_, _, _, doc)), _) <-
-         view.query[List[String], JValue, T](key = Some(List(entity, compType[T])), include_docs = true)
+      ViewResult(_, _, List(Row(_, _, _, doc)), _) <- view.query[List[String], JValue, T](key = Some(List(entity, compType[T])), include_docs = true)
     } yield doc
 
   /** Removes the component with the given name from the entity. If the entity
-   *  does not exist or has no component with the given name, returns false */
+   *  does not exist or has no component with the given name, returns false
+   */
   def removeComponentType[T: Manifest](entity: Entity): Future[Boolean] =
     for {
       view <- manager.components
-      ViewResult(_, _, List(Row(_, _, comps, _)), _) <-
-        view.query[List[String], List[String], JValue](key = Some(List(entity, compType[T])))
+      ViewResult(_, _, List(Row(_, _, comps, _)), _) <- view.query[List[String], List[String], JValue](key = Some(List(entity, compType[T])))
       results <- database.deleteDocs(comps)
       res <- allOk(results, true)
     } yield res
@@ -144,8 +144,8 @@ class EntityManager(val database: Database) {
   private def serializeComponent[T: Manifest](entity: Entity, comp: T): JValue =
     database.serializer.toJson(comp) ++
       JField("sohva-entities-type", JString("component")) ++
-         JField("sohva-entities-name", JString(compType[T])) ++
-         JField("sohva-entities-entity", JString(entity))
+      JField("sohva-entities-name", JString(compType[T])) ++
+      JField("sohva-entities-entity", JString(entity))
 
   private def serializeEntity(entity: CouchEntity): JValue =
     database.serializer.toJson(entity) ++
