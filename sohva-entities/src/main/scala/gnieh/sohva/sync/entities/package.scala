@@ -11,8 +11,13 @@
  * limitations under the License.
  */
 package gnieh.sohva
+package sync
 
-import scala.concurrent.Future
+import scala.concurrent.{
+  Await,
+  Future
+}
+import scala.concurrent.duration.Duration
 
 /** This package exposes classes that allows user to manage entities and their
  *  components within a CouchDB database.
@@ -20,41 +25,43 @@ import scala.concurrent.Future
  *  Entities are conceptually a simple identifier. In database they are stored as
  *  a simple document that has a single optional `tag` field.
  *  The components are stored in their own document as well.
- *  The [[gnieh.sohva.entities.EntityManager]] also manages views that allow for
+ *  The [[gnieh.sohva.sync.entities.EntityManager]] also manages views that allow for
  *  retrieving entities and their components.
  */
 package object entities {
 
   type Entity = String
 
+  def synced[T](f: Future[T]) = Await.result(f, Duration.Inf)
+
   implicit class RichEntity(val entity: Entity) extends AnyVal {
 
     /** Adds the given component to the entity */
-    def add[T <: IdRev: Manifest](component: T)(implicit manager: EntityManager): Future[Boolean] =
+    def add[T <: IdRev: Manifest](component: T)(implicit manager: EntityManager): Boolean =
       manager.addComponent(entity, component)
 
     /** Removes the given component to the entity */
-    def remove[T <: IdRev: Manifest](component: T)(implicit manager: EntityManager): Future[Boolean] =
+    def remove[T <: IdRev: Manifest](component: T)(implicit manager: EntityManager): Boolean =
       manager.removeComponent(entity, component)
 
     /** Removes all components of a given type attached to the entity */
-    def remove[T: Manifest](implicit manager: EntityManager): Future[Boolean] =
+    def remove[T: Manifest](implicit manager: EntityManager): Boolean =
       manager.removeComponentType[T](entity)
 
     /** Indicates whether the entity has at least one component of the given name */
-    def has[T: Manifest](implicit manager: EntityManager): Future[Boolean] =
+    def has[T: Manifest](implicit manager: EntityManager): Boolean =
       manager.hasComponentType[T](entity)
 
     /** Indicates whether the entity has the given component */
-    def has[T: Manifest](component: T)(implicit manager: EntityManager): Future[Boolean] =
+    def has[T: Manifest](component: T)(implicit manager: EntityManager): Boolean =
       manager.hasComponent(entity, component)
 
     /** Gets the component of the given type attached to the entity if any */
-    def get[T: Manifest](implicit manager: EntityManager): Future[Option[T]] =
+    def get[T: Manifest](implicit manager: EntityManager): Option[T] =
       manager.getComponent[T](entity)
 
     /** Removes the entity from the system */
-    def delete(implicit manager: EntityManager): Future[Boolean] =
+    def delete(implicit manager: EntityManager): Boolean =
       manager.deleteEntity(entity)
 
   }

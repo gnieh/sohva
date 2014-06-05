@@ -11,14 +11,13 @@
  * limitations under the License.
  */
 package gnieh.sohva
+package async
 package entities
 
 import scala.annotation.tailrec
 import scala.concurrent._
 
 import impl._
-
-import async.Database
 
 import net.liftweb.json._
 

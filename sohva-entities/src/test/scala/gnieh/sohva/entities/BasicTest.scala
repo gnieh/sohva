@@ -1,7 +1,6 @@
 package gnieh.sohva
+package sync
 package entities
-
-import async._
 
 import akka.actor.ActorSystem
 import akka.util._
@@ -18,8 +17,6 @@ class BasicTest extends FlatSpec with ShouldMatchers with BeforeAndAfterAll {
   implicit val system = ActorSystem()
   implicit val timeout = Timeout(5.seconds)
 
-  def synced[T](f: Future[T]) = Await.result(f, Duration.Inf)
-
   val couch = new CouchClient
   val session = couch.startCookieSession
   val db =  session.database("sohva-entities-tests")
@@ -28,14 +25,16 @@ class BasicTest extends FlatSpec with ShouldMatchers with BeforeAndAfterAll {
     val comp = Component1("gruik", 3, "my first component")
 
     val manager = new EntityManager(db)
-    val f = for {
-      entity <- manager.createTagged("Test Entity")
-      comp1 = Component1("gruik", 3, "my first component")
-      true <- manager.addComponent(entity, comp1)
-      comp2 <- manager.getComponent[Component1](entity)
-    } yield comp2
 
-    val res = synced(f)
+    val entity = manager.createTagged("Test Entity")
+
+    val comp1 = Component1("gruik", 3, "my first component")
+
+    val added = manager.addComponent(entity, comp1)
+
+    added should be(true)
+
+    val res = manager.getComponent[Component1](entity)
 
     res should be('defined)
     val result = res.get
@@ -46,19 +45,19 @@ class BasicTest extends FlatSpec with ShouldMatchers with BeforeAndAfterAll {
 
   override def beforeAll() {
     // login
-    synced(session.login("admin", "admin"))
+    session.login("admin", "admin")
     // create database
-    if(synced(db.exists))
-      synced(db.delete)
-    synced(db.create)
+    if(db.exists)
+      db.delete
+    db.create
   }
 
   override def afterAll() {
     // cleanup database
-    if(synced(db.exists))
-      synced(db.delete)
+    if(db.exists)
+      db.delete
     // logout
-    synced(session.logout)
+    session.logout
     couch.shutdown()
     system.shutdown()
   }
