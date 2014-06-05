@@ -126,12 +126,16 @@ object SohvaBuild extends Build {
       libraryDependencies ++= entitiesDependencies,
       resourceDirectories in Compile := List()
     ) settings(osgiSettings: _*) settings(scalariformSettings: _*) settings(
-      OsgiKeys.exportPackage := Seq("gnieh.sohva.entities"),
+      OsgiKeys.exportPackage := Seq(
+        "gnieh.sohva.async.entities",
+        "gnieh.sohva.sync.entities",
+        "gnieh.sohva.control.entities"
+      ),
       OsgiKeys.additionalHeaders := Map (
         "Bundle-Name" -> "Sohva Entity Component System"
       ),
       OsgiKeys.bundleSymbolicName := "org.gnieh.sohva.entities",
-      OsgiKeys.privatePackage := Seq("gnieh.sohva.entities.impl")
+      OsgiKeys.privatePackage := Seq("gnieh.sohva.async.entities.impl")
     ) dependsOn(client)
 
   lazy val entitiesDependencies = clientDependencies ++ Seq(
