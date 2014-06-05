@@ -31,7 +31,7 @@ import java.net.URL
  *
  *  @author Lucas Satabin
  */
-class Replicator(override val wrapped: AReplicator) extends Database(wrapped) with gnieh.sohva.Replicator[Identity] {
+class Replicator(couch: CouchDB, override val wrapped: AReplicator) extends Database(couch, wrapped) with gnieh.sohva.Replicator[Identity] {
 
   def start(replication: Replication): Replication =
     synced(wrapped.start(replication))

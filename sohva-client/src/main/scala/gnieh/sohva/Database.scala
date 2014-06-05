@@ -52,6 +52,9 @@ trait Database[Result[_]] {
   /** The serializer used by this database */
   def serializer: JsonSerializer
 
+  /** The couchdb instance this database belongs to */
+  def couch: CouchDB[Result]
+
   /** Returns the information about this database */
   def info: Result[Option[InfoResult]]
 

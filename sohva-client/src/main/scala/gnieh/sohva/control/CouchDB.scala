@@ -55,11 +55,11 @@ abstract class CouchDB private[control] (val wrapped: ACouchDB) extends gnieh.so
 
   @inline
   def database(name: String, credit: Int = 0, strategy: Strategy = BarneyStinsonStrategy): Database =
-    new Database(wrapped.database(name, credit, strategy))
+    new Database(this, wrapped.database(name, credit, strategy))
 
   @inline
   def replicator(name: String = "_replicator", credit: Int = 0, strategy: Strategy = BarneyStinsonStrategy): Replicator =
-    new Replicator(wrapped.replicator(name, credit, strategy))
+    new Replicator(this, wrapped.replicator(name, credit, strategy))
 
   @inline
   def _all_dbs: Try[List[String]] =
