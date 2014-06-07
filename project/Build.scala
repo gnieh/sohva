@@ -12,15 +12,13 @@ import java.io.File
 
 object SohvaBuild extends Build {
 
-  val sohvaVersion = "1.0.0-SNAPSHOT"
-
   lazy val globalSettings = Seq(
     resolvers += "Sonatype Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots/",
     resolvers += "Sonatype Releases" at "https://oss.sonatype.org/content/repositories/releases/",
     organization := "org.gnieh",
     licenses += ("The Apache Software License, Version 2.0" -> url("http://www.apache.org/licenses/LICENSE-2.0.txt")),
     homepage := Some(url("https://github.com/gnieh/sohva")),
-    version := sohvaVersion,
+    version := "1.0.0-SNAPSHOT",
     scalaVersion := "2.11.2",
     crossScalaVersions := Seq("2.10.4", "2.11.2"),
     libraryDependencies ++= globalDependencies,
@@ -105,7 +103,7 @@ object SohvaBuild extends Build {
     )
 
   lazy val clientDependencies = globalDependencies ++ Seq(
-    "io.spray" % "spray-client" % "1.3.1",
+    "io.spray" %% "spray-client" % "1.3.1",
     "com.typesafe.akka" %% "akka-actor" % "2.3.6" % "provided",
     "org.gnieh" %% "diffson" % "0.3",
     "com.jsuereth" %% "scala-arm" % "1.4",
@@ -127,7 +125,6 @@ object SohvaBuild extends Build {
   lazy val entities = Project(id = "sohva-entities",
     base = file("sohva-entities")) settings(globalSettings: _*) settings(
       description := "Entity Component System storing entities in a couchdb instance",
-      version := "0.1.0-SNAPSHOT",
       libraryDependencies ++= entitiesDependencies,
       resourceDirectories in Compile := List()
     ) settings(osgiSettings: _*) settings(scalariformSettings: _*) settings(
@@ -152,11 +149,11 @@ object SohvaBuild extends Build {
   lazy val dm = Project(id = "sohva-dm",
     base = file("sohva-dm")) settings(globalSettings: _*) settings(
       description := "Design documents manager based on Sohva",
-      version := "0.1.0-SNAPSHOT",
       libraryDependencies ++= dmDependencies,
       resourceDirectories in Compile := List()
     ) settings(osgiSettings: _*) settings(scalariformSettings: _*) settings(
       OsgiKeys.exportPackage := Seq(
+        "gnieh.sohva.dm",
         "gnieh.sohva.async.dm",
         "gnieh.sohva.sync.dm",
         "gnieh.sohva.control.dm"
@@ -165,12 +162,13 @@ object SohvaBuild extends Build {
         "Bundle-Name" -> "Sohva Design Manager"
       ),
       OsgiKeys.bundleSymbolicName := "org.gnieh.sohva.dm",
-      OsgiKeys.privatePackage := Seq("gnieh.sohva.async.dm.impl")
+      OsgiKeys.privatePackage := Seq("reference.conf")
     ) dependsOn(client)
 
   lazy val dmDependencies = clientDependencies ++ Seq(
     "com.github.scala-incubator.io" %% "scala-io-file" % "0.4.3",
-    "ch.qos.logback" % "logback-classic" % "1.1.2" % "test"
+    "ch.qos.logback" % "logback-classic" % "1.1.2" % "test",
+    "com.typesafe" % "config" % "1.2.1"
   )
 
 }
