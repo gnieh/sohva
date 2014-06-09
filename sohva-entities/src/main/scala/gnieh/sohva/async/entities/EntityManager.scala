@@ -40,18 +40,22 @@ class EntityManager(val database: Database) {
 
   /** Creates a simple untagged entity into the entity database and returns it */
   def createSimple(): Future[Entity] =
-    create(None)
+    for {
+      uuid <- database.couch._uuid
+      () <- create(uuid, None)
+    } yield uuid
 
   /** Creates a tagged entity into the entity database and returns it */
   def createTagged(tag: String): Future[Entity] =
-    create(Some(tag))
-
-  /** Creates an entity into the entity database and returns it */
-  def create(tag: Option[String]): Future[Entity] =
     for {
       uuid <- database.couch._uuid
-      _ <- database.saveRawDoc(serializeEntity(CouchEntity(uuid, tag)))
+      () <- create(uuid, Some(tag))
     } yield uuid
+
+  /** Creates an entity into the entity database and returns it */
+  def create(uuid: String, tag: Option[String]): Future[Unit] =
+    for(_ <- database.saveRawDoc(serializeEntity(CouchEntity(uuid, tag))))
+      yield ()
 
   /** Deletes an entity and all attched components from the entity database */
   def deleteEntity(entity: Entity): Future[Boolean] =

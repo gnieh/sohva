@@ -34,8 +34,8 @@ class EntityManager(val database: Database) {
   @inline def createTagged(tag: String): Entity =
     synced(wrapped.createTagged(tag))
 
-  @inline def create(tag: Option[String]): Entity =
-    synced(wrapped.create(tag))
+  @inline def create(uuid: String, tag: Option[String]): Unit =
+    synced(wrapped.create(uuid, tag))
 
   @inline def deleteEntity(entity: Entity): Boolean =
     synced(wrapped.deleteEntity(entity))
