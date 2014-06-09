@@ -123,8 +123,7 @@ object SohvaBuild extends Build {
     base = file("sohva-entities")) settings(
       description := "Entity Component System storing entities in a couchdb instance",
       version := "0.1.0-SNAPSHOT",
-      libraryDependencies ++= entitiesDependencies,
-      resourceDirectories in Compile := List()
+      libraryDependencies ++= entitiesDependencies
     ) settings(osgiSettings: _*) settings(scalariformSettings: _*) settings(
       OsgiKeys.exportPackage := Seq(
         "gnieh.sohva.async.entities",
@@ -135,7 +134,7 @@ object SohvaBuild extends Build {
         "Bundle-Name" -> "Sohva Entity Component System"
       ),
       OsgiKeys.bundleSymbolicName := "org.gnieh.sohva.entities",
-      OsgiKeys.privatePackage := Seq("*.js", "gnieh.sohva.async.entities.impl")
+      OsgiKeys.privatePackage := Seq("gnieh.sohva.async.entities.impl")
     ) dependsOn(client)
 
   lazy val entitiesDependencies = clientDependencies ++ Seq(
