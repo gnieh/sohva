@@ -135,7 +135,7 @@ object SohvaBuild extends Build {
         "Bundle-Name" -> "Sohva Entity Component System"
       ),
       OsgiKeys.bundleSymbolicName := "org.gnieh.sohva.entities",
-      OsgiKeys.privatePackage := Seq("gnieh.sohva.async.entities.impl")
+      OsgiKeys.privatePackage := Seq("*.js", "gnieh.sohva.async.entities.impl")
     ) dependsOn(client)
 
   lazy val entitiesDependencies = clientDependencies ++ Seq(
