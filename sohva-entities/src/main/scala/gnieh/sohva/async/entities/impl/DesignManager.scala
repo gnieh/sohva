@@ -16,6 +16,7 @@ package entities
 package impl
 
 import scala.concurrent._
+import scala.concurrent.duration.Duration
 
 import scalax.io.Resource
 
@@ -31,20 +32,25 @@ private[entities] class DesignManager(database: Database) {
 
   private val logger = LoggerFactory.getLogger(classOf[DesignManager])
 
+  private val views = List("components", "tags")
+
   val design = database.design("sohva-entities")
 
   val components =
-    view("components")
+    design.view("components")
 
   val tags =
-    view("tags")
+    design.view("tags")
 
-  private def view(name: String): Future[View] = {
+  for(view <- views)
+    createView(view)
+
+  private def createView(name: String): Unit = {
     val view = design.view(name)
-    view.exists flatMap {
+    Await.result(view.exists flatMap {
       case true =>
         // the design view exists
-        Future.successful(view)
+        Future.successful()
 
       case false =>
         if (logger.isDebugEnabled)
@@ -52,11 +58,9 @@ private[entities] class DesignManager(database: Database) {
         // the view does not exist, create it
         // read the map function
         val map =
-          Resource.fromInputStream(getClass.getResourceAsStream(s"/${name}_map.js")).string
-        for {
-          _ <- design.saveView(name, map, None)
-        } yield view
-    }
+          Resource.fromInputStream(getClass.getClassLoader.getResourceAsStream(s"${name}_map.js")).string
+        design.saveView(name, map, None)
+    }, Duration.Inf)
   }
 
 }

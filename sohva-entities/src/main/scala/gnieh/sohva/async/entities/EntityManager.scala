@@ -60,8 +60,7 @@ class EntityManager(val database: Database) {
   /** Deletes an entity and all attched components from the entity database */
   def deleteEntity(entity: Entity): Future[Boolean] =
     for {
-      view <- manager.components
-      comps <- view.query[List[String], String, JValue](startkey = Some(List(entity)))
+      comps <- manager.components.query[List[String], String, JValue](startkey = Some(List(entity)))
       results <- database.deleteDocs(entity :: comps.rows.map(_.value))
       res <- allOk(results, true)
     } yield res
@@ -84,22 +83,19 @@ class EntityManager(val database: Database) {
 
   def hasComponentType[T: Manifest](entity: Entity): Future[Boolean] =
     for {
-      view <- manager.components
-      res <- view.query[List[String], JValue, JValue](key = Some(List(entity, compType[T])))
+      res <- manager.components.query[List[String], JValue, JValue](key = Some(List(entity, compType[T])))
     } yield res.total_rows > 0
 
   def hasComponent[T: Manifest](entity: Entity, component: T): Future[Boolean] =
     for {
-      view <- manager.components
-      res <- view.query[List[String], Set[T], JValue](key = Some(List(entity, compType[T])))
+      res <- manager.components.query[List[String], Set[T], JValue](key = Some(List(entity, compType[T])))
     } yield res.rows.find {
       case Row(_, _, c, _) => c == component
     }.isDefined
 
   def getComponent[T: Manifest](entity: Entity): Future[Option[T]] =
     for {
-      view <- manager.components
-      ViewResult(_, _, List(Row(_, _, _, doc)), _) <- view.query[List[String], JValue, T](key = Some(List(entity, compType[T])), include_docs = true)
+      ViewResult(_, _, List(Row(_, _, _, doc)), _) <- manager.components.query[List[String], JValue, T](key = Some(List(entity, compType[T])), include_docs = true)
     } yield doc
 
   /** Removes the component with the given name from the entity. If the entity
@@ -107,8 +103,7 @@ class EntityManager(val database: Database) {
    */
   def removeComponentType[T: Manifest](entity: Entity): Future[Boolean] =
     for {
-      view <- manager.components
-      ViewResult(_, _, List(Row(_, _, comps, _)), _) <- view.query[List[String], List[String], JValue](key = Some(List(entity, compType[T])))
+      ViewResult(_, _, List(Row(_, _, comps, _)), _) <- manager.components.query[List[String], List[String], JValue](key = Some(List(entity, compType[T])))
       results <- database.deleteDocs(comps)
       res <- allOk(results, true)
     } yield res
@@ -126,16 +121,14 @@ class EntityManager(val database: Database) {
   // an entity manager is also a collection of entities
   def entities: Future[Set[Entity]] =
     for {
-      view <- manager.tags
-      ViewResult(_, _, rows, _) <- view.query[String, String, JValue]()
+      ViewResult(_, _, rows, _) <- manager.tags.query[String, String, JValue]()
     } yield rows.map {
       case Row(_, _, entity, _) => entity
     }.toSet
 
   def entities(tag: String): Future[Set[Entity]] =
     for {
-      view <- manager.tags
-      ViewResult(_, _, rows, _) <- view.query[String, String, JValue](key = Some(tag))
+      ViewResult(_, _, rows, _) <- manager.tags.query[String, String, JValue](key = Some(tag))
     } yield rows.map {
       case Row(_, _, entity, _) => entity
     }.toSet
