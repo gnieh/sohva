@@ -39,8 +39,8 @@ package object entities {
   implicit class RichEntity(val entity: Entity) extends AnyVal {
 
     /** Adds the given component to the entity */
-    def add[T <: IdRev: Manifest](component: T)(implicit manager: EntityManager): Try[Boolean] =
-      manager.addComponent(entity, component)
+    def save[T <: IdRev: Manifest](component: T)(implicit manager: EntityManager): Try[T] =
+      manager.saveComponent(entity, component)
 
     /** Removes the given component to the entity */
     def remove[T <: IdRev: Manifest](component: T)(implicit manager: EntityManager): Try[Boolean] =

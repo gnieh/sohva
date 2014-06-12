@@ -65,20 +65,20 @@ class EntityManager(val database: Database) {
       res <- allOk(results, true)
     } yield res
 
-  /** Adds the component to the given entity. If the entity is unknown, does nothing.
-   *  Returns `true` iff the component was actually saved.
+  /** Adds or updates the component to the given entity. If the entity is unknown, does nothing.
+   *  Returns the saved component.
    */
-  def addComponent[T <: IdRev: Manifest](entity: Entity, component: T): Future[Boolean] =
+  def saveComponent[T <: IdRev: Manifest](entity: Entity, component: T): Future[T] =
     database.getDocRevision(entity).flatMap {
       case Some(_) =>
         // the entity is known
         if (logger.isDebugEnabled)
           logger.debug(s"Add component ${component._id} to entity $entity")
-        for (_ <- database.saveRawDoc(serializeComponent(entity, component)))
-          yield true
+        for (c <- database.saveRawDoc(serializeComponent(entity, component)))
+          yield database.serializer.fromJson[T](c)
       case None =>
         // the entity is unknown
-        Future.successful(false)
+        Future.failed(new SohvaException(s"Trying to add component ${component._id} to unknown entity $entity"))
     }
 
   def hasComponentType[T: Manifest](entity: Entity): Future[Boolean] =

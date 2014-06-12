@@ -40,8 +40,8 @@ class EntityManager(val database: Database) {
   @inline def deleteEntity(entity: Entity): Boolean =
     synced(wrapped.deleteEntity(entity))
 
-  @inline def addComponent[T <: IdRev: Manifest](entity: Entity, component: T): Boolean =
-    synced(wrapped.addComponent[T](entity, component))
+  @inline def saveComponent[T <: IdRev: Manifest](entity: Entity, component: T): T =
+    synced(wrapped.saveComponent[T](entity, component))
 
   @inline def hasComponentType[T: Manifest](entity: Entity): Boolean =
     synced(wrapped.hasComponentType[T](entity))

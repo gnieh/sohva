@@ -30,9 +30,9 @@ class BasicTest extends FlatSpec with ShouldMatchers with BeforeAndAfterAll {
 
     val comp1 = Component1("gruik", 3, "my first component")
 
-    val added = manager.addComponent(entity, comp1)
+    val added = manager.saveComponent(entity, comp1)
 
-    added should be(true)
+    added._rev should be('defined)
 
     val res = manager.getComponent[Component1](entity)
 
@@ -40,6 +40,8 @@ class BasicTest extends FlatSpec with ShouldMatchers with BeforeAndAfterAll {
     val result = res.get
     result should be(comp)
     result._rev should be('defined)
+
+    result should be(added)
 
   }
 
