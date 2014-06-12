@@ -18,13 +18,15 @@ import net.liftweb.json._
 
 import scala.util.Try
 
+import gnieh.sohva.entities.Entity
+
 /** The `EntityManager` is responsible for creating, storing and deleting the entities
  *  and associated components.
  *  Entities are stored in a CouchDB database.
  *
  *  @author Lucas Satabin
  */
-class EntityManager(val database: Database) {
+class EntityManager(val database: Database) extends gnieh.sohva.entities.EntityManager[Identity] {
 
   val wrapped = new async.entities.EntityManager(database.wrapped)
 

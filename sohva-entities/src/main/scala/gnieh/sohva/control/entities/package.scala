@@ -15,6 +15,8 @@ package control
 
 import scala.util.Try
 
+import gnieh.sohva.entities.Entity
+
 /** This package exposes classes that allows user to manage entities and their
  *  components within a CouchDB database.
  *
@@ -25,8 +27,6 @@ import scala.util.Try
  *  retrieving entities and their components.
  */
 package object entities {
-
-  type Entity = String
 
   implicit class RichEntity(val entity: Entity) extends AnyVal {
 

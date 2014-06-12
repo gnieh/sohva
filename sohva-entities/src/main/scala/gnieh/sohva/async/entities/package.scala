@@ -13,20 +13,11 @@
 package gnieh.sohva
 package async
 
+import gnieh.sohva.entities.Entity
+
 import scala.concurrent.Future
 
-/** This package exposes classes that allows user to manage entities and their
- *  components within a CouchDB database.
- *
- *  Entities are conceptually a simple identifier. In database they are stored as
- *  a simple document that has a single optional `tag` field.
- *  The components are stored in their own document as well.
- *  The [[gnieh.sohva.entities.EntityManager]] also manages views that allow for
- *  retrieving entities and their components.
- */
 package object entities {
-
-  type Entity = String
 
   implicit class RichEntity(val entity: Entity) extends AnyVal {
 

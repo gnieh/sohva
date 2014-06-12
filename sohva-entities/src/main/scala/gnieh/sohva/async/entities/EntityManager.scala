@@ -14,6 +14,8 @@ package gnieh.sohva
 package async
 package entities
 
+import gnieh.sohva.entities.Entity
+
 import scala.annotation.tailrec
 import scala.concurrent._
 
@@ -29,7 +31,7 @@ import org.slf4j.LoggerFactory
  *
  *  @author Lucas Satabin
  */
-class EntityManager(val database: Database) {
+class EntityManager(val database: Database) extends gnieh.sohva.entities.EntityManager[Future] {
 
   import database.ec
 
@@ -38,26 +40,22 @@ class EntityManager(val database: Database) {
   private val manager =
     new DesignManager(database)
 
-  /** Creates a simple untagged entity into the entity database and returns it */
   def createSimple(): Future[Entity] =
     for {
       uuid <- database.couch._uuid
       () <- create(uuid, None)
     } yield uuid
 
-  /** Creates a tagged entity into the entity database and returns it */
   def createTagged(tag: String): Future[Entity] =
     for {
       uuid <- database.couch._uuid
       () <- create(uuid, Some(tag))
     } yield uuid
 
-  /** Creates an entity into the entity database and returns it */
   def create(uuid: String, tag: Option[String]): Future[Unit] =
     for(_ <- database.saveRawDoc(serializeEntity(CouchEntity(uuid, tag))))
       yield ()
 
-  /** Deletes an entity and all attched components from the entity database */
   def deleteEntity(entity: Entity): Future[Boolean] =
     for {
       comps <- manager.components.query[List[String], String, JValue](startkey = Some(List(entity)))
@@ -65,9 +63,6 @@ class EntityManager(val database: Database) {
       res <- allOk(results, true)
     } yield res
 
-  /** Adds or updates the component to the given entity. If the entity is unknown, does nothing.
-   *  Returns the saved component.
-   */
   def saveComponent[T <: IdRev: Manifest](entity: Entity, component: T): Future[T] =
     database.getDocRevision(entity).flatMap {
       case Some(_) =>
@@ -98,9 +93,6 @@ class EntityManager(val database: Database) {
       ViewResult(_, _, List(Row(_, _, _, doc)), _) <- manager.components.query[List[String], JValue, T](key = Some(List(entity, compType[T])), include_docs = true)
     } yield doc
 
-  /** Removes the component with the given name from the entity. If the entity
-   *  does not exist or has no component with the given name, returns false
-   */
   def removeComponentType[T: Manifest](entity: Entity): Future[Boolean] =
     for {
       ViewResult(_, _, List(Row(_, _, comps, _)), _) <- manager.components.query[List[String], List[String], JValue](key = Some(List(entity, compType[T])))
