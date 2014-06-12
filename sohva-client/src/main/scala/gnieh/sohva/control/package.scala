@@ -26,6 +26,7 @@ import duration._
 
 package object control {
 
-  private[control] def synced[T](result: Future[T]): Try[T] = Try(Await.result(result, Duration.Inf))
+  private[control] def synced[T](result: Future[T]): Try[T] =
+    Try(Await.result(result, Duration.Inf)) recover { case t: SohvaException => throw t }
 
 }

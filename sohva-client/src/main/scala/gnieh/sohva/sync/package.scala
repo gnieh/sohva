@@ -22,7 +22,12 @@ package object sync {
 
   type Identity[T] = T
 
-  private[sync] def synced[T](result: Future[T]): T = Await.result(result, Duration.Inf)
+  private[sync] def synced[T](result: Future[T]): T =
+    try {
+      Await.result(result, Duration.Inf)
+    } catch {
+      case t: SohvaException => throw t
+    }
 
 }
 

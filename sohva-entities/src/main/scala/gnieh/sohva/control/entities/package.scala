@@ -13,12 +13,6 @@
 package gnieh.sohva
 package control
 
-import scala.concurrent.{
-  Await,
-  Future
-}
-import scala.concurrent.duration.Duration
-
 import scala.util.Try
 
 /** This package exposes classes that allows user to manage entities and their
@@ -33,8 +27,6 @@ import scala.util.Try
 package object entities {
 
   type Entity = String
-
-  def synced[T](f: Future[T]): Try[T] = Try(Await.result(f, Duration.Inf))
 
   implicit class RichEntity(val entity: Entity) extends AnyVal {
 

@@ -13,12 +13,6 @@
 package gnieh.sohva
 package sync
 
-import scala.concurrent.{
-  Await,
-  Future
-}
-import scala.concurrent.duration.Duration
-
 /** This package exposes classes that allows user to manage entities and their
  *  components within a CouchDB database.
  *
@@ -31,8 +25,6 @@ import scala.concurrent.duration.Duration
 package object entities {
 
   type Entity = String
-
-  def synced[T](f: Future[T]) = Await.result(f, Duration.Inf)
 
   implicit class RichEntity(val entity: Entity) extends AnyVal {
 
