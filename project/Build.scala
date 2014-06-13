@@ -128,7 +128,8 @@ object SohvaBuild extends Build {
       OsgiKeys.exportPackage := Seq(
         "gnieh.sohva.async.entities",
         "gnieh.sohva.sync.entities",
-        "gnieh.sohva.control.entities"
+        "gnieh.sohva.control.entities",
+        "gnieh.sohva.entities"
       ),
       OsgiKeys.additionalHeaders := Map (
         "Bundle-Name" -> "Sohva Entity Component System"
