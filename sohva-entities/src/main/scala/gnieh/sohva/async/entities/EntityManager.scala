@@ -60,7 +60,7 @@ class EntityManager(val database: Database) extends gnieh.sohva.entities.EntityM
     for {
       comps <- manager.components.query[List[String], String, JValue](
         startkey = Some(List(entity)),
-        endkey = Some(List(entity, "0")),
+        endkey = Some(List(s"${entity}0")),
         inclusive_end = false)
       results <- database.deleteDocs(entity :: comps.rows.map(_.value))
       res <- allOk(results, true)
