@@ -92,16 +92,21 @@ class EntityManager(val database: Database) extends gnieh.sohva.entities.EntityM
     }.isDefined
 
   def getComponent[T: Manifest](entity: Entity): Future[Option[T]] =
-    for {
-      ViewResult(_, _, List(Row(_, _, _, doc)), _) <- manager.components.query[List[String], JValue, T](key = Some(List(entity, compType[T])), include_docs = true)
-    } yield doc
+    manager.components.query[List[String], JValue, T](key = Some(List(entity, compType[T])), include_docs = true) map {
+      case ViewResult(_, _, List(Row(_, _, _, doc)), _) => doc
+      case _                                            => None
+    }
 
   def removeComponentType[T: Manifest](entity: Entity): Future[Boolean] =
-    for {
-      ViewResult(_, _, List(Row(_, _, comps, _)), _) <- manager.components.query[List[String], List[String], JValue](key = Some(List(entity, compType[T])))
-      results <- database.deleteDocs(comps)
-      res <- allOk(results, true)
-    } yield res
+    manager.components.query[List[String], List[String], JValue](key = Some(List(entity, compType[T]))) flatMap {
+      case ViewResult(_, _, List(Row(_, _, comps, _)), _) =>
+        for {
+          results <- database.deleteDocs(comps)
+          res <- allOk(results, true)
+        } yield res
+      case _ =>
+        Future.successful(false)
+    }
 
   def removeComponent[T <: IdRev: Manifest](entity: Entity, component: T): Future[Boolean] =
     hasComponent(entity, component) flatMap {
