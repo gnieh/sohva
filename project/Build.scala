@@ -106,12 +106,17 @@ object SohvaBuild extends Build {
         ("_2.11", "1.3.1-20140423")
       else
         ("", "1.3.1")
+    val jsonVersion =
+      if(v.startsWith("2.11"))
+        "2.6-M4"
+      else
+        "2.5"
     Seq(
       "io.spray" % s"spray-client$spraySuffix" % sprayVersion,
       "com.typesafe.akka" %% "akka-actor" % "2.3.3" % "provided",
       "org.gnieh" %% "diffson" % "0.3-SNAPSHOT",
       "com.jsuereth" %% "scala-arm" % "1.4",
-      "net.liftweb" %% "lift-json" % "2.6-M4",
+      "net.liftweb" %% "lift-json" % jsonVersion,
       "org.slf4j" % "slf4j-api" % "1.7.2",
       "com.netflix.rxjava" % "rxjava-scala" % "0.17.4"
     )
