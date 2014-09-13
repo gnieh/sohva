@@ -38,15 +38,15 @@ object BarneyStinsonStrategy extends Strategy {
             case JField("_rev", _) => false
             case _                 => true
           }
-          JObject(JField("_rev", lastDoc \ "_rev") :: clean)
+          Some(JObject(JField("_rev", lastDoc \ "_rev") :: clean))
         case _ =>
-          currentDoc
+          Some(currentDoc)
       }
     case None =>
       // the document was deleted, drop the revision from the new document and retry
-      currentDoc.remove {
+      Some(currentDoc.remove {
         case JField("_rev", _) => true
         case _                 => false
-      }
+      })
   }
 }

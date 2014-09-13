@@ -22,13 +22,15 @@ import org.scalatest.OptionValues._
 
 import sync._
 
-class TestBarneyStinsonStrategy extends SohvaTestSpec(1) with BeforeAndAfterEach {
+import gnieh.sohva.strategy.TedMosbyStrategy
+
+class TestTedMosbyStrategy extends SohvaTestSpec(1, TedMosbyStrategy) with ShouldMatchers with BeforeAndAfterEach {
 
   override def afterEach {
     db.deleteDoc("conflicting_doc")
   }
 
-  "The new document" should "overwrite the old document if a conflict occurs" in {
+  "The new document" should "be forgotten about if a conflict occurs" in {
     val baseDoc = TestDoc("conflicting_doc", 3)()
     val firstSaved = db.saveDoc(baseDoc)
 
@@ -51,11 +53,11 @@ class TestBarneyStinsonStrategy extends SohvaTestSpec(1) with BeforeAndAfterEach
 
     thirdSaved should have(
       '_id("conflicting_doc"),
-      'toto(42))
+      'toto(17))
 
   }
 
-  it should "be saved if the document was deleted inbetween" in {
+  it should "not be saved if the document was deleted inbetween" in {
 
     val baseDoc = TestDoc("conflicting_doc", 3)()
     val firstSaved = db.saveDoc(baseDoc)
@@ -69,15 +71,13 @@ class TestBarneyStinsonStrategy extends SohvaTestSpec(1) with BeforeAndAfterEach
 
     val newDoc = TestDoc("conflicting_doc", 42)(firstSaved._rev)
 
-    val secondSaved = db.saveDoc(newDoc)
-
-    secondSaved should have(
-      '_id("conflicting_doc"),
-      'toto(42))
+    a[SohvaException] should be thrownBy {
+      db.saveDoc(newDoc)
+    }
 
   }
 
-  it should "be saved if we think it is a new document but it is not" in {
+  it should "not be saved if we think it is a new document but it is not" in {
 
     val baseDoc = TestDoc("conflicting_doc", 3)()
     val firstSaved = db.saveDoc(baseDoc)
@@ -92,30 +92,8 @@ class TestBarneyStinsonStrategy extends SohvaTestSpec(1) with BeforeAndAfterEach
 
     secondSaved should have(
       '_id("conflicting_doc"),
-      'toto(42))
-
-  }
-
-  it should "overwrite any previously saved document" in {
-
-    val baseDoc = ComplexDoc("conflicting_doc", "test", 3)
-    val firstSaved = db.saveDoc(baseDoc)
-
-    firstSaved should have(
-      '_id("conflicting_doc"),
-      'f1("test"),
-      'f2(3))
-
-    val newDoc = TestDoc("conflicting_doc", 42)()
-
-    val secondSaved = db.saveDoc(newDoc)
-
-    secondSaved should have(
-      '_id("conflicting_doc"),
-      'toto(42))
+      'toto(3))
 
   }
 
 }
-
-case class ComplexDoc(_id: String, f1: String, f2: Int, _rev: Option[String] = None)

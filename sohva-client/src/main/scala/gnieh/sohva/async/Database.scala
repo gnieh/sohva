@@ -28,6 +28,8 @@ import java.io.{
   BufferedInputStream
 }
 
+import org.slf4j.LoggerFactory
+
 import net.liftweb.json._
 
 import gnieh.diffson.JsonPatch
@@ -69,21 +71,30 @@ class Database private[sohva] (
 
   /* the resolver is responsible for applying the merging strategy on conflict and retrying
    * to save the document after resolution process */
-  private def resolver(credit: Int, docId: String, baseRev: Option[String], current: JValue): Future[JValue] =
-    couch.http(Put(uri / docId, current)).recoverWith {
-      case CouchException(409, _) if credit > 0 =>
-        // try to resolve the conflict and save again
-        for {
-          // get the base document if any
-          base <- getRawDocById(docId, baseRev)
-          // get the last document
-          last <- getRawDocById(docId)
-          // apply the merge strategy between base, last and current revision of the document
-          lastRev = last map (d => (d \ "_rev").toString)
-          resolved = strategy(base, last, current)
-          res <- resolver(credit - 1, docId, lastRev, resolved)
-        } yield res
-    } withFailureMessage f"Unable to resolve document with ID $docId at revision $baseRev"
+  private def resolver(credit: Int, docId: String, baseRev: Option[String], current: JValue): Future[JValue] = current match {
+    case JNothing =>
+      LoggerFactory.getLogger(getClass).info("No document to save")
+      Future.successful(serializer.toJson(DocUpdate(true, docId, baseRev.getOrElse(""))))
+    case _ =>
+      couch.http(Put(uri / docId, current)).recoverWith {
+        case exn @ ConflictException(_) if credit > 0 =>
+          LoggerFactory.getLogger(getClass).info("Conflict occurred, try to resolve it")
+          // try to resolve the conflict and save again
+          for {
+            // get the base document if any
+            base <- getRawDocById(docId, baseRev)
+            // get the last document
+            last <- getRawDocById(docId)
+            // apply the merge strategy between base, last and current revision of the document
+            lastRev = last flatMap (d => (d \ "_rev").extractOpt[String])
+            resolved = strategy(base, last, current)
+            res <- resolved match {
+              case Some(resolved) => resolver(credit - 1, docId, lastRev, resolved)
+              case None           => Future.failed(exn)
+            }
+          } yield res
+      } withFailureMessage f"Unable to resolve document with ID $docId at revision $baseRev"
+  }
 
   def info: Future[Option[InfoResult]] =
     for (info <- couch.optHttp(Get(uri)) withFailureMessage f"info failed for $uri")
@@ -162,7 +173,7 @@ class Database private[sohva] (
     } yield res.rows.flatMap { case Row(_, _, _, doc) => doc }
 
   def getRawDocById(id: String, revision: Option[String] = None): Future[Option[JValue]] =
-    couch.optHttp(Get(uri / id <<? revision.map("rev" -> _))) withFailureMessage
+    couch.optHttp(Get(uri / id <<? revision.flatMap(r => if(r.nonEmpty) Some("rev" -> r) else None))) withFailureMessage
       f"Failed to fetch the raw document by ID $id at revision $revision from $uri"
 
   def getDocRevision(id: String): Future[Option[String]] =
