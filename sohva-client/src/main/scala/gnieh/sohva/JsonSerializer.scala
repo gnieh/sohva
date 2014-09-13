@@ -42,6 +42,7 @@ class JsonSerializer(version: String, custom: List[SohvaSerializer[_]]) {
       new SecurityDocSerializer(version) +
       ChangeSerializer +
       ConfigurationSerializer +
+      DesignDocSerializer +
       DbRefSerializer ++
       custom.map(_.serializer(version))
 
@@ -253,6 +254,62 @@ private object ConfigurationSerializer extends Serializer[Configuration] {
   def serialize(implicit format: Formats): PartialFunction[Any, JValue] = {
     case Configuration(sections) =>
       Extraction.decompose(sections)
+  }
+
+}
+
+private object DesignDocSerializer extends Serializer[DesignDoc] {
+
+  private val DesignDocClass = classOf[DesignDoc]
+
+  def deserialize(implicit format: Formats): PartialFunction[(TypeInfo, JValue), DesignDoc] = {
+    case (TypeInfo(DesignDocClass, _), json) =>
+      val _id = (json \ "_id").extract[String]
+      val language = (json \ "language").extract[String]
+      val _rev = (json \ "_rev").extractOpt[String]
+      val views = (json \ "views").extractOpt[Map[String,ViewDoc]].getOrElse(Map())
+      val updates = (json \ "updates").extractOpt[Map[String,String]].getOrElse(Map())
+      val filters = (json \ "filters").extractOpt[Map[String,String]].getOrElse(Map())
+      val shows = (json \ "shows").extractOpt[Map[String,String]].getOrElse(Map())
+      val lists = (json \ "lists").extractOpt[Map[String,String]].getOrElse(Map())
+      val rewrites = (json \ "rewrites").extractOpt[List[RewriteRule]].getOrElse(Nil)
+      val validate_doc_update = (json \ "validate_doc_update").extractOpt[String]
+      DesignDoc(
+        _id,
+        language,
+        views = views,
+        validate_doc_update = validate_doc_update,
+        updates = updates,
+        filters = filters,
+        shows = shows,
+        lists = lists,
+        rewrites = rewrites).withRev(_rev)
+  }
+
+  def serialize(implicit format: Formats): PartialFunction[Any, JValue] = {
+    case dd @ DesignDoc(_id, language, views, validate_doc_update, updates, filters, shows, lists, rewrites) =>
+      def optionalCollection[T](s: Iterable[T]): JValue =
+        if(s.isEmpty)
+          JNothing
+        else
+          Extraction.decompose(s)
+
+      def option(o: Option[_]): JValue = o match {
+        case Some(_) => Extraction.decompose(o)
+        case None    => JNothing
+      }
+
+      JObject(List(
+        JField("_id", JString(_id)),
+        JField("language", JString(language)),
+        JField("views", optionalCollection(views)),
+        JField("validate_doc_update", option(validate_doc_update)),
+        JField("updates", optionalCollection(updates)),
+        JField("filters", optionalCollection(filters)),
+        JField("shows", optionalCollection(shows)),
+        JField("lists", optionalCollection(lists)),
+        JField("rewrites", optionalCollection(rewrites)),
+        JField("_rev", option(dd._rev))))
   }
 
 }
