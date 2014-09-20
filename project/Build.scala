@@ -18,7 +18,7 @@ object SohvaBuild extends Build {
     organization := "org.gnieh",
     licenses += ("The Apache Software License, Version 2.0" -> url("http://www.apache.org/licenses/LICENSE-2.0.txt")),
     homepage := Some(url("https://github.com/gnieh/sohva")),
-    version := "1.0.0-SNAPSHOT",
+    version := "1.0.0",
     scalaVersion := "2.11.2",
     crossScalaVersions := Seq("2.10.4", "2.11.2"),
     libraryDependencies ++= globalDependencies,
@@ -30,7 +30,8 @@ object SohvaBuild extends Build {
     base = file("."))
     settings(globalSettings: _*)
     settings (
-      name := "sohva"
+      name := "sohva",
+      packagedArtifacts :=  Map()
     )
     settings(unidocSettings: _*)
   ) aggregate(client, testing, entities, dm)
@@ -149,8 +150,7 @@ object SohvaBuild extends Build {
   lazy val dm = Project(id = "sohva-dm",
     base = file("sohva-dm")) settings(globalSettings: _*) settings(
       description := "Design documents manager based on Sohva",
-      libraryDependencies ++= dmDependencies,
-      resourceDirectories in Compile := List()
+      libraryDependencies ++= dmDependencies
     ) settings(osgiSettings: _*) settings(scalariformSettings: _*) settings(
       OsgiKeys.exportPackage := Seq(
         "gnieh.sohva.dm",
@@ -161,8 +161,7 @@ object SohvaBuild extends Build {
       OsgiKeys.additionalHeaders := Map (
         "Bundle-Name" -> "Sohva Design Manager"
       ),
-      OsgiKeys.bundleSymbolicName := "org.gnieh.sohva.dm",
-      OsgiKeys.privatePackage := Seq("reference.conf")
+      OsgiKeys.bundleSymbolicName := "org.gnieh.sohva.dm"
     ) dependsOn(client)
 
   lazy val dmDependencies = clientDependencies ++ Seq(
