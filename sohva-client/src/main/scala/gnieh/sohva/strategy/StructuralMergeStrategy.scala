@@ -163,14 +163,14 @@ object StructuralMergeStrategy extends Strategy {
       // println("DC: " + db2current)
 
       // apply the db2current to the base Json
-      db2current(baseJson)
+      Some(db2current(baseJson))
 
     case None =>
       // the document was deleted, simply remove the revision from the current document
-      currentJson remove {
+      Some(currentJson remove {
         case JField("_rev", _) => true
         case _                 => false
-      }
+      })
   }
 
   def shift(ops: List[Operation], p: Pointer, value: Int): List[Operation] = p match {

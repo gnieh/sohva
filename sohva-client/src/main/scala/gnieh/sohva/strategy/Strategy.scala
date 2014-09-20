@@ -31,9 +31,11 @@ trait Strategy {
    *  (or `None` if the document did not exist before to the client knowledge),
    *  the last revision in the database `lastDoc` (or `None` if the document was deleted)
    *  and the document the client wants to save `currentDoc`.
-   *  If no automatic merge could be found, then returns `None`
+   *  If no automatic merge could be found, then returns `None`, which results in a conflict exception.
+   *  When `JNothing` is returned no further try is performed and the saving is considered succesful by
+   *  keeping the current version in the database.
    */
   def apply(baseDoc: Option[JValue],
     lastDoc: Option[JValue],
-    currentDoc: JValue): JValue
+    currentDoc: JValue): Option[JValue]
 }

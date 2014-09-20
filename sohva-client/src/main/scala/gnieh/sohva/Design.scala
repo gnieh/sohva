@@ -91,5 +91,7 @@ case class DesignDoc(
   updates: Map[String, String] = Map(),
   filters: Map[String, String] = Map(),
   shows: Map[String, String] = Map(),
-  lists: Map[String, String] = Map()) extends IdRev
+  lists: Map[String, String] = Map(),
+  rewrites: List[RewriteRule] = Nil) extends IdRev
 
+case class RewriteRule(from: String, to: String, method: String, query: Map[String, String])

@@ -125,12 +125,10 @@ abstract class CouchDB extends gnieh.sohva.CouchDB[Future] with LiftMarshalling 
   protected[sohva] val pipeline: HttpRequest => Future[HttpResponse]
 
   protected[sohva] def http(req: HttpRequest): Future[JValue] =
-    pipeline(prepare(req)).flatMap(handleCouchResponse) withFailureMessage
-      f"Problem processing ${req.method} request to ${req.uri}"
+    pipeline(prepare(req)).flatMap(handleCouchResponse)
 
   protected[sohva] def optHttp(req: HttpRequest): Future[Option[JValue]] =
-    pipeline(prepare(req)).flatMap(handleOptionalCouchResponse) withFailureMessage
-      f"Problem processing ${req.method} request to ${req.uri}"
+    pipeline(prepare(req)).flatMap(handleOptionalCouchResponse)
 
   private def handleCouchResponse(response: HttpResponse): Future[JValue] = {
     val json = parse(response.entity.asString)

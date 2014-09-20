@@ -33,7 +33,7 @@ class TestStructuralMergeStrategy extends FlatSpec with ShouldMatchers {
     val json2 = parse("[1, 3]")
     val json3 = parse("[1, 4, 3]")
 
-    StructuralMergeStrategy(Some(json1), Some(json2), json3) should be(json2)
+    StructuralMergeStrategy(Some(json1), Some(json2), json3) should be(Some(json2))
 
   }
 
@@ -42,7 +42,7 @@ class TestStructuralMergeStrategy extends FlatSpec with ShouldMatchers {
     val json2 = parse("[1, 4, 3]")
     val json3 = parse("[1, 5, 3]")
 
-    StructuralMergeStrategy(Some(json1), Some(json2), json3) should be(json3)
+    StructuralMergeStrategy(Some(json1), Some(json2), json3) should be(Some(json3))
   }
 
   "a path modified by a first path" should "be deleted if a subsequent patch deletes it" in {
@@ -51,7 +51,7 @@ class TestStructuralMergeStrategy extends FlatSpec with ShouldMatchers {
     val json2 = parse("[1, 4, 3]")
     val json3 = parse("[1, 3]")
 
-    StructuralMergeStrategy(Some(json1), Some(json2), json3) should be(json3)
+    StructuralMergeStrategy(Some(json1), Some(json2), json3) should be(Some(json3))
 
   }
 
@@ -61,7 +61,7 @@ class TestStructuralMergeStrategy extends FlatSpec with ShouldMatchers {
     val json2 = parse("[1, 4, 3]")
     val json3 = parse("[1, 5, 3]")
 
-    StructuralMergeStrategy(Some(json1), Some(json2), json3) should be(json3)
+    StructuralMergeStrategy(Some(json1), Some(json2), json3) should be(Some(json3))
 
   }
 
@@ -71,7 +71,7 @@ class TestStructuralMergeStrategy extends FlatSpec with ShouldMatchers {
     val json2 = parse("[1, 4, 3]")
     val json3 = parse("[1, 2, 3, 4]")
 
-    StructuralMergeStrategy(Some(json1), Some(json2), json3) should be(parse("[1, 4, 3, 4]"))
+    StructuralMergeStrategy(Some(json1), Some(json2), json3) should be(Option(parse("[1, 4, 3, 4]")))
 
   }
 
@@ -81,13 +81,13 @@ class TestStructuralMergeStrategy extends FlatSpec with ShouldMatchers {
     val json2 = parse("[1, 2, 3, 4]")
     val json3 = parse("[1, 2, 3, 5]")
 
-    StructuralMergeStrategy(Some(json1), Some(json2), json3) should be(json3)
+    StructuralMergeStrategy(Some(json1), Some(json2), json3) should be(Some(json3))
 
     val json4 = parse("[1, 2, 3]")
     val json5 = parse("[1, 4, 2, 3]")
     val json6 = parse("[1, 5, 2, 3]")
 
-    StructuralMergeStrategy(Some(json1), Some(json2), json3) should be(json3)
+    StructuralMergeStrategy(Some(json1), Some(json2), json3) should be(Some(json3))
 
   }
 
@@ -136,7 +136,7 @@ class TestStructuralMergeStrategy extends FlatSpec with ShouldMatchers {
                         |  }
                         |}""".stripMargin)
 
-    StructuralMergeStrategy(Some(json1), Some(json2), json3) should be(json4)
+    StructuralMergeStrategy(Some(json1), Some(json2), json3) should be(Some(json4))
 
   }
 
@@ -144,7 +144,7 @@ class TestStructuralMergeStrategy extends FlatSpec with ShouldMatchers {
     val json1 = parse("[1, 2, 3, 4]")
     val json2 = parse("[7, 4]")
 
-    StructuralMergeStrategy(Some(json1), None, json2) should be(json2)
+    StructuralMergeStrategy(Some(json1), None, json2) should be(Some(json2))
   }
 
 }

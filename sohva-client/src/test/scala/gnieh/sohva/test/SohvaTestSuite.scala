@@ -18,22 +18,22 @@ package test
 
 import sync._
 
-import org.scalatest._
+import gnieh.sohva.strategy._
 
-import strategy._
+import org.scalatest._
 
 import akka.actor.ActorSystem
 import akka.util.Timeout
 import scala.concurrent.duration._
 
-abstract class SohvaTestSpec extends FlatSpec with ShouldMatchers with BeforeAndAfterAll {
+abstract class SohvaTestSpec(retry: Int = 0, strategy: Strategy = BarneyStinsonStrategy) extends FlatSpec with ShouldMatchers with BeforeAndAfterAll {
 
   implicit val system = ActorSystem()
   implicit val timeout = Timeout(5.seconds)
 
   val couch = new CouchClient
   val session = couch.startCookieSession
-  val db =  session.database("sohva-tests")
+  val db = session.database("sohva-tests", credit = retry, strategy = strategy)
 
   override def beforeAll() {
     // login
