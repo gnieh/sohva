@@ -126,8 +126,7 @@ object SohvaBuild extends Build {
   lazy val entities = Project(id = "sohva-entities",
     base = file("sohva-entities")) settings(globalSettings: _*) settings(
       description := "Entity Component System storing entities in a couchdb instance",
-      libraryDependencies ++= entitiesDependencies,
-      resourceDirectories in Compile := List()
+      libraryDependencies ++= entitiesDependencies
     ) settings(osgiSettings: _*) settings(scalariformSettings: _*) settings(
       OsgiKeys.exportPackage := Seq(
         "gnieh.sohva.async.entities",
