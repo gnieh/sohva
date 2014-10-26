@@ -23,16 +23,13 @@ import time.SpanSugar._
 
 import sync._
 
-import net.liftweb.json.DefaultFormats
 import java.util.concurrent.atomic.AtomicBoolean
 import rx.lang.scala.Subscription
 
 class TestChanges extends SohvaTestSpec with ShouldMatchers with AsyncAssertions with BeforeAndAfterEach {
 
-  implicit val formats = DefaultFormats
-
   override def beforeEach {
-    if(db.exists)
+    if (db.exists)
       db.delete
     db.create
   }
@@ -50,17 +47,18 @@ class TestChanges extends SohvaTestSpec with ShouldMatchers with AsyncAssertions
 
     val w = new Waiter
 
-    val sub = changes.subscribe { case (id, doc) =>
-      w {
-        id should be("new-doc")
-        val d = doc.map(_.extract[TestDoc])
-        d should be('defined)
-        d.value should be(TestDoc("new-doc", 17)())
-      }
-      w.dismiss()
+    val sub = changes.subscribe {
+      case (id, doc) =>
+        w {
+          id should be("new-doc")
+          val d = doc.map(_.convertTo[TestDoc])
+          d should be('defined)
+          d.value should be(TestDoc("new-doc", 17))
+        }
+        w.dismiss()
     }
 
-    db.saveDoc(TestDoc("new-doc", 17)())
+    db.saveDoc(TestDoc("new-doc", 17))
 
     w.await(timeout(10.seconds))
 
@@ -72,19 +70,20 @@ class TestChanges extends SohvaTestSpec with ShouldMatchers with AsyncAssertions
 
     val w = new Waiter
 
-    val saved = db.saveDoc(TestDoc("new-doc", 17)())
+    val saved = db.saveDoc(TestDoc("new-doc", 17))
 
-    val sub = changes.subscribe { case (id, doc) =>
-      w {
-        id should be("new-doc")
-        val d = doc.map(_.extract[TestDoc])
-        d should be('defined)
-        d.value should be(TestDoc("new-doc", 5)())
-      }
-      w.dismiss()
+    val sub = changes.subscribe {
+      case (id, doc) =>
+        w {
+          id should be("new-doc")
+          val d = doc.map(_.convertTo[TestDoc])
+          d should be('defined)
+          d.value should be(TestDoc("new-doc", 5))
+        }
+        w.dismiss()
     }
 
-    db.saveDoc(saved.copy(toto = 5)(saved._rev))
+    db.saveDoc(saved.copy(toto = 5).withRev(saved._rev))
 
     w.await(timeout(5.seconds))
 
@@ -95,14 +94,15 @@ class TestChanges extends SohvaTestSpec with ShouldMatchers with AsyncAssertions
 
     val w = new Waiter
 
-    val saved = db.saveDoc(TestDoc("new-doc", 17)())
+    val saved = db.saveDoc(TestDoc("new-doc", 17))
 
-    val sub = changes.subscribe { case (id, doc) =>
-      w {
-        id should be("new-doc")
-        doc should not be('defined)
-      }
-      w.dismiss()
+    val sub = changes.subscribe {
+      case (id, doc) =>
+        w {
+          id should be("new-doc")
+          doc should not be ('defined)
+        }
+        w.dismiss()
     }
 
     db.deleteDoc(saved)
@@ -116,13 +116,14 @@ class TestChanges extends SohvaTestSpec with ShouldMatchers with AsyncAssertions
 
     val w = new Waiter
 
-    val sub = changes.subscribe { case (id, doc) =>
-      w.dismiss()
+    val sub = changes.subscribe {
+      case (id, doc) =>
+        w.dismiss()
     }
 
-    val saved = db.saveDoc(TestDoc("new-doc", 17)())
+    val saved = db.saveDoc(TestDoc("new-doc", 17))
 
-    val changed = db.saveDoc(saved.copy(toto = 5)(saved._rev))
+    val changed = db.saveDoc(saved.copy(toto = 5).withRev(saved._rev))
 
     db.deleteDoc(changed)
 
@@ -136,22 +137,23 @@ class TestChanges extends SohvaTestSpec with ShouldMatchers with AsyncAssertions
     val w = new Waiter
     val unsub = new AtomicBoolean(false)
 
-    lazy val sub: Subscription = changes.subscribe { case (id, doc) =>
-      println(f"Dismissing: ${unsub.get()}")
-      w {
-        withClue(f"Unsubscription status did not match expected state: ") {
-          sub.isUnsubscribed should equal (unsub.get())
+    lazy val sub: Subscription = changes.subscribe {
+      case (id, doc) =>
+        println(f"Dismissing: ${unsub.get()}")
+        w {
+          withClue(f"Unsubscription status did not match expected state: ") {
+            sub.isUnsubscribed should equal(unsub.get())
+          }
         }
-      }
-      w.dismiss()
+        w.dismiss()
     }
     println(f"sub: $sub")
 
     println("saveDoc")
-    val saved = db.saveDoc(TestDoc("new-doc", 17)())
+    val saved = db.saveDoc(TestDoc("new-doc", 17))
 
     println("changeDoc")
-    val changed = db.saveDoc(saved.copy(toto = 5)(saved._rev))
+    val changed = db.saveDoc(saved.copy(toto = 5).withRev(saved._rev))
 
     println(f"Is unsubscribed: ${sub.isUnsubscribed}")
 
@@ -179,17 +181,18 @@ class TestChanges extends SohvaTestSpec with ShouldMatchers with AsyncAssertions
     val changes = db.changes(filter = Some("test/my_filter"))
 
     try {
-      val sub = changes.subscribe { case (_, doc) =>
-        doc should be('defined)
-        doc.value.extract[TestDoc].toto should be > (10)
-        w.dismiss()
+      val sub = changes.subscribe {
+        case (_, doc) =>
+          doc should be('defined)
+          doc.value.convertTo[TestDoc].toto should be > (10)
+          w.dismiss()
       }
 
-      val d1 = db.saveDoc(TestDoc("doc1", 8)())
+      val d1 = db.saveDoc(TestDoc("doc1", 8))
 
-      val d2 = db.saveDoc(TestDoc("doc2", 17)())
+      val d2 = db.saveDoc(TestDoc("doc2", 17))
 
-      val d3 = db.saveDoc(d1.copy(toto = 14)(_rev = d1._rev))
+      val d3 = db.saveDoc(d1.copy(toto = 14).withRev(d1._rev))
 
       val deleted = db.deleteDoc("doc1")
 
@@ -205,23 +208,27 @@ class TestChanges extends SohvaTestSpec with ShouldMatchers with AsyncAssertions
 
     val w = new Waiter
 
-    val sub1 = changes.subscribe { case (id, doc) =>
-      w.dismiss()
+    val sub1 = changes.subscribe {
+      case (id, doc) =>
+        w.dismiss()
     }
 
-    val sub2 = changes.subscribe { case (id, doc) =>
-      w.dismiss()
+    val sub2 = changes.subscribe {
+      case (id, doc) =>
+        w.dismiss()
     }
 
-    val sub3 = changes.subscribe { case (id, doc) =>
-      w.dismiss()
+    val sub3 = changes.subscribe {
+      case (id, doc) =>
+        w.dismiss()
     }
 
-    val sub4 = changes.subscribe { case (id, doc) =>
-      w.dismiss()
+    val sub4 = changes.subscribe {
+      case (id, doc) =>
+        w.dismiss()
     }
 
-    db.saveDoc(TestDoc("new-doc", 17)())
+    db.saveDoc(TestDoc("new-doc", 17))
 
     w.await(timeout(10.seconds), dismissals(4))
 
@@ -236,19 +243,20 @@ class TestChanges extends SohvaTestSpec with ShouldMatchers with AsyncAssertions
 
     val w = new Waiter
 
-    val sub1 = changes.subscribe { case (id, doc) =>
-      w.dismiss()
+    val sub1 = changes.subscribe {
+      case (id, doc) =>
+        w.dismiss()
     }
 
     val filtered =
-      for((id, Some(doc)) <- changes.stream)
+      for ((id, Some(doc)) <- changes.stream)
         yield (id, doc)
 
     val sub2 = filtered.subscribe { id_doc =>
       w.dismiss()
     }
 
-    val saved = db.saveDoc(TestDoc("doc", 23)())
+    val saved = db.saveDoc(TestDoc("doc", 23))
 
     val ok = db.deleteDoc(saved)
 
@@ -262,4 +270,3 @@ class TestChanges extends SohvaTestSpec with ShouldMatchers with AsyncAssertions
   }
 
 }
-

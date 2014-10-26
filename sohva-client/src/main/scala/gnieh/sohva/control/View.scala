@@ -22,7 +22,7 @@ import gnieh.sohva.async.{
 
 import scala.util.Try
 
-import net.liftweb.json.JValue
+import spray.json._
 
 /** A view can be queried to get the result.
  *
@@ -37,11 +37,11 @@ class View(val wrapped: AView)
 
   @inline
   def queryRaw(
-    key: Option[JValue] = None,
-    keys: List[JValue] = Nil,
-    startkey: Option[JValue] = None,
+    key: Option[JsValue] = None,
+    keys: List[JsValue] = Nil,
+    startkey: Option[JsValue] = None,
     startkey_docid: Option[String] = None,
-    endkey: Option[JValue] = None,
+    endkey: Option[JsValue] = None,
     endkey_docid: Option[String] = None,
     limit: Int = -1,
     stale: Option[String] = None,
@@ -71,7 +71,7 @@ class View(val wrapped: AView)
       update_seq = update_seq))
 
   @inline
-  def query[Key: Manifest, Value: Manifest, Doc: Manifest](key: Option[Key] = None,
+  def query[Key: JsonFormat, Value: JsonReader, Doc: JsonReader](key: Option[Key] = None,
     keys: List[Key] = Nil,
     startkey: Option[Key] = None,
     startkey_docid: Option[String] = None,

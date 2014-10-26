@@ -22,6 +22,8 @@ import spray.client.pipelining._
 
 import spray.httpx.unmarshalling._
 
+import spray.http.StatusCodes
+
 class CList(
   val design: String,
   val db: Database,
@@ -29,13 +31,12 @@ class CList(
     extends gnieh.sohva.CList[Future] {
 
   import db.ec
-  import db.serializer.formats
 
   protected[this] def uri = db.uri / "_design" / design / "_list" / list
 
   def exists: Future[Boolean] =
-    for (h <- db.couch.optHttp(Head(uri)))
-      yield h.isDefined
+    for (h <- db.couch.rawHttp(Head(uri)))
+      yield h.status == StatusCodes.OK
 
   def query[T: Unmarshaller](viewName: String, format: Option[String] = None): Future[T] =
     for {

@@ -16,7 +16,7 @@
 package gnieh.sohva
 package async
 
-import net.liftweb.json._
+import spray.json._
 
 import spray.http._
 import spray.client.pipelining._
@@ -45,20 +45,13 @@ import org.slf4j.LoggerFactory
 class CouchClient(val host: String = "localhost",
   val port: Int = 5984,
   val ssl: Boolean = false,
-  val version: String = "1.4",
-  val custom: List[SohvaSerializer[_]] = Nil)(
+  val version: String = "1.4")(
     implicit val system: ActorSystem,
     val timeout: Timeout)
     extends CouchDB with gnieh.sohva.CouchClient[Future] {
 
-  val serializer =
-    new JsonSerializer(this.version, custom)
-
   implicit def ec: ExecutionContext =
     system.dispatcher
-
-  implicit def formats =
-    serializer.formats
 
   // check that the version matches the one of the server
   for {

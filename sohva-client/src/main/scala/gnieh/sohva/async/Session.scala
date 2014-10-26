@@ -18,7 +18,9 @@ package async
 
 import scala.concurrent.Future
 
-import net.liftweb.json._
+import scala.util.Try
+
+import spray.json._
 
 import spray.client.pipelining._
 
@@ -28,16 +30,17 @@ import spray.client.pipelining._
  */
 trait Session extends CouchDB with gnieh.sohva.Session[Future] {
 
+  import SohvaProtocol._
+
   def currentUser: Future[Option[UserInfo]] = userContext.flatMap {
-    case UserCtx(name, _) if name != null =>
+    case UserCtx(Some(name), _) =>
       http(Get(uri / "_users" / (s"org.couchdb.user:$name"))).map(user)
     case _ => Future.successful(None)
   }
 
   def isAuthenticated: Future[Boolean] = userContext.map {
-    case UserCtx(name, _) if name != null =>
-      true
-    case _ => false
+    case UserCtx(Some(name), _) => true
+    case _                      => false
   }
 
   def hasRole(role: String): Future[Boolean] = userContext.map {
@@ -50,11 +53,10 @@ trait Session extends CouchDB with gnieh.sohva.Session[Future] {
   def userContext: Future[UserCtx] =
     http(Get(uri / "_session")).map(userCtx)
 
-  private def user(json: JValue) =
-    serializer.fromJsonOpt[UserInfo](json)
+  private def user(json: JsValue) =
+    Try(json.convertTo[UserInfo]).toOption
 
-  private def userCtx(json: JValue) =
-    serializer.fromJson[AuthResult](json).userCtx
+  private def userCtx(json: JsValue) =
+    json.convertTo[AuthResult].userCtx
 
 }
-

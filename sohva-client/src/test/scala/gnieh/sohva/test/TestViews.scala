@@ -22,13 +22,22 @@ import org.scalatest.OptionValues._
 
 import sync._
 
+import spray.json._
+
 class TestViews extends SohvaTestSpec with Matchers with BeforeAndAfterEach {
+
+  implicit object NullReader extends JsonReader[Null] {
+    def read(json: JsValue) = json match {
+      case JsNull => null
+      case _      => deserializationError("null expected")
+    }
+  }
 
   val docs: List[TestDoc] =
     (for {
       i <- 1 to 10
       j <- i to 10
-    } yield TestDoc("view_doc" + i + j, j)()).toList
+    } yield TestDoc("view_doc" + i + j, j)).toList
 
   override def beforeEach(): Unit = {
     try {
@@ -67,7 +76,7 @@ class TestViews extends SohvaTestSpec with Matchers with BeforeAndAfterEach {
 
     viewResult.total_rows should be(docs.size)
     viewResult.offset should be(0)
-    viewResult.rows should be(docs.map(doc => Row(Some(doc._id), doc._id, null)).sortBy { case Row (Some(id), _, _, _) => id })
+    viewResult.rows should be(docs.map(doc => Row(Some(doc._id), doc._id, null)).sortBy { case Row(Some(id), _, _, _) => id })
 
   }
 
@@ -85,7 +94,7 @@ class TestViews extends SohvaTestSpec with Matchers with BeforeAndAfterEach {
 
     viewResult.total_rows should be(docs.size)
     viewResult.offset should be(46)
-    viewResult.rows should be(filtered.sortBy { case Row (id, _, _, _) => id })
+    viewResult.rows should be(filtered.sortBy { case Row(id, _, _, _) => id })
 
   }
 
@@ -126,7 +135,7 @@ class TestViews extends SohvaTestSpec with Matchers with BeforeAndAfterEach {
 
   "reduced views" should "be queryable as well" in {
 
-    case class TestReduce(_id: String, name: String, count: Int) extends IdRev
+    implicit val testReduceFormat = couchFormat[TestReduce]
 
     db.saveDoc(TestReduce("A1", "A", 1))
     db.saveDoc(TestReduce("A2", "A", 2))
@@ -160,3 +169,5 @@ class TestViews extends SohvaTestSpec with Matchers with BeforeAndAfterEach {
   }
 
 }
+
+case class TestReduce(_id: String, name: String, count: Int) extends IdRev

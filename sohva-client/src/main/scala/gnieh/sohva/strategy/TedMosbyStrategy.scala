@@ -16,7 +16,7 @@
 package gnieh.sohva
 package strategy
 
-import net.liftweb.json._
+import spray.json._
 
 /** This strategy is the anti-[[BarneyStinsonStrategy]] by definition as it applies
  *  a simple rule: ''Old is always better''.
@@ -28,7 +28,7 @@ import net.liftweb.json._
  */
 object TedMosbyStrategy extends Strategy {
 
-  def apply(baseDoc: Option[JValue], lastDoc: Option[JValue], currentDoc: JValue) =
-    Some(JNothing)
+  def apply(baseDoc: Option[JsValue], lastDoc: Option[JsValue], currentDoc: JsValue) =
+    Some(JsNull)
 
 }

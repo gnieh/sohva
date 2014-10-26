@@ -17,6 +17,8 @@ package gnieh.sohva
 
 import spray.httpx.unmarshalling.Unmarshaller
 
+import scala.language.higherKinds
+
 /** A list that can be queried for a given view.
  *
  *  @author Lucas Satabin

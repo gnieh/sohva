@@ -37,7 +37,7 @@ class TestPasswordReset extends SohvaTestSpec with ShouldMatchers with BeforeAnd
 
   "an administrator" should "be able to require a password reset for any user" in {
     // one hour validity
-    session.users.generateResetToken("test_user", new Date(Platform.currentTime + 3600000l)) should not be(null)
+    session.users.generateResetToken("test_user", new Date(Platform.currentTime + 3600000l)) should not be (null)
   }
 
   it should "be able to reset the password if a valid token exists" in {

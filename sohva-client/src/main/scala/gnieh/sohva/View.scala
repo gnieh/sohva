@@ -15,10 +15,14 @@
 */
 package gnieh.sohva
 
-import net.liftweb.json.{
-  JValue,
-  JObject
+import spray.json.{
+  JsValue,
+  JsObject,
+  JsonReader,
+  JsonFormat
 }
+
+import scala.language.higherKinds
 
 /** A view can be queried to get the result.
  *
@@ -31,11 +35,11 @@ trait View[Result[_]] {
 
   /** Queries the view on the server and returned the untyped result. */
   def queryRaw(
-    key: Option[JValue] = None,
-    keys: List[JValue] = Nil,
-    startkey: Option[JValue] = None,
+    key: Option[JsValue] = None,
+    keys: List[JsValue] = Nil,
+    startkey: Option[JsValue] = None,
     startkey_docid: Option[String] = None,
-    endkey: Option[JValue] = None,
+    endkey: Option[JsValue] = None,
     endkey_docid: Option[String] = None,
     limit: Int = -1,
     stale: Option[String] = None,
@@ -52,7 +56,7 @@ trait View[Result[_]] {
    *  BE CAREFUL: If the types given to the constructor are not correct,
    *  strange things may happen! By 'strange', I mean exceptions
    */
-  def query[Key: Manifest, Value: Manifest, Doc: Manifest](
+  def query[Key: JsonFormat, Value: JsonReader, Doc: JsonReader](
     key: Option[Key] = None,
     keys: List[Key] = Nil,
     startkey: Option[Key] = None,
@@ -82,9 +86,9 @@ final case class RawViewResult(
 
 final case class RawRow(
   id: Option[String],
-  key: JValue,
-  value: JValue,
-  doc: Option[JObject])
+  key: JsValue,
+  value: JsValue,
+  doc: Option[JsObject])
 
 final case class ViewResult[Key, Value, Doc](
     total_rows: Int,

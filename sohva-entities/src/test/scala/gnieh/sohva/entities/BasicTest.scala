@@ -10,7 +10,7 @@ import scala.concurrent.duration._
 
 import org.scalatest._
 
-class BasicTest extends FlatSpec with ShouldMatchers with BeforeAndAfterAll {
+class BasicTest extends FlatSpec with ShouldMatchers with BeforeAndAfterAll with SohvaProtocol {
 
   import system.dispatcher
 
@@ -19,7 +19,9 @@ class BasicTest extends FlatSpec with ShouldMatchers with BeforeAndAfterAll {
 
   val couch = new CouchClient
   val session = couch.startCookieSession
-  val db =  session.database("sohva-entities-tests")
+  val db = session.database("sohva-entities-tests")
+
+  implicit def component1Format = couchFormat[Component1]
 
   "It" should "be possible to create and manage entities with a manager" in {
     val comp = Component1("gruik", 3, "my first component")
@@ -49,14 +51,14 @@ class BasicTest extends FlatSpec with ShouldMatchers with BeforeAndAfterAll {
     // login
     session.login("admin", "admin")
     // create database
-    if(db.exists)
+    if (db.exists)
       db.delete
     db.create
   }
 
   override def afterAll() {
     // cleanup database
-    if(db.exists)
+    if (db.exists)
       db.delete
     // logout
     session.logout

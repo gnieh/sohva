@@ -23,7 +23,7 @@ import scala.util.Random
 
 import rx.lang.scala._
 
-import net.liftweb.json._
+import spray.json._
 
 /** Contains all the classes needed to interact with a couchdb server.
  *  Classes in this package allows the user to:
@@ -38,25 +38,6 @@ import net.liftweb.json._
  *
  */
 package object sohva {
-
-  /** A couchdb document must have an `_id` field and an optional `_rev` field.
-   */
-  type Doc = {
-    val _id: String
-    val _rev: Option[String]
-  }
-
-  implicit def doc2idrev(d: Doc): IdRev =
-    new IdRev {
-      val _id = d._id
-      _rev = d._rev
-    }
-
-  implicit def map2idrev(m: Map[String, Any]): IdRev =
-    new IdRev {
-      val _id = m.get("_id").collect { case s: String => s }.getOrElse("")
-      _rev = m.get("_rev").collect { case s: String => s }
-    }
 
   protected[sohva] def bytes2string(bytes: Array[Byte]) =
     bytes.foldLeft(new StringBuilder) {
@@ -79,6 +60,20 @@ package object sohva {
     val salt = bytes2string(saltArray)
 
     (salt, hash(password + salt))
+  }
+
+  implicit class CouchJson[T <: IdRev](val value: T) extends AnyVal {
+
+    import DefaultJsonProtocol._
+
+    def toCouchJson(implicit writer: JsonWriter[T]): JsValue =
+      writer.write(value) match {
+        case JsObject(fields) =>
+          JsObject(fields + ("_rev" -> value._rev.toJson))
+        case _ =>
+          serializationError("Object expected")
+      }
+
   }
 
 }

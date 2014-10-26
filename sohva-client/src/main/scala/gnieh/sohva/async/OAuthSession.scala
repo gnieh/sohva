@@ -35,8 +35,7 @@ class OAuthSession protected[sohva] (
   val couch: CouchClient)
     extends CouchDB
     with Session
-    with gnieh.sohva.OAuthSession[Future]
-    with LiftMarshalling {
+    with gnieh.sohva.OAuthSession[Future] {
 
   val host =
     couch.host
@@ -50,14 +49,8 @@ class OAuthSession protected[sohva] (
   val version =
     couch.version
 
-  val serializer =
-    couch.serializer
-
   val system =
     couch.system
-
-  implicit def formats =
-    serializer.formats
 
   implicit def ec = couch.ec
 

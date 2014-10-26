@@ -17,6 +17,8 @@ package gnieh.sohva
 
 import strategy._
 
+import scala.language.higherKinds
+
 /** A CouchDB instance.
  *  Allows users to access the different databases and information.
  *  This is the key class to start with when one wants to work with couchdb.
@@ -35,9 +37,6 @@ trait CouchDB[Result[_]] {
 
   /** The couchdb instance version. */
   val version: String
-
-  /** The Json (de)serializer */
-  val serializer: JsonSerializer
 
   /** Returns the couchdb instance information */
   def info: Result[CouchInfo]

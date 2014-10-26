@@ -15,12 +15,9 @@
 */
 package gnieh.sohva
 
-import net.liftweb.json.{
-  JValue,
-  JObject
-}
-
 import spray.httpx.unmarshalling.Unmarshaller
+
+import scala.language.higherKinds
 
 /** A show function that can be queried.
  *

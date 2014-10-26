@@ -16,7 +16,7 @@
 package gnieh.sohva
 package strategy
 
-import net.liftweb.json._
+import spray.json._
 
 /** This strategy applies a simple rule: ''New is always better''
  *  Whenever a conflict occurs when trying to save a document in the database,
@@ -28,25 +28,27 @@ import net.liftweb.json._
  */
 object BarneyStinsonStrategy extends Strategy {
 
-  def apply(baseDoc: Option[JValue], lastDoc: Option[JValue], currentDoc: JValue) = lastDoc match {
-    case Some(lastDoc) =>
+  def apply(baseDoc: Option[JsValue], lastDoc: Option[JsValue], currentDoc: JsValue) = lastDoc match {
+    case Some(JsObject(lastDoc)) =>
       // simply replace the revision by the last one, and return the object unchanged (or add it if not present)
       currentDoc match {
-        case JObject(fields) =>
+        case JsObject(fields) =>
           // remove the _rev field if present
           val clean = fields.filter {
-            case JField("_rev", _) => false
-            case _                 => true
+            case ("_rev", _) => false
+            case _           => true
           }
-          Some(JObject(JField("_rev", lastDoc \ "_rev") :: clean))
+          Some(JsObject(clean + ("_rev" -> lastDoc("_rev"))))
         case _ =>
           Some(currentDoc)
       }
+    case Some(_) =>
+      None
     case None =>
       // the document was deleted, drop the revision from the new document and retry
-      Some(currentDoc.remove {
-        case JField("_rev", _) => true
-        case _                 => false
-      })
+      Some(JsObject(currentDoc.asJsObject.fields.filter {
+        case ("_rev", _) => false
+        case _           => true
+      }))
   }
 }

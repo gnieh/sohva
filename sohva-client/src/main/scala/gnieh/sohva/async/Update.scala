@@ -20,6 +20,8 @@ import scala.concurrent.Future
 
 import spray.http._
 
+import spray.json._
+
 import spray.client.pipelining._
 
 import spray.httpx.unmarshalling._
@@ -29,22 +31,20 @@ class Update(
   val db: Database,
   val update: String)
     extends gnieh.sohva.Update[Future]
-    with LiftMarshalling {
+    with SprayJsonSupport {
 
   import db.ec
-
-  implicit def formats = db.serializer.formats
 
   protected[this] def uri = db.uri / "_design" / design / "_update" / update
 
   def exists: Future[Boolean] =
-    for (h <- db.couch.optHttp(Head(uri)))
-      yield h.isDefined
+    for (h <- db.couch.rawHttp(Head(uri)))
+      yield h.status == StatusCodes.OK
 
-  def query[Body, Resp: Unmarshaller](body: Body, docId: Option[String] = None, parameters: Map[String, String] = Map()): Future[Resp] = {
+  def query[Body: RootJsonWriter, Resp: Unmarshaller](body: Body, docId: Option[String] = None, parameters: Map[String, String] = Map()): Future[Resp] = {
     val req = docId match {
-      case Some(docId) => Put(uri / docId <<? parameters, db.serializer.toJson(body))
-      case None        => Post(uri <<? parameters, db.serializer.toJson(body))
+      case Some(docId) => Put(uri / docId <<? parameters, body)
+      case None        => Post(uri <<? parameters, body)
     }
     for (resp <- db.couch.rawHttp(req))
       yield resp.as[Resp] match {

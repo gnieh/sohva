@@ -21,7 +21,7 @@ import scala.concurrent._
 
 import impl._
 
-import net.liftweb.json._
+import spray.json._
 
 import org.slf4j.LoggerFactory
 
@@ -34,6 +34,8 @@ import org.slf4j.LoggerFactory
 class EntityManager(val database: Database) extends gnieh.sohva.entities.EntityManager[Future] {
 
   import database.ec
+
+  import SohvaEntitiesProtocol._
 
   private val logger = LoggerFactory.getLogger(classOf[EntityManager])
 
@@ -58,7 +60,7 @@ class EntityManager(val database: Database) extends gnieh.sohva.entities.EntityM
 
   def deleteEntity(entity: Entity): Future[Boolean] =
     for {
-      comps <- manager.components.query[List[String], String, JValue](
+      comps <- manager.components.query[List[String], String, JsValue](
         startkey = Some(List(entity)),
         endkey = Some(List(s"${entity}0")),
         inclusive_end = false)
@@ -66,14 +68,14 @@ class EntityManager(val database: Database) extends gnieh.sohva.entities.EntityM
       res <- allOk(results, true)
     } yield res
 
-  def saveComponent[T <: IdRev: Manifest](entity: Entity, component: T): Future[T] =
+  def saveComponent[T <: IdRev: Manifest: JsonFormat](entity: Entity, component: T): Future[T] =
     database.getDocRevision(entity).flatMap {
       case Some(_) =>
         // the entity is known
         if (logger.isDebugEnabled)
           logger.debug(s"Add component ${component._id} to entity $entity")
         for (c <- database.saveRawDoc(serializeComponent(entity, component)))
-          yield database.serializer.fromJson[T](c)
+          yield c.convertTo[T]
       case None =>
         // the entity is unknown
         Future.failed(new SohvaException(s"Trying to add component ${component._id} to unknown entity $entity"))
@@ -81,24 +83,24 @@ class EntityManager(val database: Database) extends gnieh.sohva.entities.EntityM
 
   def hasComponentType[T: Manifest](entity: Entity): Future[Boolean] =
     for {
-      res <- manager.components.query[List[String], JValue, JValue](key = Some(List(entity, compType[T])))
+      res <- manager.components.query[List[String], JsValue, JsValue](key = Some(List(entity, compType[T])))
     } yield res.total_rows > 0
 
-  def hasComponent[T: Manifest](entity: Entity, component: T): Future[Boolean] =
+  def hasComponent[T: Manifest: JsonFormat](entity: Entity, component: T): Future[Boolean] =
     for {
-      res <- manager.components.query[List[String], Set[T], JValue](key = Some(List(entity, compType[T])))
+      res <- manager.components.query[List[String], List[T], JsValue](key = Some(List(entity, compType[T])))
     } yield res.rows.find {
       case Row(_, _, c, _) => c == component
     }.isDefined
 
-  def getComponent[T: Manifest](entity: Entity): Future[Option[T]] =
-    manager.components.query[List[String], JValue, T](key = Some(List(entity, compType[T])), include_docs = true) map {
+  def getComponent[T: Manifest: JsonReader](entity: Entity): Future[Option[T]] =
+    manager.components.query[List[String], JsValue, T](key = Some(List(entity, compType[T])), include_docs = true) map {
       case ViewResult(_, _, List(Row(_, _, _, doc)), _) => doc
       case _ => None
     }
 
   def removeComponentType[T: Manifest](entity: Entity): Future[Boolean] =
-    manager.components.query[List[String], List[String], JValue](key = Some(List(entity, compType[T]))) flatMap {
+    manager.components.query[List[String], List[String], JsValue](key = Some(List(entity, compType[T]))) flatMap {
       case ViewResult(_, _, List(Row(_, _, comps, _)), _) =>
         for {
           results <- database.deleteDocs(comps)
@@ -108,7 +110,7 @@ class EntityManager(val database: Database) extends gnieh.sohva.entities.EntityM
         Future.successful(false)
     }
 
-  def removeComponent[T <: IdRev: Manifest](entity: Entity, component: T): Future[Boolean] =
+  def removeComponent[T <: IdRev: Manifest: JsonFormat](entity: Entity, component: T): Future[Boolean] =
     hasComponent(entity, component) flatMap {
       case true =>
         // the entity has the given component, we can delete it
@@ -121,14 +123,14 @@ class EntityManager(val database: Database) extends gnieh.sohva.entities.EntityM
   // an entity manager is also a collection of entities
   def entities: Future[Set[Entity]] =
     for {
-      ViewResult(_, _, rows, _) <- manager.tags.query[String, String, JValue]()
+      ViewResult(_, _, rows, _) <- manager.tags.query[String, String, JsValue]()
     } yield rows.map {
       case Row(_, _, entity, _) => entity
     }.toSet
 
   def entities(tag: String): Future[Set[Entity]] =
     for {
-      ViewResult(_, _, rows, _) <- manager.tags.query[String, String, JValue](key = Some(tag))
+      ViewResult(_, _, rows, _) <- manager.tags.query[String, String, JsValue](key = Some(tag))
     } yield rows.map {
       case Row(_, _, entity, _) => entity
     }.toSet
@@ -137,15 +139,25 @@ class EntityManager(val database: Database) extends gnieh.sohva.entities.EntityM
     implicitly[Manifest[T]].runtimeClass.getCanonicalName
 
   /* Add the type and name fields */
-  private def serializeComponent[T: Manifest](entity: Entity, comp: T): JValue =
-    database.serializer.toJson(comp) ++
-      JField("sohva-entities-type", JString("component")) ++
-      JField("sohva-entities-name", JString(compType[T])) ++
-      JField("sohva-entities-entity", JString(entity))
+  private def serializeComponent[T: Manifest: JsonWriter](entity: Entity, comp: T): JsValue =
+    comp.toJson match {
+      case JsObject(fields) =>
+        JsObject(fields +
+          ("sohva-entities-type" -> JsString("component")) +
+          ("sohva-entities-name" -> JsString(compType[T])) +
+          ("sohva-entities-entity" -> JsString(entity)))
+      case _ =>
+        throw new SohvaException("Object expected")
+    }
 
-  private def serializeEntity(entity: CouchEntity): JValue =
-    database.serializer.toJson(entity) ++
-      JField("sohva-entities-type", JString("entity"))
+  private def serializeEntity(entity: CouchEntity): JsValue =
+    entity.toJson match {
+      case JsObject(fields) =>
+        JsObject(fields +
+          ("sohva-entities-type" -> JsString("entity")))
+      case _ =>
+        throw new SohvaException("Object expected")
+    }
 
   @tailrec
   private def allOk(results: List[DbResult], acc: Boolean): Future[Boolean] =

@@ -22,17 +22,19 @@ import org.scalatest.OptionValues._
 
 import sync._
 
-import java.io.{ByteArrayInputStream, File, FileWriter}
+import java.io.{ ByteArrayInputStream, File, FileWriter }
 
 import resource._
 
+case class TestDocAtt(_id: String, value: Int) extends IdRev with Attachments
+
 class TestAttachments extends SohvaTestSpec with Matchers {
 
-  case class TestDoc(_id: String, value: Int) extends IdRev with Attachments
+  implicit val testDocAttFormat = couchFormat[TestDocAtt]
 
   "a document with no attached file" should "have an empty attachment field" in {
 
-    val doc = TestDoc("doc-with-attachments", 4)
+    val doc = TestDocAtt("doc-with-attachments", 4)
     val saved = db.saveDoc(doc)
 
     saved._attachments should be('empty)
@@ -41,21 +43,21 @@ class TestAttachments extends SohvaTestSpec with Matchers {
 
   "a document for which a file was attached" should "contain the attachment information" in {
 
-    val saved = db.getDocById[TestDoc]("doc-with-attachments")
+    val saved = db.getDocById[TestDocAtt]("doc-with-attachments")
 
     val f = File.createTempFile("sohva", "test")
     val content = "this is the content"
-    for(fw <- managed(new FileWriter(f)))
+    for (fw <- managed(new FileWriter(f)))
       fw.write(content)
 
     val ok = db.attachTo("doc-with-attachments", f, "text/plain")
 
     ok should be(true)
 
-    val withAttachment = db.getDocById[TestDoc]("doc-with-attachments")
+    val withAttachment = db.getDocById[TestDocAtt]("doc-with-attachments")
     withAttachment should be('defined)
-    withAttachment.value._rev should not be(saved.value._rev)
-    withAttachment.value._attachments should not be('empty)
+    withAttachment.value._rev should not be (saved.value._rev)
+    withAttachment.value._attachments should not be ('empty)
     withAttachment.value._attachments.get(f.getName) should be('defined)
 
     val attachment = withAttachment.value._attachments.get(f.getName).value
@@ -66,17 +68,17 @@ class TestAttachments extends SohvaTestSpec with Matchers {
   }
 
   "an attachment supplied by inputstream" should "have predictable ID" in {
-    val doc = TestDoc("doc-with-stream-attachments", 5)
+    val doc = TestDocAtt("doc-with-stream-attachments", 5)
     val saved = db.saveDoc(doc)
     saved._attachments should be('empty)
 
     val is = new ByteArrayInputStream("attachment-contents".getBytes("utf8"))
 
     db.attachTo(doc._id, "attachment-id", is, "text/plain")
-    val withAttachment = db.getDocById[TestDoc](doc._id)
+    val withAttachment = db.getDocById[TestDocAtt](doc._id)
     withAttachment.value._attachments.headOption match {
       case Some(a) => a._1 should equal("attachment-id")
-      case None => fail("no attachment")
+      case None    => fail("no attachment")
     }
   }
 

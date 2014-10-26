@@ -17,6 +17,8 @@ package gnieh.sohva
 
 import java.util.Date
 
+import scala.language.higherKinds
+
 /** The users database, exposing the interface for managing couchdb users.
  *
  *  @author Lucas Satabin

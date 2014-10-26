@@ -15,11 +15,12 @@ package async
 package entities
 package impl
 
-/** Reprensetation of an entity in the CouchDB database.
- *  In CouchDB an entity is nothing but an identifier and an optional tag.
- *  Components will be stored in their own document, managed views may be used to
- *  aggregate several components at once.
- *
- *  @author Lucas Satabin
- */
-case class CouchEntity(_id: String, tag: Option[String]) extends IdRev
+import spray.json._
+
+trait SohvaEntitiesProtocol extends SohvaProtocol {
+
+  implicit val couchEntityFormat = couchFormat[CouchEntity]
+
+}
+
+object SohvaEntitiesProtocol extends SohvaEntitiesProtocol

@@ -31,14 +31,14 @@ class TestTedMosbyStrategy extends SohvaTestSpec(1, TedMosbyStrategy) with Shoul
   }
 
   "The new document" should "be forgotten about if a conflict occurs" in {
-    val baseDoc = TestDoc("conflicting_doc", 3)()
+    val baseDoc = TestDoc("conflicting_doc", 3)
     val firstSaved = db.saveDoc(baseDoc)
 
     firstSaved should have(
       '_id("conflicting_doc"),
       'toto(3))
 
-    val conflictDoc = TestDoc("conflicting_doc", 17)(firstSaved._rev)
+    val conflictDoc = TestDoc("conflicting_doc", 17).withRev(firstSaved._rev)
 
     val secondSaved = db.saveDoc(conflictDoc)
 
@@ -47,7 +47,7 @@ class TestTedMosbyStrategy extends SohvaTestSpec(1, TedMosbyStrategy) with Shoul
       'toto(17))
 
     // try to save a new document based on the base revision (not the last one)
-    val newDoc = TestDoc("conflicting_doc", 42)(firstSaved._rev)
+    val newDoc = TestDoc("conflicting_doc", 42).withRev(firstSaved._rev)
 
     val thirdSaved = db.saveDoc(newDoc)
 
@@ -59,7 +59,7 @@ class TestTedMosbyStrategy extends SohvaTestSpec(1, TedMosbyStrategy) with Shoul
 
   it should "not be saved if the document was deleted inbetween" in {
 
-    val baseDoc = TestDoc("conflicting_doc", 3)()
+    val baseDoc = TestDoc("conflicting_doc", 3)
     val firstSaved = db.saveDoc(baseDoc)
 
     firstSaved should have(
@@ -69,7 +69,7 @@ class TestTedMosbyStrategy extends SohvaTestSpec(1, TedMosbyStrategy) with Shoul
     // delete the document
     db.deleteDoc("conflicting_doc") should be(true)
 
-    val newDoc = TestDoc("conflicting_doc", 42)(firstSaved._rev)
+    val newDoc = TestDoc("conflicting_doc", 42).withRev(firstSaved._rev)
 
     a[SohvaException] should be thrownBy {
       db.saveDoc(newDoc)
@@ -79,14 +79,14 @@ class TestTedMosbyStrategy extends SohvaTestSpec(1, TedMosbyStrategy) with Shoul
 
   it should "not be saved if we think it is a new document but it is not" in {
 
-    val baseDoc = TestDoc("conflicting_doc", 3)()
+    val baseDoc = TestDoc("conflicting_doc", 3)
     val firstSaved = db.saveDoc(baseDoc)
 
     firstSaved should have(
       '_id("conflicting_doc"),
       'toto(3))
 
-    val newDoc = TestDoc("conflicting_doc", 42)()
+    val newDoc = TestDoc("conflicting_doc", 42)
 
     val secondSaved = db.saveDoc(newDoc)
 

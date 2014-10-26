@@ -16,7 +16,7 @@
 package gnieh.sohva
 package strategy
 
-import net.liftweb.json._
+import spray.json._
 
 /** A strategy indicates how update conflict are resolved.
  *  It is used by the conflict resolver at each try and may be called
@@ -35,7 +35,7 @@ trait Strategy {
    *  When `JNothing` is returned no further try is performed and the saving is considered succesful by
    *  keeping the current version in the database.
    */
-  def apply(baseDoc: Option[JValue],
-    lastDoc: Option[JValue],
-    currentDoc: JValue): Option[JValue]
+  def apply(baseDoc: Option[JsValue],
+    lastDoc: Option[JsValue],
+    currentDoc: JsValue): Option[JsValue]
 }

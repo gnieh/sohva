@@ -30,7 +30,9 @@ import scala.concurrent.Future
  *  @author Lucas Satabin
  */
 class Replicator(name: String, couch: CouchDB, credit: Int, strategy: Strategy)
-    extends Database(name, couch, couch.serializer, credit, strategy) with gnieh.sohva.Replicator[Future] {
+    extends Database(name, couch, credit, strategy) with gnieh.sohva.Replicator[Future] {
+
+  import SohvaProtocol._
 
   def start(replication: Replication): Future[Replication] =
     saveDoc(replication)

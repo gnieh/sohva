@@ -20,11 +20,6 @@ import gnieh.sohva.async.{
   Show => AShow
 }
 
-import net.liftweb.json.{
-  JValue,
-  JObject
-}
-
 import spray.httpx.unmarshalling.Unmarshaller
 
 class Show(val wrapped: AShow) extends gnieh.sohva.Show[Identity] {

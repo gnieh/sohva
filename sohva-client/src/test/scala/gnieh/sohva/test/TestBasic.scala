@@ -23,7 +23,7 @@ import sync._
 
 import gnieh.diffson._
 
-import net.liftweb.json._
+import spray.json._
 
 class TestBasic extends SohvaTestSpec with Matchers {
 
@@ -52,7 +52,7 @@ class TestBasic extends SohvaTestSpec with Matchers {
   it should "not be saved if we have an outdated version" in {
     db.getDocById[TestDoc2]("new-doc") match {
       case Some(doc) =>
-        val thrown = the [SohvaException] thrownBy {
+        val thrown = the[SohvaException] thrownBy {
           db.saveDoc(doc.copy(toto = 1).withRev(Some("0-0")))
         }
 
@@ -88,6 +88,8 @@ class TestBasic extends SohvaTestSpec with Matchers {
 
   case class StringDoc(_id: String, value: String) extends IdRev
 
+  implicit val stringDocFormat = couchFormat[StringDoc]
+
   "a document" should "be sent encoded in UTF-8" in {
 
     val doc = StringDoc("utf8-doc", "éßèüäöàç€ẞÐẞŁª€ªÐŁ")
@@ -103,13 +105,20 @@ class TestBasic extends SohvaTestSpec with Matchers {
 
     val doc = NoCouchDoc(value = 3)
 
+    implicit val noCouchDoc = jsonFormat1(NoCouchDoc)
+
     db.createDoc(doc) match {
       case OkResult(true, id, rev) =>
 
         val newId = id.value
         val saved = db.getRawDocById(newId)
-        saved.value \ "value" should be(JInt(3))
-        saved.value \ "_rev" should be (JString(rev.value))
+        saved.value match {
+          case JsObject(fields) =>
+            fields.get("value").value should be(JsNumber(3))
+            fields.get("_rev").value should be(JsString(rev.value))
+          case _ =>
+            fail("An object was expected")
+        }
 
       case _ =>
         fail("The document should have been saved")

@@ -25,7 +25,7 @@ import java.io.{
   InputStream
 }
 
-import net.liftweb.json._
+import spray.json._
 
 import scala.concurrent._
 import duration._
@@ -48,9 +48,6 @@ class Database private[sohva] (val couch: CouchDB, val wrapped: ADatabase) exten
 
   @inline
   val strategy = wrapped.strategy
-
-  @inline
-  val serializer = wrapped.serializer
 
   @inline
   def info: Option[InfoResult] =
@@ -101,15 +98,15 @@ class Database private[sohva] (val couch: CouchDB, val wrapped: ADatabase) exten
     )
 
   @inline
-  def getDocById[T: Manifest](id: String, revision: Option[String] = None): Option[T] =
+  def getDocById[T: JsonReader](id: String, revision: Option[String] = None): Option[T] =
     synced(wrapped.getDocById(id, revision))
 
   @inline
-  def getRawDocById(id: String, revision: Option[String] = None): Option[JValue] =
+  def getRawDocById(id: String, revision: Option[String] = None): Option[JsValue] =
     synced(wrapped.getRawDocById(id, revision))
 
   @inline
-  def getDocsById[T: Manifest](ids: List[String]): List[T] =
+  def getDocsById[T: JsonReader](ids: List[String]): List[T] =
     synced(wrapped.getDocsById(ids))
 
   @inline
@@ -121,31 +118,31 @@ class Database private[sohva] (val couch: CouchDB, val wrapped: ADatabase) exten
     synced(wrapped.getDocRevisions(ids))
 
   @inline
-  def saveDoc[T <% IdRev: Manifest](doc: T): T =
+  def saveDoc[T: CouchFormat](doc: T): T =
     synced(wrapped.saveDoc(doc))
 
   @inline
-  def saveDocs[T <% IdRev](docs: List[T], all_or_nothing: Boolean = false): List[DbResult] =
+  def saveDocs[T: CouchFormat](docs: List[T], all_or_nothing: Boolean = false): List[DbResult] =
     synced(wrapped.saveDocs(docs, all_or_nothing))
 
   @inline
-  def createDoc(doc: Any): DbResult =
-    synced(wrapped.createDoc(doc))
+  def createDoc[T: JsonWriter](doc: T): DbResult =
+    synced(wrapped.createDoc[T](doc))
 
   @inline
-  def createDocs(docs: List[Any]): List[DbResult] =
-    synced(wrapped.createDocs(docs))
+  def createDocs[T: JsonWriter](docs: List[T]): List[DbResult] =
+    synced(wrapped.createDocs[T](docs))
 
   @inline
   def copy(origin: String, target: String, originRev: Option[String] = None, targetRev: Option[String] = None): Boolean =
     synced(wrapped.copy(origin, target, originRev, targetRev))
 
   @inline
-  def patchDoc[T <: IdRev: Manifest](id: String, rev: String, patch: JsonPatch): T =
+  def patchDoc[T: CouchFormat](id: String, rev: String, patch: JsonPatch): T =
     synced(wrapped.patchDoc(id, rev, patch))
 
   @inline
-  def deleteDoc[T <% IdRev](doc: T): Boolean =
+  def deleteDoc[T: CouchFormat](doc: T): Boolean =
     synced(wrapped.deleteDoc(doc))
 
   @inline

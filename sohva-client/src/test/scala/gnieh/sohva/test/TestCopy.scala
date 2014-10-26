@@ -30,7 +30,7 @@ class TestCopy extends SohvaTestSpec with Matchers {
 
     val targetUnknown = db.getDocById[TestDoc2]("my-doc-copy")
 
-    targetUnknown should not be('defined)
+    targetUnknown should not be ('defined)
 
     val ok = db.copy("my-doc", "my-doc-copy")
 
@@ -62,7 +62,7 @@ class TestCopy extends SohvaTestSpec with Matchers {
     val targetUpdated = db.getDocById[TestDoc2]("my-doc-target")
 
     targetUpdated.value.toto should be(4)
-    targetUpdated.value._rev should not be(targetSaved._rev)
+    targetUpdated.value._rev should not be (targetSaved._rev)
 
   }
 

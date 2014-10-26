@@ -15,9 +15,11 @@
 */
 package gnieh.sohva
 
-import net.liftweb.json._
+import spray.json._
 
 import rx.lang.scala._
+
+import scala.util.Try
 
 /** A stream that represents a connection to the `_changes` stream of a database.
  *
@@ -29,12 +31,12 @@ trait ChangeStream {
    *  This `Observable` can be combined with other ones, filtered, mapped, ...
    *  See the [documentation](http://rxscala.github.io/scaladoc/index.html#rx.lang.scala.Observable) for more details.
    */
-  def stream: Observable[(String, Option[JObject])]
+  def stream: Observable[(String, Option[JsObject])]
 
   /** Subscribe to the original change stream initiated with the database.
    *  this is equivalent to calling `changes.stream.subscribe(obs)`
    */
-  def subscribe(obs: ((String, Option[JObject])) => Unit): Subscription
+  def subscribe(obs: ((String, Option[JsObject])) => Unit): Subscription
 
   /** Closes this stream and the underlying `Observable`. Subscriber will receive a terminatio
    *  message
@@ -44,16 +46,15 @@ trait ChangeStream {
 }
 
 object Change {
-  def unapply(json: JValue)(implicit formats: Formats): Option[(Int, String, String, Boolean, Option[JObject])] =
-    json.extractOpt[Change].flatMap(Change.unapply)
+  def unapply(json: JsValue)(implicit formats: JsonFormat[Change]): Option[(Int, String, String, Boolean, Option[JsObject])] =
+    Try(json.convertTo[Change]).toOption.flatMap(Change.unapply)
 }
 
 object LastSeq {
-  def unapply(json: JValue)(implicit formats: Formats): Option[Int] =
-    json.extractOpt[LastSeq].flatMap(LastSeq.unapply)
+  def unapply(json: JsValue)(implicit formats: JsonFormat[LastSeq]): Option[Int] =
+    Try(json.convertTo[LastSeq]).toOption.flatMap(LastSeq.unapply)
 }
 
-case class Change(seq: Int, id: String, rev: String, deleted: Boolean, doc: Option[JObject])
+case class Change(seq: Int, id: String, rev: String, deleted: Boolean, doc: Option[JsObject])
 
 case class LastSeq(last_seq: Int)
-
