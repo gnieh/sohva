@@ -34,6 +34,11 @@ package object async {
     def /(part: String) =
       uri.withPath(part.split("/").foldLeft(uri.path)(_ / _))
 
+    def /(part: Option[String]) = part match {
+      case Some(part) => uri.withPath(part.split("/").foldLeft(uri.path)(_ / _))
+      case None       => uri
+    }
+
     def <<?(params: Map[String, String]): Uri =
       uri.withQuery(params)
 

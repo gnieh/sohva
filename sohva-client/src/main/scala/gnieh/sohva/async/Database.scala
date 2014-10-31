@@ -173,11 +173,11 @@ class Database private[sohva] (
     } yield res.rows.flatMap { case Row(_, _, _, doc) => doc }
 
   def getRawDocById(id: String, revision: Option[String] = None): Future[Option[JValue]] =
-    couch.optHttp(Get(uri / id <<? revision.flatMap(r => if(r.nonEmpty) Some("rev" -> r) else None))) withFailureMessage
+    couch.optHttp(Get(uri / id <<? revision.flatMap(r => if (r.nonEmpty) Some("rev" -> r) else None))) withFailureMessage
       f"Failed to fetch the raw document by ID $id at revision $revision from $uri"
 
   def getDocRevision(id: String): Future[Option[String]] =
-    couch.pipeline(couch.prepare((Head(uri / id)))).flatMap(extractRev _) withFailureMessage
+    couch.rawHttp(Head(uri / id)).flatMap(extractRev _) withFailureMessage
       f"Failed to fetch document revision by ID $id from $uri"
 
   def getDocRevisions(ids: List[String]): Future[List[(String, String)]] =
@@ -316,7 +316,7 @@ class Database private[sohva] (
   }
 
   def getAttachment(docId: String, attachment: String): Future[Option[(String, InputStream)]] =
-    couch.pipeline(couch.prepare(Get(uri / docId / attachment))).flatMap(readFile) withFailureMessage
+    couch.rawHttp(Get(uri / docId / attachment)).flatMap(readFile) withFailureMessage
       f"Failed to get attachment $attachment for document ID $docId from $uri"
 
   def deleteAttachment(docId: String, attachment: String): Future[Boolean] =

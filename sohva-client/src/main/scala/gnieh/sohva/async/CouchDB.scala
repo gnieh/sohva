@@ -124,11 +124,14 @@ abstract class CouchDB extends gnieh.sohva.CouchDB[Future] with LiftMarshalling 
 
   protected[sohva] val pipeline: HttpRequest => Future[HttpResponse]
 
+  protected[sohva] def rawHttp(req: HttpRequest): Future[HttpResponse] =
+    pipeline(prepare(req))
+
   protected[sohva] def http(req: HttpRequest): Future[JValue] =
-    pipeline(prepare(req)).flatMap(handleCouchResponse)
+    rawHttp(req).flatMap(handleCouchResponse)
 
   protected[sohva] def optHttp(req: HttpRequest): Future[Option[JValue]] =
-    pipeline(prepare(req)).flatMap(handleOptionalCouchResponse)
+    rawHttp(req).flatMap(handleOptionalCouchResponse)
 
   private def handleCouchResponse(response: HttpResponse): Future[JValue] = {
     val json = parse(response.entity.asString)

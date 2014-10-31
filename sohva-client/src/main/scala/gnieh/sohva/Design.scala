@@ -15,6 +15,8 @@
 */
 package gnieh.sohva
 
+import spray.httpx.unmarshalling.Unmarshaller
+
 /** A design gives access to the different views.
  *  Use this class to get or create new views.
  *
@@ -65,6 +67,39 @@ trait Design[Result[_]] {
   /** Returns the view in this design document. */
   def view(viewName: String): View[Result]
 
+  /** Creates or update the show function in this design with the given name.
+   *  If the design does not exist yet, it is created.
+   */
+  def saveShow(showName: String, show: String): Result[Unit]
+
+  /** Deletes the show function with the given name from the design */
+  def deleteShow(showName: String): Result[Unit]
+
+  /** Returns representation of the show function for this design. */
+  def show(showName: String): Show[Result]
+
+  /** Creates or update the update function in this design with the given name.
+   *  If the design does not exist yet, it is created.
+   */
+  def saveList(listName: String, list: String): Result[Unit]
+
+  /** Deletes the list function with the given name from the design */
+  def deleteList(listName: String): Result[Unit]
+
+  /** Returns representation of the list function with the given view. */
+  def list(listName: String): CList[Result]
+
+  /** Creates or update the update function in this design with the given name.
+   *  If the design does not exist yet, it is created.
+   */
+  def saveUpdate(updateName: String, update: String): Result[Unit]
+
+  /** Deletes the update function with the given name from the design */
+  def deleteUpdate(updateName: String): Result[Unit]
+
+  /** Returns representation of the update function with the given view. */
+  def update(updateName: String): Update[Result]
+
   /** Creates or updates the document validation function.
    *  If the design does not exist yet, it is created.
    */
@@ -80,6 +115,13 @@ trait Design[Result[_]] {
 
   /** Deletes the filter identified by its name from the design document */
   def deleteFilter(name: String): Result[Unit]
+
+  /** Creates or updates the list of rewrite rules.
+   *  If the design does not exist yet, it is created. */
+  def saveRewriteRules(rules: List[RewriteRule]): Result[Unit]
+
+  /** Retrieves the rewrite rules associated to this design document. */
+  def getRewriteRules(): Result[List[RewriteRule]]
 
 }
 

@@ -53,7 +53,7 @@ class EntityManager(val database: Database) extends gnieh.sohva.entities.EntityM
     } yield uuid
 
   def create(uuid: String, tag: Option[String]): Future[Unit] =
-    for(_ <- database.saveRawDoc(serializeEntity(CouchEntity(uuid, tag))))
+    for (_ <- database.saveRawDoc(serializeEntity(CouchEntity(uuid, tag))))
       yield ()
 
   def deleteEntity(entity: Entity): Future[Boolean] =
@@ -94,7 +94,7 @@ class EntityManager(val database: Database) extends gnieh.sohva.entities.EntityM
   def getComponent[T: Manifest](entity: Entity): Future[Option[T]] =
     manager.components.query[List[String], JValue, T](key = Some(List(entity, compType[T])), include_docs = true) map {
       case ViewResult(_, _, List(Row(_, _, _, doc)), _) => doc
-      case _                                            => None
+      case _ => None
     }
 
   def removeComponentType[T: Manifest](entity: Entity): Future[Boolean] =
