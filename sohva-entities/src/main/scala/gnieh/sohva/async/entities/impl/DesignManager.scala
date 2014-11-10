@@ -42,7 +42,7 @@ private[entities] class DesignManager(database: Database) {
   val tags =
     design.view("tags")
 
-  for(view <- views)
+  for (view <- views)
     createView(view)
 
   private def createView(name: String): Unit = {

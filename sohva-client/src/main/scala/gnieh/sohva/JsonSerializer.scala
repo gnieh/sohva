@@ -267,11 +267,11 @@ private object DesignDocSerializer extends Serializer[DesignDoc] {
       val _id = (json \ "_id").extract[String]
       val language = (json \ "language").extract[String]
       val _rev = (json \ "_rev").extractOpt[String]
-      val views = (json \ "views").extractOpt[Map[String,ViewDoc]].getOrElse(Map())
-      val updates = (json \ "updates").extractOpt[Map[String,String]].getOrElse(Map())
-      val filters = (json \ "filters").extractOpt[Map[String,String]].getOrElse(Map())
-      val shows = (json \ "shows").extractOpt[Map[String,String]].getOrElse(Map())
-      val lists = (json \ "lists").extractOpt[Map[String,String]].getOrElse(Map())
+      val views = (json \ "views").extractOpt[Map[String, ViewDoc]].getOrElse(Map())
+      val updates = (json \ "updates").extractOpt[Map[String, String]].getOrElse(Map())
+      val filters = (json \ "filters").extractOpt[Map[String, String]].getOrElse(Map())
+      val shows = (json \ "shows").extractOpt[Map[String, String]].getOrElse(Map())
+      val lists = (json \ "lists").extractOpt[Map[String, String]].getOrElse(Map())
       val rewrites = (json \ "rewrites").extractOpt[List[RewriteRule]].getOrElse(Nil)
       val validate_doc_update = (json \ "validate_doc_update").extractOpt[String]
       DesignDoc(
@@ -289,7 +289,7 @@ private object DesignDocSerializer extends Serializer[DesignDoc] {
   def serialize(implicit format: Formats): PartialFunction[Any, JValue] = {
     case dd @ DesignDoc(_id, language, views, validate_doc_update, updates, filters, shows, lists, rewrites) =>
       def optionalCollection[T](s: Iterable[T]): JValue =
-        if(s.isEmpty)
+        if (s.isEmpty)
           JNothing
         else
           Extraction.decompose(s)

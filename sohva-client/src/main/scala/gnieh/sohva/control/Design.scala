@@ -22,6 +22,8 @@ import gnieh.sohva.async.{
 
 import scala.util.Try
 
+import spray.httpx.unmarshalling.Unmarshaller
+
 /** A design gives access to the different views.
  *  Use this class to get or create new views.
  *
@@ -46,6 +48,42 @@ class Design(val wrapped: ADesign) extends gnieh.sohva.Design[Try] {
   @inline
   def delete: Try[Boolean] =
     synced(wrapped.delete)
+
+  @inline
+  def saveShow(showName: String, show: String): Try[Unit] =
+    synced(wrapped.saveShow(showName, show))
+
+  @inline
+  def deleteShow(showName: String): Try[Unit] =
+    synced(wrapped.deleteShow(showName))
+
+  @inline
+  def show(showName: String): Show =
+    new Show(wrapped.show(showName))
+
+  @inline
+  def saveList(listName: String, list: String): Try[Unit] =
+    synced(wrapped.saveList(listName, list))
+
+  @inline
+  def deleteList(listName: String): Try[Unit] =
+    synced(wrapped.deleteList(listName))
+
+  @inline
+  def list(listName: String): CList =
+    new CList(wrapped.list(listName))
+
+  @inline
+  def saveUpdate(updateName: String, update: String): Try[Unit] =
+    synced(wrapped.saveUpdate(updateName, update))
+
+  @inline
+  def deleteUpdate(updateName: String): Try[Unit] =
+    synced(wrapped.deleteUpdate(updateName))
+
+  @inline
+  def update(updateName: String): Update =
+    new Update(wrapped.update(updateName))
 
   @inline
   def saveView(viewName: String,
@@ -79,6 +117,14 @@ class Design(val wrapped: ADesign) extends gnieh.sohva.Design[Try] {
   @inline
   def deleteFilter(name: String): Try[Unit] =
     synced(wrapped.deleteFilter(name))
+
+  @inline
+  def saveRewriteRules(rules: List[RewriteRule]): Try[Unit] =
+    synced(wrapped.saveRewriteRules(rules))
+
+  @inline
+  def getRewriteRules(): Try[List[RewriteRule]] =
+    synced(wrapped.getRewriteRules())
 
   override def toString =
     wrapped.toString
