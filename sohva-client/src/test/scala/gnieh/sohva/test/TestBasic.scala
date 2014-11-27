@@ -23,6 +23,8 @@ import sync._
 
 import gnieh.diffson._
 
+import net.liftweb.json._
+
 class TestBasic extends SohvaTestSpec with Matchers {
 
   "an unknown document" should "not be retrieved" in {
@@ -97,5 +99,24 @@ class TestBasic extends SohvaTestSpec with Matchers {
 
   }
 
+  it should "be created into the database with a new identifier if none is given" in {
+
+    val doc = NoCouchDoc(value = 3)
+
+    db.createDoc(doc) match {
+      case OkResult(true, id, rev) =>
+
+        val newId = id.value
+        val saved = db.getRawDocById(newId)
+        saved.value \ "value" should be(JInt(3))
+        saved.value \ "_rev" should be (JString(rev.value))
+
+      case _ =>
+        fail("The document should have been saved")
+    }
+
+  }
+
 }
 
+case class NoCouchDoc(value: Int)

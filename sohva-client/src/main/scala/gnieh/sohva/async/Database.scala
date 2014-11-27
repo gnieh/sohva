@@ -222,8 +222,35 @@ class Database private[sohva] (
         f"Failed to bulk save documents to $uri"
     } yield bulkSaveResult(raw)
 
+  def saveRawDocs(docs: List[JValue], all_or_nothing: Boolean = false): Future[List[DbResult]] =
+    for {
+      raw <- couch.http(Post(uri / "_bulk_docs", JObject(List(JField("all_or_nothing", JBool(all_or_nothing)), JField("docs", JArray(docs)))))) withFailureMessage
+        f"Failed to bulk save documents to $uri"
+    } yield bulkSaveResult(raw)
+
   private[this] def bulkSaveResult(json: JValue) =
     serializer.fromJson[List[DbResult]](json)
+
+  def createDoc(doc: Any): Future[DbResult] = {
+    val json = serializer.toJson(doc)
+    json \ "_id" match {
+      case JNothing =>
+        for {
+          raw <- couch.http(Post(uri, json)).withFailureMessage(f"Failed to create new document into $uri")
+          DocUpdate(ok, id, rev) = docUpdateResult(raw)
+        } yield OkResult(ok, Some(id), Some(rev))
+      case _ =>
+        saveRawDoc(json).map { res =>
+          serializer.fromCouchJson(res) match {
+            case Some((id, rev)) => OkResult(true, Some(id), rev)
+            case _               => throw new SohvaException("This should never happen")
+          }
+        }
+    }
+  }
+
+  def createDocs(docs: List[Any]): Future[List[DbResult]] =
+    saveRawDocs(docs.map(serializer.toJson(_)))
 
   def copy(origin: String, target: String, originRev: Option[String] = None, targetRev: Option[String] = None): Future[Boolean] =
     for (
