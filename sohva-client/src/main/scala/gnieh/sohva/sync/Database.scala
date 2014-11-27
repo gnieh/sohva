@@ -129,6 +129,14 @@ class Database private[sohva] (val couch: CouchDB, val wrapped: ADatabase) exten
     synced(wrapped.saveDocs(docs, all_or_nothing))
 
   @inline
+  def createDoc(doc: Any): DbResult =
+    synced(wrapped.createDoc(doc))
+
+  @inline
+  def createDocs(docs: List[Any]): List[DbResult] =
+    synced(wrapped.createDocs(docs))
+
+  @inline
   def copy(origin: String, target: String, originRev: Option[String] = None, targetRev: Option[String] = None): Boolean =
     synced(wrapped.copy(origin, target, originRev, targetRev))
 
