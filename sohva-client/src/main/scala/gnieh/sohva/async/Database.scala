@@ -384,6 +384,9 @@ class Database private[sohva] (
   def builtInView(view: String): View =
     new BuiltInView(this, view)
 
+  def temporaryView(viewDoc: ViewDoc): View =
+    new TemporaryView(this, viewDoc)
+
   // helper methods
 
   protected[sohva] def uri =
@@ -446,4 +449,3 @@ class Database private[sohva] (
 protected[sohva] final case class BulkDocRow[T](id: String, rev: String, doc: Option[T])
 
 protected[sohva] final case class BulkSave[T](all_or_nothing: Boolean, docs: List[T])
-

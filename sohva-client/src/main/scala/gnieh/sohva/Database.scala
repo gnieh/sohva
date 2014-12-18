@@ -199,6 +199,9 @@ trait Database[Result[_]] {
    */
   def builtInView(view: String): View[Result]
 
+  /** Returns a temporary view of this database, specified by the `ViewDoc`. */
+  def temporaryView(viewDoc: ViewDoc): View[Result]
+
 }
 
 final case class InfoResult(
@@ -220,4 +223,3 @@ final case class DocUpdate(
 private[sohva] final case class BulkDocs[T](rows: List[BulkDocRow[T]])
 
 private[sohva] final case class BulkDocRow[T](id: String, rev: String, doc: Option[T])
-

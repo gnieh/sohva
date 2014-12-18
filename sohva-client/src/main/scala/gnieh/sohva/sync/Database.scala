@@ -189,8 +189,10 @@ class Database private[sohva] (val couch: CouchDB, val wrapped: ADatabase) exten
   def builtInView(view: String): View =
     new View(wrapped.builtInView(name))
 
+  def temporaryView(viewDoc: ViewDoc): View =
+    new View(wrapped.temporaryView(viewDoc))
+
   override def toString =
     wrapped.toString
 
 }
-
