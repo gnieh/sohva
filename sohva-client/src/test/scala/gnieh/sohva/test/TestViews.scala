@@ -145,5 +145,18 @@ class TestViews extends SohvaTestSpec with Matchers with BeforeAndAfterEach {
 
   }
 
-}
+  "querying a temporary view" should "yield same result as querying identical permanent view" in {
+    // Get existing view specification as ViewDoc
+    val viewDoc = db.design("reduce_design").getDesignDocument.get.views("counts")
 
+    val tempView = db.temporaryView(viewDoc)
+    val permanentView = db.design("reduce_design").view("counts")
+
+    val Seq(testViewResult, permanentViewResult) = Seq(tempView, permanentView).map { view =>
+      view.query[List[Int], Null, TestDoc](startkey = Some(List(3, 5)))
+    }
+
+    testViewResult should equal(permanentViewResult)
+  }
+
+}

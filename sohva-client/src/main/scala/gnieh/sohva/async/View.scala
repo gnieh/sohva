@@ -84,7 +84,7 @@ class View(
       .toMap
 
     for (
-      res <- db.couch.http(Get(uri <<? options)) withFailureMessage
+      res <- db.couch.http(buildReq(options)) withFailureMessage
         f"Raw query failed for view `$view' in design `$design' at $db"
     ) yield rawViewResult(res)
 
@@ -132,13 +132,14 @@ class View(
       .toMap
 
     for (
-      res <- db.couch.http(Get(uri <<? options)) withFailureMessage
+      res <- db.couch.http(buildReq(options)) withFailureMessage
         f"Query failed for view `$view' in design `$design' at $db"
     ) yield viewResult[Key, Value, Doc](res)
 
   }
 
   // helper methods
+  protected def buildReq(options: Map[String, String]) = Get(uri <<? options)
 
   private def rawViewResult(json: JValue) = {
     val offset = (json \ "offset").extractOpt[Long].getOrElse(0l)
@@ -197,3 +198,21 @@ private class BuiltInView(
 
 }
 
+private class TemporaryView(
+  db: Database,
+  viewDoc: ViewDoc)
+    extends BuiltInView(db, "_temp_view") {
+
+  import net.liftweb.json._
+  import spray.http.HttpEntity
+  import spray.http.ContentTypes._
+
+  import db.serializer.formats
+
+  override protected def buildReq(options: Map[String, String]) =
+    Post(uri <<? options)
+      .withEntity(HttpEntity(`application/json`, postData))
+
+  lazy val postData: String = compact(render(Extraction.decompose(viewDoc)))
+
+}
