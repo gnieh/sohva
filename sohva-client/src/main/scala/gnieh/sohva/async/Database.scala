@@ -331,7 +331,7 @@ class Database private[sohva] (
     stream: InputStream,
     contentType: String): Future[Boolean] = {
     // create a temporary file with the content of the input stream
-    val file = File.createTempFile(attachment, null)
+    val file = new File(System.getProperty("java.io.tmpdir"), attachment)
     for (fos <- managed(new FileOutputStream(file))) {
       for (bis <- managed(new BufferedInputStream(stream))) {
         val array = new Array[Byte](bis.available)
