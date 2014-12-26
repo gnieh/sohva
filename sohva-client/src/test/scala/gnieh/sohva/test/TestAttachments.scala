@@ -22,10 +22,7 @@ import org.scalatest.OptionValues._
 
 import sync._
 
-import java.io.{
-  File,
-  FileWriter
-}
+import java.io.{ByteArrayInputStream, File, FileWriter}
 
 import resource._
 
@@ -66,7 +63,21 @@ class TestAttachments extends SohvaTestSpec with Matchers {
     attachment.revpos should be(2)
     attachment.length should be(content.length)
     attachment.stub should be(true)
+  }
 
+  "an attachment supplied by inputstream" should "have predictable ID" in {
+    val doc = TestDoc("doc-with-stream-attachments", 5)
+    val saved = db.saveDoc(doc)
+    saved._attachments should be('empty)
+
+    val is = new ByteArrayInputStream("attachment-contents".getBytes("utf8"))
+
+    db.attachTo(doc._id, "attachment-id", is, "text/plain")
+    val withAttachment = db.getDocById[TestDoc](doc._id)
+    withAttachment.value._attachments.headOption match {
+      case Some(a) => a._1 should equal("attachment-id")
+      case None => fail("no attachment")
+    }
   }
 
 }
