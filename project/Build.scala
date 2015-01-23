@@ -18,9 +18,9 @@ object SohvaBuild extends Build {
     organization := "org.gnieh",
     licenses += ("The Apache Software License, Version 2.0" -> url("http://www.apache.org/licenses/LICENSE-2.0.txt")),
     homepage := Some(url("https://github.com/gnieh/sohva")),
-    version := "1.1.0",
+    version := "1.1.1",
     scalaVersion := "2.11.4",
-    crossScalaVersions := Seq("2.10.4", "2.11.4"),
+    crossScalaVersions := Seq("2.10.4", "2.11.5"),
     libraryDependencies ++= globalDependencies,
     parallelExecution := false,
     scalacOptions ++= Seq("-deprecation", "-feature", "-language:higherKinds,implicitConversions,reflectiveCalls")
@@ -106,7 +106,7 @@ object SohvaBuild extends Build {
   lazy val clientDependencies = globalDependencies ++ Seq(
     "io.spray" %% "spray-client" % "1.3.2",
     "com.typesafe.akka" %% "akka-actor" % "2.3.6" % "provided",
-    "org.gnieh" %% "diffson" % "0.3",
+    "org.gnieh" %% "diffson" % "0.3.1",
     "com.jsuereth" %% "scala-arm" % "1.4",
     "net.liftweb" %% "lift-json" % "2.6",
     "org.slf4j" % "slf4j-api" % "1.7.10",
