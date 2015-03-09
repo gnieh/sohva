@@ -117,7 +117,8 @@ trait Design[Result[_]] {
   def deleteFilter(name: String): Result[Unit]
 
   /** Creates or updates the list of rewrite rules.
-   *  If the design does not exist yet, it is created. */
+   *  If the design does not exist yet, it is created.
+   */
   def saveRewriteRules(rules: List[RewriteRule]): Result[Unit]
 
   /** Retrieves the rewrite rules associated to this design document. */

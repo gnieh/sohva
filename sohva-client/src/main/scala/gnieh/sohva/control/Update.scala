@@ -30,7 +30,7 @@ class Update(val wrapped: AUpdate) extends gnieh.sohva.Update[Try] {
     synced(wrapped.exists)
 
   def query[Body, Resp: Unmarshaller](body: Body, docId: Option[String] = None, parameters: Map[String, String] = Map()): Try[Resp] =
-    synced(wrapped.query[Body,Resp](body, docId, parameters))
+    synced(wrapped.query[Body, Resp](body, docId, parameters))
 
   def queryForm[Resp: Unmarshaller](data: Map[String, String], docId: String, parameters: Map[String, String] = Map()): Try[Resp] =
     synced(wrapped.queryForm[Resp](data, docId, parameters))
