@@ -120,12 +120,14 @@ trait Database[Result[_]] {
 
   /** Creates a document in the database and returns its identifier and revision.
    *  If the json version of the object has a `_id` field, this identifier is used for the document,
-   *  otherwise a new one is generated. */
+   *  otherwise a new one is generated.
+   */
   def createDoc(doc: Any): Result[DbResult]
 
   /** Creates a set of documents in the database and returns theirs identifiers and revision.
    *  If the json version of an object has a `_id` field, this identifier is used for the document,
-   *  otherwise a new one is generated. */
+   *  otherwise a new one is generated.
+   */
   def createDocs(doc: List[Any]): Result[List[DbResult]]
 
   /** Copies the origin document to the target document.

@@ -267,11 +267,11 @@ class Design(val db: Database,
     }
 
   def getRewriteRules(): Future[List[RewriteRule]] =
-    for(design <- getDesignDocument)
+    for (design <- getDesignDocument)
       yield design match {
-        case Some(d) => d.rewrites
-        case None    => Nil
-      }
+      case Some(d) => d.rewrites
+      case None    => Nil
+    }
 
   // helper methods
 
