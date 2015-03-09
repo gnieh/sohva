@@ -18,7 +18,7 @@ object SohvaBuild extends Build {
     organization := "org.gnieh",
     licenses += ("The Apache Software License, Version 2.0" -> url("http://www.apache.org/licenses/LICENSE-2.0.txt")),
     homepage := Some(url("https://github.com/gnieh/sohva")),
-    version := "1.1.1",
+    version := "1.1.2-SNAPSHOT",
     scalaVersion := "2.11.4",
     crossScalaVersions := Seq("2.10.4", "2.11.5"),
     libraryDependencies ++= globalDependencies,
