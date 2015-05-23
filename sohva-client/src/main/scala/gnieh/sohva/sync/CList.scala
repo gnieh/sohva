@@ -20,11 +20,6 @@ import gnieh.sohva.async.{
   CList => ACList
 }
 
-import net.liftweb.json.{
-  JValue,
-  JObject
-}
-
 import spray.httpx.unmarshalling.Unmarshaller
 
 class CList(val wrapped: ACList) extends gnieh.sohva.CList[Identity] {

@@ -20,7 +20,7 @@ import scala.annotation.tailrec
 
 import gnieh.diffson._
 
-import net.liftweb.json._
+import spray.json._
 
 /** This strategy applies a simple structural merge algorithm between variation from
  *  a base document to the last one in the database and from the base to the current
@@ -111,10 +111,10 @@ import net.liftweb.json._
  */
 object StructuralMergeStrategy extends Strategy {
 
-  def apply(baseDoc: Option[JValue], dbDoc: Option[JValue], currentJson: JValue) = dbDoc match {
+  def apply(baseDoc: Option[JsValue], dbDoc: Option[JsValue], currentJson: JsValue) = dbDoc match {
     case Some(dbJson) =>
       // if the document was created, the base document is an empty object
-      val baseJson = baseDoc.getOrElse(JObject(Nil))
+      val baseJson = baseDoc.getOrElse(JsObject())
 
       // compute base2db
       val base2db = JsonDiff.diff(baseJson, dbJson)
@@ -167,10 +167,10 @@ object StructuralMergeStrategy extends Strategy {
 
     case None =>
       // the document was deleted, simply remove the revision from the current document
-      Some(currentJson remove {
-        case JField("_rev", _) => true
-        case _                 => false
-      })
+      Some(JsObject(currentJson.asJsObject.fields.filter {
+        case ("_rev", _) => false
+        case _           => true
+      }))
   }
 
   def shift(ops: List[Operation], p: Pointer, value: Int): List[Operation] = p match {

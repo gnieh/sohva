@@ -22,6 +22,8 @@ import gnieh.sohva.async.{
 
 import spray.httpx.unmarshalling.Unmarshaller
 
+import spray.json._
+
 import scala.util.Try
 
 class Update(val wrapped: AUpdate) extends gnieh.sohva.Update[Try] {
@@ -29,7 +31,7 @@ class Update(val wrapped: AUpdate) extends gnieh.sohva.Update[Try] {
   def exists: Try[Boolean] =
     synced(wrapped.exists)
 
-  def query[Body, Resp: Unmarshaller](body: Body, docId: Option[String] = None, parameters: Map[String, String] = Map()): Try[Resp] =
+  def query[Body: RootJsonWriter, Resp: Unmarshaller](body: Body, docId: Option[String] = None, parameters: Map[String, String] = Map()): Try[Resp] =
     synced(wrapped.query[Body, Resp](body, docId, parameters))
 
   def queryForm[Resp: Unmarshaller](data: Map[String, String], docId: String, parameters: Map[String, String] = Map()): Try[Resp] =

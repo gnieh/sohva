@@ -17,6 +17,8 @@ package gnieh.sohva
 
 import spray.httpx.unmarshalling.Unmarshaller
 
+import scala.language.higherKinds
+
 /** A design gives access to the different views.
  *  Use this class to get or create new views.
  *
@@ -129,12 +131,12 @@ trait Design[Result[_]] {
 case class DesignDoc(
   _id: String,
   language: String,
-  views: Map[String, ViewDoc] = Map(),
-  validate_doc_update: Option[String] = None,
-  updates: Map[String, String] = Map(),
-  filters: Map[String, String] = Map(),
-  shows: Map[String, String] = Map(),
-  lists: Map[String, String] = Map(),
-  rewrites: List[RewriteRule] = Nil) extends IdRev
+  views: Map[String, ViewDoc],
+  validate_doc_update: Option[String],
+  updates: Map[String, String],
+  filters: Map[String, String],
+  shows: Map[String, String],
+  lists: Map[String, String],
+  rewrites: List[RewriteRule]) extends IdRev
 
 case class RewriteRule(from: String, to: String, method: String, query: Map[String, String])

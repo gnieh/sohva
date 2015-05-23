@@ -15,6 +15,8 @@
 */
 package gnieh.sohva
 
+import scala.language.higherKinds
+
 /** Methods that must be implemented by a session.
  *
  *  @author Lucas Satabin

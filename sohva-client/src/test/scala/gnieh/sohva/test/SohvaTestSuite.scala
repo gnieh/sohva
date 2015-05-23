@@ -26,10 +26,15 @@ import akka.actor.ActorSystem
 import akka.util.Timeout
 import scala.concurrent.duration._
 
-abstract class SohvaTestSpec(retry: Int = 0, strategy: Strategy = BarneyStinsonStrategy) extends FlatSpec with ShouldMatchers with BeforeAndAfterAll {
+import spray.json._
+
+abstract class SohvaTestSpec(retry: Int = 0, strategy: Strategy = BarneyStinsonStrategy) extends FlatSpec with ShouldMatchers with BeforeAndAfterAll with SohvaProtocol {
 
   implicit val system = ActorSystem()
   implicit val timeout = Timeout(5.seconds)
+
+  implicit val testDocFormat = couchFormat[TestDoc]
+  implicit val testDoc2Format = couchFormat[TestDoc2]
 
   val couch = new CouchClient
   val session = couch.startCookieSession
@@ -53,6 +58,5 @@ abstract class SohvaTestSpec(retry: Int = 0, strategy: Strategy = BarneyStinsonS
 
 }
 
-case class TestDoc(_id: String, toto: Int)(val _rev: Option[String] = None)
+case class TestDoc(_id: String, toto: Int) extends IdRev
 case class TestDoc2(_id: String, toto: Int) extends IdRev
-

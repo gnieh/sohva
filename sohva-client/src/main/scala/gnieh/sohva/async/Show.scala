@@ -22,6 +22,8 @@ import spray.client.pipelining._
 
 import spray.httpx.unmarshalling._
 
+import spray.http.StatusCodes
+
 class Show(
   val design: String,
   val db: Database,
@@ -29,13 +31,12 @@ class Show(
     extends gnieh.sohva.Show[Future] {
 
   import db.ec
-  import db.serializer.formats
 
   protected[this] def uri = db.uri / "_design" / design / "_show" / show
 
   def exists: Future[Boolean] =
-    for (h <- db.couch.optHttp(Head(uri)))
-      yield h.isDefined
+    for (h <- db.couch.rawHttp(Head(uri)))
+      yield h.status == StatusCodes.OK
 
   def query[T: Unmarshaller](docId: Option[String] = None, format: Option[String] = None): Future[T] =
     for {

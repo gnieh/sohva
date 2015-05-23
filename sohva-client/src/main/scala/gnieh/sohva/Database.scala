@@ -22,9 +22,11 @@ import java.io.{
   InputStream
 }
 
-import net.liftweb.json._
+import spray.json._
 
 import gnieh.diffson.JsonPatch
+
+import scala.language.higherKinds
 
 /** Gives the user access to the different operations available on a database.
  *  Among other operations this is the key class to get access to the documents
@@ -48,9 +50,6 @@ trait Database[Result[_]] {
 
   /** The merge strategy */
   val strategy: Strategy
-
-  /** The serializer used by this database */
-  def serializer: JsonSerializer
 
   /** The couchdb instance this database belongs to */
   def couch: CouchDB[Result]
@@ -91,16 +90,16 @@ trait Database[Result[_]] {
     inclusive_end: Boolean = true): Result[List[String]]
 
   /** Returns the document identified by the given id if it exists */
-  def getDocById[T: Manifest](id: String, revision: Option[String] = None): Result[Option[T]]
+  def getDocById[T: JsonReader](id: String, revision: Option[String] = None): Result[Option[T]]
 
   /** Returns the raw repsentation of the document identified by the given id if it exists */
-  def getRawDocById(id: String, revision: Option[String] = None): Result[Option[JValue]]
+  def getRawDocById(id: String, revision: Option[String] = None): Result[Option[JsValue]]
 
   /** Returns all the documents with given identifiers and of the given type.
    *  If the document with an identifier exists in the database but has not the
    *  required type, it is not added to the result
    */
-  def getDocsById[T: Manifest](ids: List[String]): Result[List[T]]
+  def getDocsById[T: JsonReader](ids: List[String]): Result[List[T]]
 
   /** Returns the current revision of the document if it exists */
   def getDocRevision(id: String): Result[Option[String]]
@@ -113,22 +112,22 @@ trait Database[Result[_]] {
    *  to conform to the couchdb document structure.
    *  The saved revision is returned. If something went wrong, an exception is raised
    */
-  def saveDoc[T <% IdRev: Manifest](doc: T): Result[T]
+  def saveDoc[T: CouchFormat](doc: T): Result[T]
 
   /** Creates or updates a bunch of documents into the database. */
-  def saveDocs[T <% IdRev](docs: List[T], all_or_nothing: Boolean = false): Result[List[DbResult]]
+  def saveDocs[T: CouchFormat](docs: List[T], all_or_nothing: Boolean = false): Result[List[DbResult]]
 
   /** Creates a document in the database and returns its identifier and revision.
    *  If the json version of the object has a `_id` field, this identifier is used for the document,
    *  otherwise a new one is generated.
    */
-  def createDoc(doc: Any): Result[DbResult]
+  def createDoc[T: JsonWriter](doc: T): Result[DbResult]
 
   /** Creates a set of documents in the database and returns theirs identifiers and revision.
    *  If the json version of an object has a `_id` field, this identifier is used for the document,
    *  otherwise a new one is generated.
    */
-  def createDocs(doc: List[Any]): Result[List[DbResult]]
+  def createDocs[T: JsonWriter](doc: List[T]): Result[List[DbResult]]
 
   /** Copies the origin document to the target document.
    *  If the target does not exist, it is created, otherwise it is updated and the target
@@ -141,12 +140,12 @@ trait Database[Result[_]] {
    *  conflict manager manages to solve the potential conflicts.
    *  The patched revision is returned. If something went wrong, an exception is raised
    */
-  def patchDoc[T <: IdRev: Manifest](id: String, rev: String, patch: JsonPatch): Result[T]
+  def patchDoc[T: CouchFormat](id: String, rev: String, patch: JsonPatch): Result[T]
 
   /** Deletes the document from the database.
    *  The document will only be deleted if the caller provided the last revision
    */
-  def deleteDoc[T <% IdRev](doc: T): Result[Boolean]
+  def deleteDoc[T: CouchFormat](doc: T): Result[Boolean]
 
   /** Deletes the document identified by the given id from the database.
    *  If the document exists it is deleted and the method returns `true`,
@@ -225,3 +224,4 @@ final case class DocUpdate(
 private[sohva] final case class BulkDocs[T](rows: List[BulkDocRow[T]])
 
 private[sohva] final case class BulkDocRow[T](id: String, rev: String, doc: Option[T])
+private[sohva] final case class BulkSave(all_or_nothing: Boolean, docs: List[JsValue])

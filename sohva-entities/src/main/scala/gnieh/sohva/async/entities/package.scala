@@ -17,16 +17,18 @@ import gnieh.sohva.entities.Entity
 
 import scala.concurrent.Future
 
+import spray.json._
+
 package object entities {
 
   implicit class RichEntity(val entity: Entity) extends AnyVal {
 
     /** Adds or updates the given component to the entity */
-    def save[T <: IdRev: Manifest](component: T)(implicit manager: EntityManager): Future[T] =
+    def save[T <: IdRev: Manifest: JsonFormat](component: T)(implicit manager: EntityManager): Future[T] =
       manager.saveComponent(entity, component)
 
     /** Removes the given component to the entity */
-    def remove[T <: IdRev: Manifest](component: T)(implicit manager: EntityManager): Future[Boolean] =
+    def remove[T <: IdRev: Manifest: JsonFormat](component: T)(implicit manager: EntityManager): Future[Boolean] =
       manager.removeComponent(entity, component)
 
     /** Removes all components of a given type attached to the entity */
@@ -38,11 +40,11 @@ package object entities {
       manager.hasComponentType[T](entity)
 
     /** Indicates whether the entity has the given component */
-    def has[T: Manifest](component: T)(implicit manager: EntityManager): Future[Boolean] =
+    def has[T: Manifest: JsonFormat](component: T)(implicit manager: EntityManager): Future[Boolean] =
       manager.hasComponent(entity, component)
 
     /** Gets the component of the given type attached to the entity if any */
-    def get[T: Manifest](implicit manager: EntityManager): Future[Option[T]] =
+    def get[T: Manifest: JsonFormat](implicit manager: EntityManager): Future[Option[T]] =
       manager.getComponent[T](entity)
 
     /** Removes the entity from the system */

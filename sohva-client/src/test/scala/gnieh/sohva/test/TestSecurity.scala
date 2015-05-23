@@ -58,7 +58,7 @@ class TestSecurity extends SohvaTestSpec with Matchers with BeforeAndAfterEach {
 
   it should "be writtable to anybody" in {
 
-    val saved = secDb.saveDoc(TestDoc("some_doc", 17)())
+    val saved = secDb.saveDoc(TestDoc("some_doc", 17))
 
     saved should have(
       '_id("some_doc"),
@@ -83,16 +83,16 @@ class TestSecurity extends SohvaTestSpec with Matchers with BeforeAndAfterEach {
 
   "anonymous user" should "not be able to read a database with a members list" in {
 
-    secDb.saveDoc(TestDoc("some_doc", 13)())
+    secDb.saveDoc(TestDoc("some_doc", 13))
     adminSecDb.saveSecurityDoc(secDoc3) should be(true)
 
-    val thrown = the [SohvaException] thrownBy {
-      secDb.getDocById("some_doc")
+    val thrown = the[SohvaException] thrownBy {
+      secDb.getDocById[TestDoc]("some_doc")
     }
 
     val ce = CauseMatchers.findExpectedExceptionRecursively[CouchException](thrown)
-    withClue("CouchException should be present in the stack trace: ") { ce should not be('empty) }
-    ce.get.status should be (401)
+    withClue("CouchException should be present in the stack trace: ") { ce should not be ('empty) }
+    ce.get.status should be(401)
 
   }
 
@@ -100,13 +100,13 @@ class TestSecurity extends SohvaTestSpec with Matchers with BeforeAndAfterEach {
 
     adminSecDb.saveSecurityDoc(secDoc3) should be(true)
 
-    val thrown = the [SohvaException] thrownBy {
-      secDb.saveDoc(TestDoc("some_doc", 13)())
+    val thrown = the[SohvaException] thrownBy {
+      secDb.saveDoc(TestDoc("some_doc", 13))
     }
 
     val ce = CauseMatchers.findExpectedExceptionRecursively[CouchException](thrown)
-    withClue("CouchException should be present in the stack trace: ") { ce should not be('empty) }
-    ce.get.status should be (401)
+    withClue("CouchException should be present in the stack trace: ") { ce should not be ('empty) }
+    ce.get.status should be(401)
 
   }
 

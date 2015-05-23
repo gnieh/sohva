@@ -66,7 +66,7 @@ class TestOAuth extends SohvaTestSpec with BeforeAndAfterAll {
 
     val anonUser = cookieSession.currentUser
 
-    oauthUser should not be(anonUser)
+    oauthUser should not be (anonUser)
 
     val loggedin = cookieSession.login(user, user)
 
@@ -87,8 +87,6 @@ class TestOAuth extends SohvaTestSpec with BeforeAndAfterAll {
     oauthRev should be('defined)
     oauthRev should be(cookieRev)
 
-
   }
 
 }
-

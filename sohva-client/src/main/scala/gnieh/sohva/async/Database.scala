@@ -30,11 +30,13 @@ import java.io.{
 
 import org.slf4j.LoggerFactory
 
-import net.liftweb.json._
+import spray.json._
 
 import gnieh.diffson.JsonPatch
 
 import scala.concurrent.Future
+
+import scala.util.Try
 
 import spray.http._
 import spray.client.pipelining._
@@ -57,24 +59,22 @@ import akka.actor._
 class Database private[sohva] (
   val name: String,
   val couch: CouchDB,
-  val serializer: JsonSerializer,
   val credit: Int,
   val strategy: Strategy)
     extends gnieh.sohva.Database[Future]
-    with LiftMarshalling {
+    with SprayJsonSupport {
 
   implicit def ec =
     couch.ec
 
-  implicit def formats =
-    couch.formats
+  import SohvaProtocol._
 
   /* the resolver is responsible for applying the merging strategy on conflict and retrying
    * to save the document after resolution process */
-  private def resolver(credit: Int, docId: String, baseRev: Option[String], current: JValue): Future[JValue] = current match {
-    case JNothing =>
+  private def resolver(credit: Int, docId: String, baseRev: Option[String], current: JsValue): Future[JsValue] = current match {
+    case JsNull =>
       LoggerFactory.getLogger(getClass).info("No document to save")
-      Future.successful(serializer.toJson(DocUpdate(true, docId, baseRev.getOrElse(""))))
+      Future.successful(DocUpdate(true, docId, baseRev.getOrElse("")).toJson)
     case _ =>
       couch.http(Put(uri / docId, current)).recoverWith {
         case exn @ ConflictException(_) if credit > 0 =>
@@ -86,7 +86,9 @@ class Database private[sohva] (
             // get the last document
             last <- getRawDocById(docId)
             // apply the merge strategy between base, last and current revision of the document
-            lastRev = last flatMap (d => (d \ "_rev").extractOpt[String])
+            lastRev = last collect {
+              case JsObject(fs) if fs.contains("_rev") => fs("_rev").convertTo[String]
+            }
             resolved = strategy(base, last, current)
             res <- resolved match {
               case Some(resolved) => resolver(credit - 1, docId, lastRev, resolved)
@@ -101,8 +103,8 @@ class Database private[sohva] (
       yield info.map(infoResult)
 
   def exists: Future[Boolean] =
-    for (h <- couch.optHttp(Head(uri)) withFailureMessage f"exists failed for $uri")
-      yield h.isDefined
+    for (r <- couch.rawHttp(Head(uri)) withFailureMessage f"exists failed for $uri")
+      yield r.status == StatusCodes.OK
 
   def changes(since: Option[Int] = None, filter: Option[String] = None): ChangeStream =
     new ChangeStream(this, since, filter)
@@ -147,7 +149,7 @@ class Database private[sohva] (
     skip: Int = 0,
     inclusive_end: Boolean = true): Future[List[String]] =
     for {
-      res <- builtInView("_all_docs").query[String, Map[String, String], Any](
+      res <- builtInView("_all_docs").query[String, Map[String, String], JsObject](
         key = key,
         keys = keys,
         startkey = startkey,
@@ -162,17 +164,17 @@ class Database private[sohva] (
       ) withFailureMessage f"Failed to access _all_docs view for $uri"
     } yield for (Row(Some(id), _, _, _) <- res.rows) yield id
 
-  def getDocById[T: Manifest](id: String, revision: Option[String] = None): Future[Option[T]] =
+  def getDocById[T: JsonReader](id: String, revision: Option[String] = None): Future[Option[T]] =
     (for (raw <- getRawDocById(id, revision))
       yield raw.map(docResult[T])
     ) withFailureMessage f"Failed to fetch document by ID $id and revision $revision"
 
-  def getDocsById[T: Manifest](ids: List[String]): Future[List[T]] =
+  def getDocsById[T: JsonReader](ids: List[String]): Future[List[T]] =
     for {
-      res <- builtInView("_all_docs").query[String, Map[String, String], T](keys = ids, include_docs = true)
+      res <- builtInView("_all_docs").query[String, JsValue, T](keys = ids, include_docs = true)
     } yield res.rows.flatMap { case Row(_, _, _, doc) => doc }
 
-  def getRawDocById(id: String, revision: Option[String] = None): Future[Option[JValue]] =
+  def getRawDocById(id: String, revision: Option[String] = None): Future[Option[JsValue]] =
     couch.optHttp(Get(uri / id <<? revision.flatMap(r => if (r.nonEmpty) Some("rev" -> r) else None))) withFailureMessage
       f"Failed to fetch the raw document by ID $id at revision $revision from $uri"
 
@@ -182,27 +184,38 @@ class Database private[sohva] (
 
   def getDocRevisions(ids: List[String]): Future[List[(String, String)]] =
     for {
-      res <- builtInView("_all_docs").query[String, Map[String, String], Any](keys = ids) withFailureMessage
+      res <- builtInView("_all_docs").query[String, Map[String, String], JsObject](keys = ids) withFailureMessage
         f"Failed to fetch document revisions by IDs $ids from $uri"
     } yield res.rows.map { case Row(Some(id), _, value, _) => (id, value("rev")) }
 
-  def saveDoc[T <% IdRev: Manifest](doc: T): Future[T] =
+  def saveDoc[T: CouchFormat](doc: T): Future[T] = {
+    val format = implicitly[CouchFormat[T]]
     (for {
-      upd <- resolver(credit, doc._id, doc._rev, serializer.toJson(doc))
-      res <- update(upd.extract[DocUpdate])
-    } yield res) withFailureMessage f"Unable to save document with ID ${doc._id} at revision ${doc._rev}"
-
-  def saveRawDoc(doc: JValue): Future[JValue] = serializer.fromCouchJson(doc) match {
-    case Some((id, rev)) =>
-      (for {
-        upd <- resolver(credit, id, rev, doc)
-        res <- updateRaw(docUpdateResult(upd))
-      } yield res) withFailureMessage f"Failed to update raw document with ID $id and revision $rev"
-    case None =>
-      Future.failed(new SohvaException(f"Not a couchdb document: ${pretty(render(doc))}"))
+      upd <- resolver(credit, format._id(doc), format._rev(doc), doc.toJson)
+      res <- update[T](upd.convertTo[DocUpdate])
+    } yield res) withFailureMessage f"Unable to save document with ID ${format._id(doc)} at revision ${format._rev(doc)}"
   }
 
-  private[this] def update[T: Manifest](res: DocUpdate) = res match {
+  def saveRawDoc(doc: JsValue): Future[JsValue] = doc match {
+    case JsObject(fields) =>
+      val idRev = for {
+        id <- fields.get("_id").map(_.convertTo[String])
+        rev = fields.get("_rev").map(_.convertTo[String])
+      } yield (id, rev)
+      idRev match {
+        case Some((id, rev)) =>
+          (for {
+            upd <- resolver(credit, id, rev, doc)
+            res <- updateRaw(docUpdateResult(upd))
+          } yield res) withFailureMessage f"Failed to update raw document with ID $id and revision $rev"
+        case None =>
+          Future.failed(new SohvaException(f"Not a couchdb document: ${doc.prettyPrint}"))
+      }
+    case _ =>
+      Future.failed(new SohvaException(f"Not a couchdb document: ${doc.prettyPrint}"))
+  }
+
+  private[this] def update[T: JsonReader](res: DocUpdate) = res match {
     case DocUpdate(true, id, rev) =>
       getDocById[T](id, Some(rev)).map(_.get)
     case DocUpdate(false, id, _) =>
@@ -216,41 +229,35 @@ class Database private[sohva] (
       Future.failed(new SohvaException("Document $id could not be saved"))
   }
 
-  def saveDocs[T <% IdRev](docs: List[T], all_or_nothing: Boolean = false): Future[List[DbResult]] =
+  def saveDocs[T: CouchFormat](docs: List[T], all_or_nothing: Boolean = false): Future[List[DbResult]] =
     for {
-      raw <- couch.http(Post(uri / "_bulk_docs", serializer.toJson(BulkSave(all_or_nothing, docs)))) withFailureMessage
+      raw <- couch.http(Post(uri / "_bulk_docs", BulkSave(all_or_nothing, docs.map(_.toJson)).toJson)) withFailureMessage
         f"Failed to bulk save documents to $uri"
     } yield bulkSaveResult(raw)
 
-  def saveRawDocs(docs: List[JValue], all_or_nothing: Boolean = false): Future[List[DbResult]] =
+  def saveRawDocs(docs: List[JsValue], all_or_nothing: Boolean = false): Future[List[DbResult]] =
     for {
-      raw <- couch.http(Post(uri / "_bulk_docs", JObject(List(JField("all_or_nothing", JBool(all_or_nothing)), JField("docs", JArray(docs)))))) withFailureMessage
+      raw <- couch.http(Post(uri / "_bulk_docs", JsObject(Map("all_or_nothing" -> JsBoolean(all_or_nothing), "docs" -> JsArray(docs.toVector))))) withFailureMessage
         f"Failed to bulk save documents to $uri"
     } yield bulkSaveResult(raw)
 
-  private[this] def bulkSaveResult(json: JValue) =
-    serializer.fromJson[List[DbResult]](json)
+  private[this] def bulkSaveResult(json: JsValue) =
+    json.convertTo[List[DbResult]]
 
-  def createDoc(doc: Any): Future[DbResult] = {
-    val json = serializer.toJson(doc)
-    json \ "_id" match {
-      case JNothing =>
+  def createDoc[T: JsonWriter](doc: T): Future[DbResult] =
+    doc.toJson match {
+      case json @ JsObject(fields) if fields.contains("_id") =>
+        for (res <- saveRawDoc(json))
+          yield res.convertTo[DbResult]
+      case json =>
         for {
           raw <- couch.http(Post(uri, json)).withFailureMessage(f"Failed to create new document into $uri")
           DocUpdate(ok, id, rev) = docUpdateResult(raw)
         } yield OkResult(ok, Some(id), Some(rev))
-      case _ =>
-        saveRawDoc(json).map { res =>
-          serializer.fromCouchJson(res) match {
-            case Some((id, rev)) => OkResult(true, Some(id), rev)
-            case _               => throw new SohvaException("This should never happen")
-          }
-        }
     }
-  }
 
-  def createDocs(docs: List[Any]): Future[List[DbResult]] =
-    saveRawDocs(docs.map(serializer.toJson(_)))
+  def createDocs[T: JsonWriter](docs: List[T]): Future[List[DbResult]] =
+    saveRawDocs(docs.map(_.toJson))
 
   def copy(origin: String, target: String, originRev: Option[String] = None, targetRev: Option[String] = None): Future[Boolean] =
     for (
@@ -259,22 +266,27 @@ class Database private[sohva] (
       ) withFailureMessage f"Failed to copy from $origin at $originRev to $target at $targetRev from $uri"
     ) yield couch.ok(res)
 
-  def patchDoc[T <: IdRev: Manifest](id: String, rev: String, patch: JsonPatch): Future[T] =
+  def patchDoc[T: CouchFormat](id: String, rev: String, patch: JsonPatch): Future[T] =
     (for {
       doc <- getDocById[T](id, Some(rev))
       res <- patchDoc(id, doc, patch)
     } yield res) withFailureMessage "Failed to patch document with ID $id at revision $rev"
 
-  private[this] def patchDoc[T <: IdRev: Manifest](id: String, doc: Option[T], patch: JsonPatch) = doc match {
-    case Some(doc) => saveDoc(patch(doc).withRev(doc._rev))
-    case None      => Future.failed(new SohvaException("Uknown document to patch: " + id))
+  private[this] def patchDoc[T: CouchFormat](id: String, doc: Option[T], patch: JsonPatch) = doc match {
+    case Some(doc) =>
+      val format = implicitly[CouchFormat[T]]
+      saveDoc(format.withRev(patch(doc), format._rev(doc)))
+    case None =>
+      Future.failed(new SohvaException("Uknown document to patch: " + id))
   }
 
-  def deleteDoc[T <% IdRev](doc: T): Future[Boolean] =
+  def deleteDoc[T: CouchFormat](doc: T): Future[Boolean] = {
+    val format = implicitly[CouchFormat[T]]
     for (
-      res <- couch.http(Delete(uri / doc._id <<? Map("rev" -> doc._rev.getOrElse("")))) withFailureMessage
-        f"Failed to delete document with ID ${doc._id} at revision ${doc._rev} from $uri"
+      res <- couch.http(Delete(uri / format._id(doc) <<? Map("rev" -> format._rev(doc).getOrElse("")))) withFailureMessage
+        f"Failed to delete document with ID ${format._id(doc)} at revision ${format._rev(doc)} from $uri"
     ) yield couch.ok(res)
+  }
 
   def deleteDoc(id: String): Future[Boolean] =
     (for {
@@ -298,12 +310,15 @@ class Database private[sohva] (
       revs <- getDocRevisions(ids)
       raw <- couch.http(
         Post(uri / "_bulk_docs",
-          serializer.toJson(
+          JsObject(
             Map(
-              "all_or_nothing" -> all_or_nothing,
+              "all_or_nothing" -> all_or_nothing.toJson,
               "docs" -> revs.map {
-                case (id, rev) => Map("_id" -> id, "_rev" -> rev, "_deleted" -> true)
-              }
+                case (id, rev) => JsObject(
+                  "_id" -> id.toJson,
+                  "_rev" -> rev.toJson,
+                  "_deleted" -> true.toJson)
+              }.toJson
             )
           )
         )
@@ -374,7 +389,7 @@ class Database private[sohva] (
 
   def saveSecurityDoc(doc: SecurityDoc): Future[Boolean] =
     for (
-      res <- couch.http(Put(uri / "_security", serializer.toJson(doc))) withFailureMessage
+      res <- couch.http(Put(uri / "_security", doc.toJson)) withFailureMessage
         f"failed to save security document for $uri"
     ) yield couch.ok(res)
 
@@ -403,25 +418,25 @@ class Database private[sohva] (
     } else {
       val code = response.status.intValue
       // something went wrong...
-      val error = serializer.fromJsonOpt[ErrorResult](parse(response.entity.asString))
+      val error = Try(JsonParser(response.entity.asString).convertTo[ErrorResult]).toOption
       Future.failed(CouchException(code, error))
     }
   }
 
-  private def okResult(json: JValue) =
-    serializer.fromJson[OkResult](json)
+  private def okResult(json: JsValue) =
+    json.convertTo[OkResult]
 
-  private def infoResult(json: JValue) =
-    serializer.fromJson[InfoResult](json)
+  private def infoResult(json: JsValue) =
+    json.convertTo[InfoResult]
 
-  private def docResult[T: Manifest](json: JValue) =
-    serializer.fromJson[T](json)
+  private def docResult[T: JsonReader](json: JsValue) =
+    json.convertTo[T]
 
-  private def docResultOpt[T: Manifest](json: JValue) =
-    serializer.fromJsonOpt[T](json)
+  private def docResultOpt[T: JsonReader](json: JsValue) =
+    Try(docResult[T](json)).toOption
 
-  private def docUpdateResult(json: JValue) =
-    serializer.fromJson[DocUpdate](json)
+  private def docUpdateResult(json: JsValue) =
+    json.convertTo[DocUpdate]
 
   private def extractRev(response: HttpResponse) = {
     if (response.status.intValue == 404) {
@@ -433,19 +448,15 @@ class Database private[sohva] (
     } else {
       // something went wrong...
       val code = response.status.intValue
-      val error = serializer.fromJsonOpt[ErrorResult](parse(response.entity.asString))
+      val error = Try(JsonParser(response.entity.asString).convertTo[ErrorResult]).toOption
       Future.failed(new CouchException(code, error))
     }
   }
 
-  private def extractSecurityDoc(json: JValue) =
-    serializer.fromJson[SecurityDoc](json)
+  private def extractSecurityDoc(json: JsValue) =
+    json.convertTo[SecurityDoc]
 
   override def toString =
     uri.toString
 
 }
-
-protected[sohva] final case class BulkDocRow[T](id: String, rev: String, doc: Option[T])
-
-protected[sohva] final case class BulkSave[T](all_or_nothing: Boolean, docs: List[T])

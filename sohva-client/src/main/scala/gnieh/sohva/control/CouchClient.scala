@@ -39,11 +39,10 @@ class CouchClient private[control] (override val wrapped: ACouchClient) extends 
   def this(host: String = "localhost",
     port: Int = 5984,
     ssl: Boolean = false,
-    version: String = "1.4",
-    custom: List[SohvaSerializer[_]] = Nil)(
+    version: String = "1.4")(
       implicit system: ActorSystem,
       timeout: Timeout) =
-    this(new ACouchClient(host, port, ssl, version, custom))
+    this(new ACouchClient(host, port, ssl, version))
 
   def startCookieSession =
     new CookieSession(wrapped.startCookieSession)

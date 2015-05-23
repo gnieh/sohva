@@ -17,6 +17,10 @@ package gnieh.sohva
 
 import spray.httpx.unmarshalling.Unmarshaller
 
+import spray.json._
+
+import scala.language.higherKinds
+
 /** An update handler that can be queried.
  *
  *  @author Lucas Satabin
@@ -29,7 +33,7 @@ trait Update[Result[_]] {
   /** Queries the update handler as a POST request.
    *  `body` is sent as a json value.
    */
-  def query[Body, Resp: Unmarshaller](
+  def query[Body: RootJsonWriter, Resp: Unmarshaller](
     body: Body,
     docId: Option[String] = None,
     parameters: Map[String, String] = Map()): Result[Resp]

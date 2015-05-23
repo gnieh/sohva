@@ -15,6 +15,8 @@
 */
 package gnieh.sohva
 
+import scala.language.higherKinds
+
 /** An instance of a Couch session that allows the user to login and
  *  send request identified with the login credentials.
  *  This performs a cookie based authentication against the couchdb server.
@@ -45,14 +47,14 @@ trait CookieSession[Result[_]] extends CouchDB[Result] with Session[Result] {
 case class AuthResult(ok: Boolean, userCtx: UserCtx, info: Option[AuthInfo])
 
 /** The user context giving his name and roles */
-case class UserCtx(name: String, roles: List[String])
+case class UserCtx(name: Option[String], roles: List[String])
 
 /** Authentication information indicating the authentication database,
  *  the handler used and the authentication method
  */
 case class AuthInfo(authentication_db: String,
   authentication_handlers: List[String],
-  authenticated: String)
+  authenticated: Option[String])
 
 /** A couchdb user has a name, a password and a lit of roles. */
 case class UserInfo(val name: String,

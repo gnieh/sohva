@@ -19,6 +19,8 @@ import strategy._
 
 import java.net.URL
 
+import scala.language.higherKinds
+
 /** A replicator database that allows people to manage replications:
  *   - start replication
  *   - cancel or stop replications

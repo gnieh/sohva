@@ -16,7 +16,7 @@
 package gnieh.sohva
 package async
 
-import net.liftweb.json._
+import spray.json._
 
 import akka.io._
 import akka.actor._
@@ -48,7 +48,7 @@ class ChangeStream(database: Database, since: Option[Int], filter: Option[String
 
   private val actor = system.actorOf(Props(new ChangeActor(database, filter)))
 
-  val stream: Observable[(String, Option[JObject])] =
+  val stream: Observable[(String, Option[JsObject])] =
     Observable { observer =>
       val id = subscriptionId.getAndIncrement()
       // send the subscription request
@@ -59,7 +59,7 @@ class ChangeStream(database: Database, since: Option[Int], filter: Option[String
       }
     }
 
-  def subscribe(obs: ((String, Option[JObject])) => Unit): Subscription =
+  def subscribe(obs: ((String, Option[JsObject])) => Unit): Subscription =
     stream.subscribe(obs)
 
   def close(): Unit =
@@ -81,7 +81,7 @@ private class ChangeActor(database: Database, filter: Option[String]) extends Ac
 
   implicit def system = context.system
 
-  import database.formats
+  import SohvaProtocol._
 
   private def uri = database.uri / "_changes"
 
@@ -97,7 +97,7 @@ private class ChangeActor(database: Database, filter: Option[String]) extends Ac
 
   def receive = connecting(Map())
 
-  def connecting(observers: Map[Long, Observer[(String, Option[JObject])]]): Receive = {
+  def connecting(observers: Map[Long, Observer[(String, Option[JsObject])]]): Receive = {
     case _: Http.Connected =>
       // connection has been established, send the change stream request
       val params = {
@@ -141,15 +141,13 @@ private class ChangeActor(database: Database, filter: Option[String]) extends Ac
 
   }
 
-  def receiving(commander: ActorRef, observers: Map[Long, Observer[(String, Option[JObject])]]): Receive = {
+  def receiving(commander: ActorRef, observers: Map[Long, Observer[(String, Option[JsObject])]]): Receive = {
     case MessageChunk(data, _) =>
       log.debug(s"Change stream for database ${database.name} received a message")
-      Try(parse(data.asString)).map {
-        case Change(seq, id, rev, deleted, doc) =>
-          for ((_, o) <- observers)
-            o.onNext(id, doc)
-        case _ => // ignore other json messages
-      }
+      for {
+        Change(seq, id, rev, deleted, doc) <- Try(JsonParser(data.asString).convertTo[Change])
+        (_, o) <- observers
+      } o.onNext(id, doc)
 
     case ChunkedMessageEnd(_, _) =>
       log.debug(s"Change stream for database ${database.name} received the end of stream message")
@@ -194,6 +192,5 @@ private class ChangeActor(database: Database, filter: Option[String]) extends Ac
 }
 
 private case class Unsubscribe(id: Long)
-private case class Subscribe(id: Long, observer: Observer[(String, Option[JObject])])
+private case class Subscribe(id: Long, observer: Observer[(String, Option[JsObject])])
 private case object CloseStream
-

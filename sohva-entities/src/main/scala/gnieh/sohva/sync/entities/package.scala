@@ -15,6 +15,8 @@ package sync
 
 import gnieh.sohva.entities.Entity
 
+import spray.json._
+
 /** This package exposes classes that allows user to manage entities and their
  *  components within a CouchDB database.
  *
@@ -29,11 +31,11 @@ package object entities {
   implicit class RichEntity(val entity: Entity) extends AnyVal {
 
     /** Adds the given component to the entity */
-    def save[T <: IdRev: Manifest](component: T)(implicit manager: EntityManager): T =
+    def save[T <: IdRev: Manifest: JsonFormat](component: T)(implicit manager: EntityManager): T =
       manager.saveComponent(entity, component)
 
     /** Removes the given component to the entity */
-    def remove[T <: IdRev: Manifest](component: T)(implicit manager: EntityManager): Boolean =
+    def remove[T <: IdRev: Manifest: JsonFormat](component: T)(implicit manager: EntityManager): Boolean =
       manager.removeComponent(entity, component)
 
     /** Removes all components of a given type attached to the entity */
@@ -45,11 +47,11 @@ package object entities {
       manager.hasComponentType[T](entity)
 
     /** Indicates whether the entity has the given component */
-    def has[T: Manifest](component: T)(implicit manager: EntityManager): Boolean =
+    def has[T: Manifest: JsonFormat](component: T)(implicit manager: EntityManager): Boolean =
       manager.hasComponent(entity, component)
 
     /** Gets the component of the given type attached to the entity if any */
-    def get[T: Manifest](implicit manager: EntityManager): Option[T] =
+    def get[T: Manifest: JsonFormat](implicit manager: EntityManager): Option[T] =
       manager.getComponent[T](entity)
 
     /** Removes the entity from the system */

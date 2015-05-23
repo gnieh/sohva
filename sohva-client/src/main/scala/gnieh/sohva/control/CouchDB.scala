@@ -47,9 +47,6 @@ abstract class CouchDB private[control] (val wrapped: ACouchDB) extends gnieh.so
   val version = wrapped.version
 
   @inline
-  val serializer = wrapped.serializer
-
-  @inline
   def info: Try[CouchInfo] =
     synced(wrapped.info)
 

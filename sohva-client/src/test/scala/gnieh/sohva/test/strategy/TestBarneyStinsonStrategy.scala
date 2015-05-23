@@ -29,14 +29,14 @@ class TestBarneyStinsonStrategy extends SohvaTestSpec(1) with BeforeAndAfterEach
   }
 
   "The new document" should "overwrite the old document if a conflict occurs" in {
-    val baseDoc = TestDoc("conflicting_doc", 3)()
+    val baseDoc = TestDoc("conflicting_doc", 3)
     val firstSaved = db.saveDoc(baseDoc)
 
     firstSaved should have(
       '_id("conflicting_doc"),
       'toto(3))
 
-    val conflictDoc = TestDoc("conflicting_doc", 17)(firstSaved._rev)
+    val conflictDoc = TestDoc("conflicting_doc", 17).withRev(firstSaved._rev)
 
     val secondSaved = db.saveDoc(conflictDoc)
 
@@ -45,7 +45,7 @@ class TestBarneyStinsonStrategy extends SohvaTestSpec(1) with BeforeAndAfterEach
       'toto(17))
 
     // try to save a new document based on the base revision (not the last one)
-    val newDoc = TestDoc("conflicting_doc", 42)(firstSaved._rev)
+    val newDoc = TestDoc("conflicting_doc", 42).withRev(firstSaved._rev)
 
     val thirdSaved = db.saveDoc(newDoc)
 
@@ -57,7 +57,7 @@ class TestBarneyStinsonStrategy extends SohvaTestSpec(1) with BeforeAndAfterEach
 
   it should "be saved if the document was deleted inbetween" in {
 
-    val baseDoc = TestDoc("conflicting_doc", 3)()
+    val baseDoc = TestDoc("conflicting_doc", 3)
     val firstSaved = db.saveDoc(baseDoc)
 
     firstSaved should have(
@@ -67,7 +67,7 @@ class TestBarneyStinsonStrategy extends SohvaTestSpec(1) with BeforeAndAfterEach
     // delete the document
     db.deleteDoc("conflicting_doc") should be(true)
 
-    val newDoc = TestDoc("conflicting_doc", 42)(firstSaved._rev)
+    val newDoc = TestDoc("conflicting_doc", 42).withRev(firstSaved._rev)
 
     val secondSaved = db.saveDoc(newDoc)
 
@@ -79,14 +79,14 @@ class TestBarneyStinsonStrategy extends SohvaTestSpec(1) with BeforeAndAfterEach
 
   it should "be saved if we think it is a new document but it is not" in {
 
-    val baseDoc = TestDoc("conflicting_doc", 3)()
+    val baseDoc = TestDoc("conflicting_doc", 3)
     val firstSaved = db.saveDoc(baseDoc)
 
     firstSaved should have(
       '_id("conflicting_doc"),
       'toto(3))
 
-    val newDoc = TestDoc("conflicting_doc", 42)()
+    val newDoc = TestDoc("conflicting_doc", 42)
 
     val secondSaved = db.saveDoc(newDoc)
 
@@ -98,6 +98,8 @@ class TestBarneyStinsonStrategy extends SohvaTestSpec(1) with BeforeAndAfterEach
 
   it should "overwrite any previously saved document" in {
 
+    implicit val complexDocFormat = couchFormat[ComplexDoc]
+
     val baseDoc = ComplexDoc("conflicting_doc", "test", 3)
     val firstSaved = db.saveDoc(baseDoc)
 
@@ -106,7 +108,7 @@ class TestBarneyStinsonStrategy extends SohvaTestSpec(1) with BeforeAndAfterEach
       'f1("test"),
       'f2(3))
 
-    val newDoc = TestDoc("conflicting_doc", 42)()
+    val newDoc = TestDoc("conflicting_doc", 42)
 
     val secondSaved = db.saveDoc(newDoc)
 
@@ -118,4 +120,4 @@ class TestBarneyStinsonStrategy extends SohvaTestSpec(1) with BeforeAndAfterEach
 
 }
 
-case class ComplexDoc(_id: String, f1: String, f2: Int, _rev: Option[String] = None)
+case class ComplexDoc(_id: String, f1: String, f2: Int) extends IdRev

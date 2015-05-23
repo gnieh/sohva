@@ -50,7 +50,7 @@ private[entities] class DesignManager(database: Database) {
     Await.result(view.exists flatMap {
       case true =>
         // the design view exists
-        Future.successful()
+        Future.successful(())
 
       case false =>
         if (logger.isDebugEnabled)

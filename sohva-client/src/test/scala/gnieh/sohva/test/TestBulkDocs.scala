@@ -25,14 +25,14 @@ import sync._
 class TestBulkDocs extends SohvaTestSpec with Matchers {
 
   val docs: List[TestDoc] =
-    (for(i <- 1 to 10)
-      yield TestDoc("doc" + i, i)()).toList
+    (for (i <- 1 to 10)
+      yield TestDoc("doc" + i, i)).toList
 
   "saving several documents at once" should "result in all the documents being saved in the db" in {
     val result = db.saveDocs(docs)
 
     result.filter {
-      case OkResult(_, _, _) => false
+      case OkResult(_, _, _)    => false
       case ErrorResult(_, _, _) => true
     }.size should be(0)
 
@@ -42,27 +42,27 @@ class TestBulkDocs extends SohvaTestSpec with Matchers {
 
     val revisions = db.getDocRevisions(docs.map(_._id))
 
-    revisions should have size(saved.size)
-    revisions.map(_._2) should not contain("")
+    revisions should have size (saved.size)
+    revisions.map(_._2) should not contain ("")
 
   }
 
   "saving several document with lists at once" should "result in all the documents being saved in the db and the list elements serialized correctly" in {
 
-    case class DocWithList(_id: String, list: List[String]) extends IdRev
+    implicit val docWithListFormat = couchFormat[DocWithList]
 
     def strings(id: Int) =
-      (for(i <- 1 to 3)
+      (for (i <- 1 to 3)
         yield "element:" + id + ":" + i).toList
 
     val docsString =
-      (for(i <- 1 to 5)
+      (for (i <- 1 to 5)
         yield DocWithList("doc_string_list:" + i, strings(i))).toList
 
     val result1 = db.saveDocs(docsString)
 
     result1.filter {
-      case OkResult(_, _, _) => false
+      case OkResult(_, _, _)    => false
       case ErrorResult(_, _, _) => true
     }.size should be(0)
 
@@ -85,7 +85,7 @@ class TestBulkDocs extends SohvaTestSpec with Matchers {
     val deleted = db.deleteDocs(ids)
 
     deleted.filter {
-      case OkResult(_, _, _) => false
+      case OkResult(_, _, _)    => false
       case ErrorResult(_, _, _) => true
     }.size should be(0)
 
@@ -106,7 +106,7 @@ class TestBulkDocs extends SohvaTestSpec with Matchers {
     val deleted = db.deleteDocs(ids.take(5))
 
     deleted.filter {
-      case OkResult(_, _, _) => false
+      case OkResult(_, _, _)    => false
       case ErrorResult(_, _, _) => true
     }.size should be(0)
 
@@ -116,3 +116,4 @@ class TestBulkDocs extends SohvaTestSpec with Matchers {
 
 }
 
+case class DocWithList(_id: String, list: List[String]) extends IdRev

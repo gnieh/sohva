@@ -16,11 +16,13 @@
 package gnieh.sohva
 package async
 
-import net.liftweb.json._
+import spray.json._
 
 import scala.concurrent.Future
 
 import spray.client.pipelining._
+
+import spray.http.StatusCodes
 
 /** A view can be queried to get the result.
  *
@@ -33,20 +35,21 @@ class View(
     extends gnieh.sohva.View[Future] {
 
   import db.ec
-  import db.serializer.formats
+
+  import SohvaProtocol._
 
   protected[this] def uri = db.uri / "_design" / design / "_view" / view
 
   def exists: Future[Boolean] =
-    for (h <- db.couch.optHttp(Head(uri)))
-      yield h.isDefined
+    for (h <- db.couch.rawHttp(Head(uri)))
+      yield h.status == StatusCodes.OK
 
   def queryRaw(
-    key: Option[JValue] = None,
-    keys: List[JValue] = Nil,
-    startkey: Option[JValue] = None,
+    key: Option[JsValue] = None,
+    keys: List[JsValue] = Nil,
+    startkey: Option[JsValue] = None,
     startkey_docid: Option[String] = None,
-    endkey: Option[JValue] = None,
+    endkey: Option[JsValue] = None,
     endkey_docid: Option[String] = None,
     limit: Int = -1,
     stale: Option[String] = None,
@@ -61,11 +64,11 @@ class View(
 
     // build options
     val options = List(
-      key.map(k => "key" -> compact(render(db.serializer.toJson(k)))),
-      if (keys.nonEmpty) Some("keys" -> compact(render(db.serializer.toJson(keys)))) else None,
-      startkey.map(k => "startkey" -> compact(render(db.serializer.toJson(k)))),
+      key.map(k => "key" -> k.toJson.compactPrint),
+      if (keys.nonEmpty) Some("keys" -> keys.toJson.compactPrint) else None,
+      startkey.map(k => "startkey" -> k.toJson.compactPrint),
       startkey_docid.map("startkey_docid" -> _),
-      endkey.map(k => "endkey" -> compact(render(db.serializer.toJson(k)))),
+      endkey.map(k => "endkey" -> k.toJson.compactPrint),
       endkey_docid.map("endkey_docid" -> _),
       if (limit > 0) Some("limit" -> limit) else None,
       stale.map("stale" -> _),
@@ -86,11 +89,11 @@ class View(
     for (
       res <- db.couch.http(buildReq(options)) withFailureMessage
         f"Raw query failed for view `$view' in design `$design' at $db"
-    ) yield rawViewResult(res)
+    ) yield res.convertTo[RawViewResult]
 
   }
 
-  def query[Key: Manifest, Value: Manifest, Doc: Manifest](key: Option[Key] = None,
+  def query[Key: JsonFormat, Value: JsonReader, Doc: JsonReader](key: Option[Key] = None,
     keys: List[Key] = Nil,
     startkey: Option[Key] = None,
     startkey_docid: Option[String] = None,
@@ -109,11 +112,11 @@ class View(
 
     // build options
     val options = List(
-      key.map(k => "key" -> compact(render(db.serializer.toJson(k)))),
-      if (keys.nonEmpty) Some("keys" -> compact(render(db.serializer.toJson(keys)))) else None,
-      startkey.map(k => "startkey" -> compact(render(db.serializer.toJson(k)))),
+      key.map(k => "key" -> k.toJson.compactPrint),
+      if (keys.nonEmpty) Some("keys" -> keys.toJson.compactPrint) else None,
+      startkey.map(k => "startkey" -> k.toJson.compactPrint),
       startkey_docid.map("startkey_docid" -> _),
-      endkey.map(k => "endkey" -> compact(render(db.serializer.toJson(k)))),
+      endkey.map(k => "endkey" -> k.toJson.compactPrint),
       endkey_docid.map("endkey_docid" -> _),
       if (limit > 0) Some("limit" -> limit) else None,
       stale.map("stale" -> _),
@@ -141,43 +144,12 @@ class View(
   // helper methods
   protected def buildReq(options: Map[String, String]) = Get(uri <<? options)
 
-  private def rawViewResult(json: JValue) = {
-    val offset = (json \ "offset").extractOpt[Long].getOrElse(0l)
-    val rows = (json \ "rows") match {
-      case JArray(rows) =>
-        for (row <- rows) yield {
-          val key = row \ "key"
-          val id = (row \ "id").extractOpt[String]
-          val value = row \ "value"
-          val doc = (row \ "doc").extractOpt[JObject]
-          RawRow(id, key, value, doc)
-        }
-      case _ =>
-        Nil
-    }
-    val total_rows = (json \ "total_rows").extractOpt[Long].getOrElse(rows.size.toLong)
-    val update_seq = (json \ "update_seq").extractOpt[Long]
-    RawViewResult(total_rows, offset, rows, update_seq)
-  }
-
-  private def viewResult[Key: Manifest, Value: Manifest, Doc: Manifest](json: JValue) = {
-    val offset = (json \ "offset").extractOpt[Int].getOrElse(0)
-    val rows = (json \ "rows") match {
-      case JArray(rows) =>
-        rows.flatMap { row =>
-          for {
-            key <- (row \ "key").extractOpt[Key]
-            id = (row \ "id").extractOpt[String]
-            value <- (row \ "value").extractOpt[Value]
-            doc = (row \ "doc").extractOpt[Doc]
-          } yield Row(id, key, value, doc)
-        }
-      case _ =>
-        Nil
-    }
-    val total_rows = (json \ "total_rows").extractOpt[Int].getOrElse(rows.size)
-    val update_seq = (json \ "update_seq").extractOpt[Int]
-    ViewResult(total_rows, offset, rows, update_seq)
+  private def viewResult[Key: JsonReader, Value: JsonReader, Doc: JsonReader](json: JsValue) = {
+    val RawViewResult(total_rows, offset, rawRows, update_seq) = json.convertTo[RawViewResult]
+    val rows =
+      for (RawRow(id, key, value, doc) <- rawRows)
+        yield Row(id, key.convertTo[Key], value.convertTo[Value], doc.map(_.convertTo[Doc]))
+    ViewResult(total_rows.toInt, offset.toInt, rows, update_seq.map(_.toInt))
   }
 
   override def toString =
@@ -203,16 +175,15 @@ private class TemporaryView(
   viewDoc: ViewDoc)
     extends BuiltInView(db, "_temp_view") {
 
-  import net.liftweb.json._
   import spray.http.HttpEntity
   import spray.http.ContentTypes._
 
-  import db.serializer.formats
+  import SohvaProtocol._
 
   override protected def buildReq(options: Map[String, String]) =
     Post(uri <<? options)
       .withEntity(HttpEntity(`application/json`, postData))
 
-  lazy val postData: String = compact(render(Extraction.decompose(viewDoc)))
+  lazy val postData: String = viewDoc.toJson.compactPrint
 
 }

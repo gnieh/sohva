@@ -14,11 +14,11 @@ package gnieh.sohva
 package sync
 package entities
 
-import net.liftweb.json._
-
 import scala.util.Try
 
 import gnieh.sohva.entities.Entity
+
+import spray.json._
 
 /** The `EntityManager` is responsible for creating, storing and deleting the entities
  *  and associated components.
@@ -42,22 +42,22 @@ class EntityManager(val database: Database) extends gnieh.sohva.entities.EntityM
   @inline def deleteEntity(entity: Entity): Boolean =
     synced(wrapped.deleteEntity(entity))
 
-  @inline def saveComponent[T <: IdRev: Manifest](entity: Entity, component: T): T =
+  @inline def saveComponent[T <: IdRev: Manifest: JsonFormat](entity: Entity, component: T): T =
     synced(wrapped.saveComponent[T](entity, component))
 
   @inline def hasComponentType[T: Manifest](entity: Entity): Boolean =
     synced(wrapped.hasComponentType[T](entity))
 
-  @inline def hasComponent[T: Manifest](entity: Entity, component: T): Boolean =
+  @inline def hasComponent[T: Manifest: JsonFormat](entity: Entity, component: T): Boolean =
     synced(wrapped.hasComponent[T](entity, component))
 
-  @inline def getComponent[T: Manifest](entity: Entity): Option[T] =
+  @inline def getComponent[T: Manifest: JsonReader](entity: Entity): Option[T] =
     synced(wrapped.getComponent[T](entity))
 
   @inline def removeComponentType[T: Manifest](entity: Entity): Boolean =
     synced(wrapped.removeComponentType[T](entity))
 
-  @inline def removeComponent[T <: IdRev: Manifest](entity: Entity, component: T): Boolean =
+  @inline def removeComponent[T <: IdRev: Manifest: JsonFormat](entity: Entity, component: T): Boolean =
     synced(wrapped.removeComponent[T](entity, component))
 
   @inline def entities: Set[Entity] =

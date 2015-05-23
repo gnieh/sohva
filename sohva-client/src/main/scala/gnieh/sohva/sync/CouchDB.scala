@@ -48,9 +48,6 @@ abstract class CouchDB private[sync] (val wrapped: ACouchDB) extends gnieh.sohva
   val version = wrapped.version
 
   @inline
-  val serializer = wrapped.serializer
-
-  @inline
   def info: CouchInfo =
     synced(wrapped.info)
 

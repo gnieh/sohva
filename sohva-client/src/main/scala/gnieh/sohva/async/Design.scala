@@ -18,10 +18,11 @@ package async
 
 import scala.concurrent.Future
 
-import net.liftweb.json._
+import spray.json._
 
 import spray.client.pipelining._
-import spray.httpx.unmarshalling._
+
+import spray.http.StatusCodes
 
 /** A design gives access to the different views.
  *  Use this class to get or create new views.
@@ -33,18 +34,20 @@ class Design(val db: Database,
     val language: String) extends gnieh.sohva.Design[Future] {
 
   import db.ec
-  import db.serializer.formats
+
+  import SohvaProtocol._
 
   protected[sohva] def uri = db.uri / "_design" / name.trim
 
   def exists: Future[Boolean] =
-    getDesignDocument map (_.isDefined)
+    for (h <- db.couch.rawHttp(Head(uri)))
+      yield h.status == StatusCodes.OK
 
   def create: Future[DesignDoc] =
     for {
       ex <- exists
       cr <- if (ex) throw new SohvaException(f"Failed to create design. A design with the name $name already exists.")
-      else db.saveDoc(DesignDoc("_design/" + name, language))
+      else db.saveDoc(DesignDoc("_design/" + name, language, Map(), None, Map(), Map(), Map(), Map(), Nil))
     } yield cr
 
   def getDesignDocument: Future[Option[DesignDoc]] =
@@ -74,7 +77,7 @@ class Design(val db: Database,
         design.copy(views = design.views + (viewName -> view)).withRev(design._rev)
       case None =>
         // the design does not exist...
-        DesignDoc("_design/" + name, language, Map(viewName -> view), None)
+        DesignDoc("_design/" + name, language, Map(viewName -> view), None, Map(), Map(), Map(), Map(), Nil)
     }
 
   def deleteView(viewName: String): Future[Unit] =
@@ -106,7 +109,7 @@ class Design(val db: Database,
         design.copy(shows = design.shows.updated(showName, showFun))
       case None =>
         // the design does not exist...
-        DesignDoc("_design/" + name, language, Map(), shows = Map(showName -> showFun))
+        DesignDoc("_design/" + name, language, Map(), None, Map(), Map(showName -> showFun), Map(), Map(), Nil)
     }
 
   def deleteShow(showName: String): Future[Unit] =
@@ -138,7 +141,7 @@ class Design(val db: Database,
         design.copy(lists = design.lists.updated(listName, listFun))
       case None =>
         // the design does not exist...
-        DesignDoc("_design/" + name, language, Map(), lists = Map(listName -> listFun))
+        DesignDoc("_design/" + name, language, Map(), None, Map(), Map(), Map(), Map(listName -> listFun), Nil)
     }
 
   def deleteList(listName: String): Future[Unit] =
@@ -170,7 +173,7 @@ class Design(val db: Database,
         design.copy(updates = design.updates.updated(updateName, updateFun))
       case None =>
         // the design does not exist...
-        DesignDoc("_design/" + name, language, Map(), updates = Map(updateName -> updateFun))
+        DesignDoc("_design/" + name, language, Map(), None, Map(updateName -> updateFun), Map(), Map(), Map(), Nil)
     }
 
   def deleteUpdate(updateName: String): Future[Unit] =
@@ -202,7 +205,7 @@ class Design(val db: Database,
         design.copy(validate_doc_update = Some(validateFun))
       case None =>
         // the design does not exist...
-        DesignDoc("_design/" + name, language, Map(), Some(validateFun))
+        DesignDoc("_design/" + name, language, Map(), Some(validateFun), Map(), Map(), Map(), Map(), Nil)
     }
 
   def deleteValidateFunction: Future[Unit] =
@@ -232,7 +235,7 @@ class Design(val db: Database,
         design.copy(filters = design.filters.updated(filterName, filterFun))
       case None =>
         // the design does not exist yet
-        DesignDoc("_design/" + name, language, Map(), None, filters = Map(filterName -> filterFun))
+        DesignDoc("_design/" + name, language, Map(), None, Map(), Map(filterName -> filterFun), Map(), Map(), Nil)
     }
 
   def deleteFilter(name: String): Future[Unit] =
@@ -263,7 +266,7 @@ class Design(val db: Database,
         design.copy(rewrites = rules)
       case None =>
         // the design does not exist...
-        DesignDoc("_design/" + name, language, rewrites = rules)
+        DesignDoc("_design/" + name, language, Map(), None, Map(), Map(), Map(), Map(), rules)
     }
 
   def getRewriteRules(): Future[List[RewriteRule]] =
@@ -275,8 +278,8 @@ class Design(val db: Database,
 
   // helper methods
 
-  private def designDoc(json: JValue) =
-    db.serializer.fromJson[DesignDoc](json)
+  private def designDoc(json: JsValue) =
+    json.convertTo[DesignDoc]
 
   override def toString =
     uri.toString

@@ -13,6 +13,8 @@
 package gnieh.sohva
 package entities
 
+import spray.json._
+
 /** The `EntityManager` is responsible for creating, storing and deleting the entities
  *  and associated components.
  *  Entities are stored in a CouchDB database.
@@ -38,16 +40,16 @@ trait EntityManager[Result[_]] {
   /** Adds or updates the component to the given entity. If the entity is unknown, does nothing.
    *  Returns the saved component.
    */
-  def saveComponent[T <: IdRev: Manifest](entity: Entity, component: T): Result[T]
+  def saveComponent[T <: IdRev: Manifest: JsonFormat](entity: Entity, component: T): Result[T]
 
   /** Indicates whether the entity has a component of the given type attached to it */
   def hasComponentType[T: Manifest](entity: Entity): Result[Boolean]
 
   /** Indicates whether the entity has a component attached to it */
-  def hasComponent[T: Manifest](entity: Entity, component: T): Result[Boolean]
+  def hasComponent[T: Manifest: JsonFormat](entity: Entity, component: T): Result[Boolean]
 
   /** Retrieves the component of the given type attached to the entity if any */
-  def getComponent[T: Manifest](entity: Entity): Result[Option[T]]
+  def getComponent[T: Manifest: JsonReader](entity: Entity): Result[Option[T]]
 
   /** Removes the component with the given name from the entity. If the entity
    *  does not exist or has no component with the given name, returns false
@@ -57,7 +59,7 @@ trait EntityManager[Result[_]] {
   /** Removes the given component from the entity. If the entity
    *  does not exist or has not this component attached, returns false
    */
-  def removeComponent[T <: IdRev: Manifest](entity: Entity, component: T): Result[Boolean]
+  def removeComponent[T <: IdRev: Manifest: JsonFormat](entity: Entity, component: T): Result[Boolean]
 
   /** Returns the list of known entities */
   def entities: Result[Set[Entity]]

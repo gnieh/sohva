@@ -17,6 +17,8 @@ package gnieh.sohva
 package async
 package dm
 
+import scala.util.Try
+
 import strategy.{
   BarneyStinsonStrategy,
   StructuralMergeStrategy
@@ -39,12 +41,14 @@ import org.slf4j.LoggerFactory
 
 import scala.concurrent.Future
 
-import net.liftweb.json._
+import spray.json._
 
 import com.typesafe.config.ConfigFactory
 
 class DesignManager(val basedir: File, val dbName: String, val couch: CouchDB, val trackRevisions: Boolean)
     extends gnieh.sohva.dm.DesignManager[Future] {
+
+  import DmProtocol._
 
   private val basepath = Path(basedir)
 
@@ -260,14 +264,14 @@ class DesignManager(val basedir: File, val dbName: String, val couch: CouchDB, v
   private def loadRewrites(path: Path): List[RewriteRule] =
     for {
       rewrite <- (path * "rewrites" * "*.json").toList.sorted
-      rw <- couch.serializer.fromJsonOpt[RewriteRule](parse(loadFile(rewrite)))
+      rw <- Try(JsonParser(loadFile(rewrite)).convertTo[RewriteRule]).toOption
     } yield rw
 
   private def saveRewrites(path: Path, rules: List[RewriteRule]): Unit =
     for ((rule, idx) <- rules.zipWithIndex) {
       val rulepath = path / s"$idx.json"
       rulepath.createFile(createParents = true)
-      rulepath.write(pretty(render(couch.serializer.toJson(rule))))(Codec.UTF8)
+      rulepath.write(rule.toJson.prettyPrint)(Codec.UTF8)
     }
 
   private def loadValidateDocUpdate(path: Path, extension: String): Option[String] =
@@ -283,13 +287,13 @@ class DesignManager(val basedir: File, val dbName: String, val couch: CouchDB, v
   private def loadLanguage(path: Path): Language =
     (for {
       content <- loadOptionalFile(path / "language.json")
-      language <- couch.serializer.fromJsonOpt[Language](parse(content))
+      language <- Try(JsonParser(content).convertTo[Language]).toOption
     } yield language).getOrElse(Language("javascript", "js"))
 
   private def loadRev(path: Path): Option[String] =
     for {
       content <- loadOptionalFile(path / "revision.json")
-      rev <- couch.serializer.fromJsonOpt[String](parse(content))
+      rev <- Try(JsonParser(content).convertTo[String]).toOption
     } yield rev
 
   private def loadFile(path: Path): String =
@@ -350,7 +354,7 @@ class DesignManager(val basedir: File, val dbName: String, val couch: CouchDB, v
   private def saveLanguage(design: String, language: Language): Unit = {
     val langpath = basepath / design / "language.json"
     langpath.createFile(failIfExists = false)
-    langpath.write(pretty(render(couch.serializer.toJson(language))))(Codec.UTF8)
+    langpath.write(language.toJson.prettyPrint)(Codec.UTF8)
   }
 
   private def extensionFor(language: String): String = {
@@ -369,5 +373,5 @@ class DesignManager(val basedir: File, val dbName: String, val couch: CouchDB, v
 
 }
 
-private case class Language(language: String, extension: String)
-private case class Rev(rev: String)
+case class Language(language: String, extension: String)
+case class Rev(rev: String)

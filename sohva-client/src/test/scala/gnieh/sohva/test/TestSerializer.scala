@@ -18,46 +18,44 @@ package test
 
 import org.scalatest._
 
-import net.liftweb.json._
+import spray.json._
 
 class TestSerializer extends SohvaTestSpec with ShouldMatchers {
 
-  import couch.serializer.toJson
-
   "a string" should "be correctly serialized" in {
-    toJson("this is my string to serialize") should be(JString("this is my string to serialize"))
+    "this is my string to serialize".toJson should be(JsString("this is my string to serialize"))
   }
 
   "an integer" should "be correctly serialized" in {
-    toJson(4) should be(JInt(4))
+    4.toJson should be(JsNumber(4))
   }
 
   "a long" should "be correctly serialized" in {
-    toJson(12345678901234l) should be(JInt(12345678901234l))
+    12345678901234l.toJson should be(JsNumber(12345678901234l))
   }
 
   "a big integer" should "be correctly serialized" in {
-    toJson(BigInt("12345678901234567890")) should be(JInt(BigInt("12345678901234567890")))
+    BigInt("12345678901234567890").toJson should be(JsNumber(BigInt("12345678901234567890")))
   }
 
   "a float" should "be correctly serialized" in {
-    toJson(3.14159) should be(JDouble(3.14159))
+    3.14159.toJson should be(JsNumber(3.14159))
   }
 
   "a double" should "be correctly serialized" in {
-    toJson(1.123456789012345d) should be(JDouble(1.123456789012345))
+    1.123456789012345d.toJson should be(JsNumber(1.123456789012345))
   }
 
   "a big decimal" should "be correctly serialized" in {
-    toJson(BigDecimal("1.123456789012345")) should be(JDouble(1.123456789012345))
+    BigDecimal("1.123456789012345").toJson should be(JsNumber(1.123456789012345))
   }
 
   "true" should "be correctly serialized" in {
-    toJson(true) should be(JBool(true))
+    true.toJson should be(JsBoolean(true))
   }
 
   "false" should "be correctly serialized" in {
-    toJson(false) should be(JBool(false))
+    false.toJson should be(JsBoolean(false))
   }
 
 }

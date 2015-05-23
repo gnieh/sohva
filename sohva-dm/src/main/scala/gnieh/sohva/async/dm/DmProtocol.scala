@@ -15,23 +15,16 @@
 */
 package gnieh.sohva
 package async
+package dm
 
-import net.liftweb.json._
+import spray.json._
 
-import spray.http._
-import spray.httpx.marshalling.{
-  Marshaller,
-  MarshallingContext
-}
+trait DmProtocol extends SohvaProtocol {
 
-trait LiftMarshalling {
+  implicit val revFormat = jsonFormat1(Rev)
 
-  implicit def formats: Formats
-
-  implicit def jvalueMarshaller: Marshaller[JValue] =
-    Marshaller.of[JValue](MediaTypes.`application/json`) { (value, contentType, ctx) =>
-      ctx.marshalTo(HttpEntity(contentType, HttpData(pretty(render(value)), HttpCharsets.`UTF-8`)))
-    }
+  implicit val languageFormat = jsonFormat2(Language)
 
 }
 
+object DmProtocol extends DmProtocol

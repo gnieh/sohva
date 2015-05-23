@@ -15,6 +15,8 @@
 */
 package gnieh.sohva
 
+import scala.language.higherKinds
+
 /** A CouchDB instance.
  *  Allows users to access the different databases and instance information.
  *  This is the key class to start with when one wants to work with couchdb.

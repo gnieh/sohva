@@ -46,17 +46,11 @@ class CookieSession protected[sohva] (val couch: CouchClient) extends CouchDB wi
   val version =
     couch.version
 
-  val serializer =
-    couch.serializer
-
   val system =
     couch.system
 
   implicit def ec =
     couch.ec
-
-  implicit def formats =
-    couch.formats
 
   def login(name: String, password: String): Future[Boolean] =
     for (

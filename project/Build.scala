@@ -18,12 +18,13 @@ object SohvaBuild extends Build {
     organization := "org.gnieh",
     licenses += ("The Apache Software License, Version 2.0" -> url("http://www.apache.org/licenses/LICENSE-2.0.txt")),
     homepage := Some(url("https://github.com/gnieh/sohva")),
-    version := "1.1.2-SNAPSHOT",
-    scalaVersion := "2.11.4",
-    crossScalaVersions := Seq("2.10.4", "2.11.5"),
+    version := "2.0.0-SNAPSHOT",
+    scalaVersion := "2.11.6",
+    crossScalaVersions := Seq("2.10.4", "2.11.6"),
     libraryDependencies ++= globalDependencies,
     parallelExecution := false,
-    scalacOptions ++= Seq("-deprecation", "-feature", "-language:higherKinds,implicitConversions,reflectiveCalls")
+    fork in Test := true,
+    scalacOptions ++= Seq("-deprecation", "-feature")
   ) ++ publishSettings
 
   lazy val sohva = (Project(id = "sohva",
@@ -36,7 +37,7 @@ object SohvaBuild extends Build {
     settings(unidocSettings: _*)
   ) aggregate(client, testing, entities, dm)
 
-  lazy val scalariformSettings = defaultScalariformSettings ++ Seq(
+  lazy val scalariform = scalariformSettings ++ Seq(
     ScalariformKeys.preferences :=
       ScalariformKeys.preferences.value
         .setPreference(AlignSingleLineCaseStatements, true)
@@ -46,8 +47,8 @@ object SohvaBuild extends Build {
   )
 
   lazy val globalDependencies = Seq(
-    "org.scalatest" %% "scalatest" % "2.2.2" % "test",
-    "com.typesafe.akka" %% "akka-osgi" % "2.3.6" % "test"
+    "org.scalatest" %% "scalatest" % "2.2.5" % "test",
+    "com.typesafe.akka" %% "akka-osgi" % "2.3.11" % "test"
   )
 
   lazy val publishSettings = Seq(
@@ -85,13 +86,32 @@ object SohvaBuild extends Build {
     )
   )
 
+  lazy val json = Project(id = "sohva-json",
+    base = file("sohva-json")) settings(globalSettings: _*) settings(
+      libraryDependencies ++= clientDependencies,
+      libraryDependencies <+= scalaVersion("org.scala-lang" % "scala-reflect" % _),
+      libraryDependencies := {
+        CrossVersion.partialVersion(scalaVersion.value) match {
+          // if scala 2.11+ is used, quasiquotes are merged into scala-reflect
+          case Some((2, scalaMajor)) if scalaMajor >= 11 =>
+            libraryDependencies.value
+          // in Scala .10, quasiquotes are provided by macro paradise
+          case Some((2, 10)) =>
+            libraryDependencies.value ++ Seq(
+              compilerPlugin("org.scalamacros" % "paradise" % "2.0.1" cross CrossVersion.full),
+              "org.scalamacros" %% "quasiquotes" % "2.0.0" cross CrossVersion.binary)
+        }
+      })
+
   lazy val client = Project(id = "sohva-client",
     base = file("sohva-client")) settings(globalSettings: _*) settings(
       description := "Couchdb client library",
       libraryDependencies ++= clientDependencies,
       fork in test := true,
+      mappings in (Compile, packageBin) ++= mappings.in(json, Compile, packageBin).value,
+      mappings in (Compile, packageSrc) ++= mappings.in(json, Compile, packageSrc).value,
       resourceDirectories in Compile := List()
-    ) settings(osgiSettings: _*) settings(scalariformSettings: _*) settings (
+    ) settings(osgiSettings: _*) settings(scalariform: _*) settings (
       OsgiKeys.exportPackage := Seq(
         "gnieh.sohva",
         "gnieh.sohva.*"
@@ -101,15 +121,15 @@ object SohvaBuild extends Build {
       ),
       OsgiKeys.bundleSymbolicName := "org.gnieh.sohva",
       OsgiKeys.privatePackage := Seq()
-    )
+    ) dependsOn(json)
 
   lazy val clientDependencies = globalDependencies ++ Seq(
-    "io.spray" %% "spray-client" % "1.3.2",
-    "com.typesafe.akka" %% "akka-actor" % "2.3.6" % "provided",
-    "org.gnieh" %% "diffson" % "0.3.1",
+    "io.spray" %% "spray-client" % "1.3.3",
+    "com.typesafe.akka" %% "akka-actor" % "2.3.11" % "provided",
+    "org.gnieh" %% "diffson" % "1.0.0",
     "com.jsuereth" %% "scala-arm" % "1.4",
-    "net.liftweb" %% "lift-json" % "2.6",
-    "org.slf4j" % "slf4j-api" % "1.7.10",
+    "io.spray" %% "spray-json" % "1.3.2",
+    "org.slf4j" % "slf4j-api" % "1.7.12",
     "com.netflix.rxjava" % "rxjava-scala" % "0.20.7"
   )
 
@@ -120,14 +140,14 @@ object SohvaBuild extends Build {
     ) dependsOn(client)
 
   lazy val testingDependencies = Seq(
-    "org.scalatest" %% "scalatest" % "2.2.2"
+    "org.scalatest" %% "scalatest" % "2.2.5"
   )
 
   lazy val entities = Project(id = "sohva-entities",
     base = file("sohva-entities")) settings(globalSettings: _*) settings(
       description := "Entity Component System storing entities in a couchdb instance",
-      libraryDependencies ++= entitiesDependencies
-    ) settings(osgiSettings: _*) settings(scalariformSettings: _*) settings(
+      libraryDependencies ++= entitiesDependencies(scalaVersion.value)
+    ) settings(osgiSettings: _*) settings(scalariform: _*) settings(
       OsgiKeys.exportPackage := Seq(
         "gnieh.sohva.async.entities",
         "gnieh.sohva.sync.entities",
@@ -141,16 +161,21 @@ object SohvaBuild extends Build {
       OsgiKeys.privatePackage := Seq("gnieh.sohva.async.entities.impl")
     ) dependsOn(client)
 
-  lazy val entitiesDependencies = clientDependencies ++ Seq(
-    "com.github.scala-incubator.io" %% "scala-io-core" % "0.4.3",
-    "ch.qos.logback" % "logback-classic" % "1.1.2" % "test"
+  def entitiesDependencies(scalaVersion: String) = clientDependencies ++ Seq(
+    CrossVersion.partialVersion(scalaVersion) match {
+      case Some((2, 10)) =>
+        "com.github.scala-incubator.io" %% "scala-io-core" % "0.4.3"
+      case _ =>
+        "com.github.scala-incubator.io" %% "scala-io-core" % "0.4.3-1"
+    },
+    "ch.qos.logback" % "logback-classic" % "1.1.3" % "test"
   )
 
   lazy val dm = Project(id = "sohva-dm",
     base = file("sohva-dm")) settings(globalSettings: _*) settings(
       description := "Design documents manager based on Sohva",
-      libraryDependencies ++= dmDependencies
-    ) settings(osgiSettings: _*) settings(scalariformSettings: _*) settings(
+      libraryDependencies ++= dmDependencies(scalaVersion.value)
+    ) settings(osgiSettings: _*) settings(scalariform: _*) settings(
       OsgiKeys.exportPackage := Seq(
         "gnieh.sohva.dm",
         "gnieh.sohva.async.dm",
@@ -163,10 +188,15 @@ object SohvaBuild extends Build {
       OsgiKeys.bundleSymbolicName := "org.gnieh.sohva.dm"
     ) dependsOn(client)
 
-  lazy val dmDependencies = clientDependencies ++ Seq(
-    "com.github.scala-incubator.io" %% "scala-io-file" % "0.4.3",
-    "ch.qos.logback" % "logback-classic" % "1.1.2" % "test",
-    "com.typesafe" % "config" % "1.2.1"
+  def dmDependencies(scalaVersion: String) = clientDependencies ++ Seq(
+    CrossVersion.partialVersion(scalaVersion) match {
+      case Some((2, 10)) =>
+        "com.github.scala-incubator.io" %% "scala-io-file" % "0.4.3"
+      case _ =>
+        "com.github.scala-incubator.io" %% "scala-io-file" % "0.4.3-1"
+    },
+    "ch.qos.logback" % "logback-classic" % "1.1.3" % "test",
+    "com.typesafe" % "config" % "1.3.0"
   )
 
 }

@@ -23,13 +23,14 @@ import scala.concurrent.{
   ExecutionContext
 }
 
+import scala.util.Try
+
 import spray.http._
 import spray.client.pipelining._
-import spray.httpx.unmarshalling._
 
 import akka.actor._
 
-import net.liftweb.json._
+import spray.json._
 
 /** A CouchDB instance.
  *  Allows users to access the different databases and information.
@@ -39,11 +40,13 @@ import net.liftweb.json._
  *  @author Lucas Satabin
  *
  */
-abstract class CouchDB extends gnieh.sohva.CouchDB[Future] with LiftMarshalling {
+abstract class CouchDB extends gnieh.sohva.CouchDB[Future] with SprayJsonSupport {
 
   self =>
 
   implicit def ec: ExecutionContext
+
+  import SohvaProtocol._
 
   def system: ActorSystem
 
@@ -56,7 +59,7 @@ abstract class CouchDB extends gnieh.sohva.CouchDB[Future] with LiftMarshalling 
     ) yield asCouchInfo(json)
 
   def database(name: String, credit: Int = 0, strategy: Strategy = BarneyStinsonStrategy): Database =
-    new Database(name, this, serializer, credit, strategy)
+    new Database(name, this, credit, strategy)
 
   def replicator(name: String = "_replicator", credit: Int = 0, strategy: Strategy = BarneyStinsonStrategy): Replicator =
     new Replicator(name, this, credit, strategy)
@@ -81,13 +84,13 @@ abstract class CouchDB extends gnieh.sohva.CouchDB[Future] with LiftMarshalling 
     for (
       config <- http(Get(uri / "_config")) withFailureMessage
         f"Failed to fetch config from $uri"
-    ) yield serializer.fromJson[Configuration](config)
+    ) yield config.convertTo[Configuration]
 
   def _config(section: String): Future[Map[String, String]] =
     for (
       section <- http(Get(uri / "_config" / section)) withFailureMessage
         f"Failed to fetch config for $section from $uri"
-    ) yield serializer.fromJson[Map[String, String]](section)
+    ) yield section.convertTo[Map[String, String]]
 
   def _config(section: String, key: String): Future[Option[String]] =
     for (
@@ -97,7 +100,7 @@ abstract class CouchDB extends gnieh.sohva.CouchDB[Future] with LiftMarshalling 
 
   def saveConfigValue(section: String, key: String, value: String): Future[Boolean] =
     for (
-      res <- http(Put(uri / "_config" / section / key, serializer.toJson(value))) withFailureMessage
+      res <- http(Put(uri / "_config" / section / key, value.toJson)) withFailureMessage
         f"Failed to save config $section with key `$key' and value `$value' to $uri"
     ) yield ok(res)
 
@@ -127,49 +130,49 @@ abstract class CouchDB extends gnieh.sohva.CouchDB[Future] with LiftMarshalling 
   protected[sohva] def rawHttp(req: HttpRequest): Future[HttpResponse] =
     pipeline(prepare(req))
 
-  protected[sohva] def http(req: HttpRequest): Future[JValue] =
+  protected[sohva] def http(req: HttpRequest): Future[JsValue] =
     rawHttp(req).flatMap(handleCouchResponse)
 
-  protected[sohva] def optHttp(req: HttpRequest): Future[Option[JValue]] =
+  protected[sohva] def optHttp(req: HttpRequest): Future[Option[JsValue]] =
     rawHttp(req).flatMap(handleOptionalCouchResponse)
 
-  private def handleCouchResponse(response: HttpResponse): Future[JValue] = {
-    val json = parse(response.entity.asString)
+  private def handleCouchResponse(response: HttpResponse): Future[JsValue] = {
+    val json = JsonParser(response.entity.asString)
     if (response.status.isSuccess) {
       Future.successful(json)
     } else {
       // something went wrong...
       val code = response.status.intValue
-      val error = serializer.fromJsonOpt[ErrorResult](json)
+      val error = Try(json.convertTo[ErrorResult]).toOption
       Future.failed(CouchException(code, error))
     }
   }
 
-  private def handleOptionalCouchResponse(response: HttpResponse): Future[Option[JValue]] =
+  private def handleOptionalCouchResponse(response: HttpResponse): Future[Option[JsValue]] =
     handleCouchResponse(response) map (Some(_)) recoverWith {
       case CouchException(404, _) => Future.successful(None)
       case err                    => Future.failed(err)
     }
 
   @inline
-  protected[sohva] def ok(json: JValue) =
-    serializer.fromJson[OkResult](json).ok
+  protected[sohva] def ok(json: JsValue) =
+    json.convertTo[OkResult].ok
 
   @inline
-  private def asCouchInfo(json: JValue) =
-    serializer.fromJson[CouchInfo](json)
+  private def asCouchInfo(json: JsValue) =
+    json.convertTo[CouchInfo]
 
   @inline
-  private def asStringList(json: JValue) =
-    serializer.fromJson[List[String]](json)
+  private def asStringList(json: JsValue) =
+    json.convertTo[List[String]]
 
   @inline
-  private def asUuidsList(json: JValue) =
-    serializer.fromJson[Uuids](json).uuids
+  private def asUuidsList(json: JsValue) =
+    json.convertTo[Uuids].uuids
 
   @inline
-  private def asConfiguration(json: JValue) =
-    serializer.fromJson[Configuration](json)
+  private def asConfiguration(json: JsValue) =
+    json.convertTo[Configuration]
 
   override def toString =
     uri.toString
