@@ -113,17 +113,21 @@ trait SohvaProtocol extends DefaultJsonProtocol with CouchFormatImpl {
     }
 
     def write(user: CouchUser): JsObject = {
-      val fields = Map(
+      val fields1 = Map(
         "_id" -> JsString(user._id),
         "name" -> JsString(user.name),
         "type" -> JsString("user"),
         "roles" -> JsArray(user.roles.map(JsString(_)): _*),
-        "password" -> JsString(user.password),
-        "oauth" -> user.oauth.toJson)
-      user._rev match {
-        case Some(r) => JsObject(fields + ("_rev" -> JsString(r)))
-        case None    => JsObject(fields)
+        "password" -> JsString(user.password))
+      val fields2 = user._rev match {
+        case Some(r) => fields1 + ("_rev" -> JsString(r))
+        case None    => fields1
       }
+      val fields3 = user.oauth match {
+        case Some(oauth) => fields2 + ("oauth" -> oauth.toJson)
+        case None        => fields2
+      }
+      JsObject(fields3)
     }
 
     def _id(t: CouchUser): String =

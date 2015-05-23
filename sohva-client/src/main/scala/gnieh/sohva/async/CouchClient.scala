@@ -67,8 +67,13 @@ class CouchClient(val host: String = "localhost",
   def startOAuthSession(consumerKey: String, consumerSecret: String, token: String, secret: String) =
     new OAuthSession(consumerKey, consumerSecret, token, secret, this)
 
+  def startBasicSession(username: String, password: String) =
+    new BasicSession(username, password, this)
+
   def withCredentials(credentials: CouchCredentials): Future[Session] = credentials match {
-    case LoginPasswordCredentials(username, password) =>
+    case LoginPasswordCredentials(username, password, false) =>
+      Future.successful(startBasicSession(username, password))
+    case LoginPasswordCredentials(username, password, true) =>
       val session = startCookieSession
       for (true <- session.login(username, password))
         yield session

@@ -230,7 +230,7 @@ class TestChanges extends SohvaTestSpec with ShouldMatchers with AsyncAssertions
 
     db.saveDoc(TestDoc("new-doc", 17))
 
-    w.await(timeout(10.seconds), dismissals(4))
+    w.await(timeout(15.seconds), dismissals(4))
 
     sub1.unsubscribe()
     sub2.unsubscribe()

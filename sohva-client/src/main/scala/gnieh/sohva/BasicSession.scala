@@ -15,16 +15,20 @@
 */
 package gnieh.sohva
 
-sealed trait CouchCredentials
+import scala.language.higherKinds
 
-final case class LoginPasswordCredentials(
-  username: String,
-  password: String,
-  cookie: Boolean) extends CouchCredentials
+/** An instance of a Couch session that allows the user to perform authenticated
+ *  operations using HTTP basic authentication.
+ *
+ *  @author Lucas Satabin
+ */
+trait BasicSession[Result[_]] extends CouchDB[Result] with Session[Result] {
 
-final case class OAuthCredentials(
-  consumerKey: String,
-  consumerSecret: String,
-  token: String,
-  secret: String) extends CouchCredentials
+  /** The current session user name */
+  val username: String
+
+  /** The current session password */
+  val password: String
+
+}
 

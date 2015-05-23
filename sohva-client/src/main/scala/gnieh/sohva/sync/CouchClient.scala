@@ -48,8 +48,13 @@ class CouchClient private[sync] (override val wrapped: ACouchClient) extends Cou
   def startOAuthSession(consumerKey: String, consumerSecret: String, token: String, secret: String) =
     new OAuthSession(consumerKey, consumerSecret, token, secret, wrapped)
 
+  def startBasicSession(username: String, password: String) =
+    new BasicSession(username, password, wrapped)
+
   def withCredentials(credentials: CouchCredentials) = credentials match {
-    case LoginPasswordCredentials(username, password) =>
+    case LoginPasswordCredentials(username, password, false) =>
+      startBasicSession(username, password)
+    case LoginPasswordCredentials(username, password, true) =>
       val session = startCookieSession
       session.login(username, password)
       session
