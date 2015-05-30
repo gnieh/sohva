@@ -62,7 +62,7 @@ object CouchFormatImpl {
         case _        => q"v.withAttachments(atts)"
       }
 
-    c.Expr[CouchFormat[T]](q"""new CouchFormat[$tpe] {
+    c.Expr[CouchFormat[T]](q"""new gnieh.sohva.CouchFormat[$tpe] {
 
       val inner = jsonFormat(${tpe.typeSymbol.companionSymbol}, ..$methodNames)
       def _id(v: $tpe) = v._id
@@ -81,12 +81,12 @@ object CouchFormatImpl {
           case spray.json.JsObject(fields) =>
             val base1 = fields.get("_rev") match {
               case Some(spray.json.JsString(rev)) => withRev(base, Some(rev))
-              case None                => withRev(base, None)
-              case _                   => base
+              case None                           => withRev(base, None)
+              case _                              => base
             }
             fields.get("_attachments") match {
               case Some(atts @ spray.json.JsObject(_)) => withAttachments(base1, atts.convertTo[Map[String, gnieh.sohva.Attachment]])
-              case _                        => base1
+              case _                                   => base1
             }
           case _ =>
             base

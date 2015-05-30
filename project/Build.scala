@@ -104,7 +104,7 @@ object SohvaBuild extends Build {
       })
 
   lazy val client = Project(id = "sohva-client",
-    base = file("sohva-client")) settings(globalSettings: _*) settings(
+    base = file("sohva-client")) dependsOn(json % "compile-internal, test-internal") settings(globalSettings: _*) settings(
       description := "Couchdb client library",
       libraryDependencies ++= clientDependencies,
       fork in test := true,
@@ -121,7 +121,7 @@ object SohvaBuild extends Build {
       ),
       OsgiKeys.bundleSymbolicName := "org.gnieh.sohva",
       OsgiKeys.privatePackage := Seq()
-    ) dependsOn(json)
+    )
 
   lazy val clientDependencies = globalDependencies ++ Seq(
     "io.spray" %% "spray-client" % "1.3.3",
