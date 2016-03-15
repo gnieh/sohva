@@ -46,7 +46,7 @@ class ChangeStream(database: Database, since: Option[Int], filter: Option[String
 
   private val subscriptionId = new AtomicLong
 
-  private val actor = system.actorOf(Props(new ChangeActor(database, filter)))
+  private val actor = system.actorOf(Props(new ChangeActor(database, since, filter)))
 
   val stream: Observable[(String, Option[JsObject])] =
     Observable { observer =>
@@ -77,7 +77,7 @@ class ChangeStream(database: Database, since: Option[Int], filter: Option[String
  *
  *  @author Lucas Satabin
  */
-private class ChangeActor(database: Database, filter: Option[String]) extends Actor with ActorLogging {
+private class ChangeActor(database: Database, since: Option[Int], filter: Option[String]) extends Actor with ActorLogging {
 
   implicit def system = context.system
 
@@ -103,7 +103,7 @@ private class ChangeActor(database: Database, filter: Option[String]) extends Ac
       val params = {
         val base = Map(
           "feed" -> "continuous",
-          "since" -> "now",
+          "since" -> since.map(_.toString).getOrElse("now"),
           "include_docs" -> "true",
           "heartbeat" -> "true"
         )

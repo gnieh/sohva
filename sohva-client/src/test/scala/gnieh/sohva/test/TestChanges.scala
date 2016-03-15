@@ -204,6 +204,33 @@ class TestChanges extends SohvaTestSpec with ShouldMatchers with AsyncAssertions
 
   }
 
+  it should "be notified of past changes if since was specified" in {
+
+    val w = new Waiter
+
+    val d1 = db.saveDoc(TestDoc("doc1", 8)())
+
+    val seqFollowingD1 = db.info.map(_.update_seq)
+
+    val d2 = db.saveDoc(TestDoc("doc2", 17)())
+
+    val changes = db.changes(seqFollowingD1, None)
+
+    try {
+      val sub = changes.subscribe { case (_, doc) =>
+        doc should be('defined)
+        doc.value.extract[TestDoc].toto should be > (10)
+        w.dismiss()
+      }
+
+      val d3 = db.saveDoc(d1.copy(toto = 14)(_rev = d1._rev))
+
+      w.await(timeout(5.seconds), dismissals(2))
+
+    } finally changes.close()
+
+  }
+
   "all registered handlers" should "be notified" in withChanges { changes =>
 
     val w = new Waiter
