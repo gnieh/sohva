@@ -18,8 +18,6 @@ package test
 
 import org.scalatest._
 
-import sync._
-
 class TestOAuth extends SohvaTestSpec with BeforeAndAfterAll {
 
   val consumerKey1 = "consumer1"
@@ -35,7 +33,7 @@ class TestOAuth extends SohvaTestSpec with BeforeAndAfterAll {
   } finally {
     // add a user with OAuth data
     val userDb = session.database("_users")
-    userDb.saveDoc(
+    synced(userDb.saveDoc(
       CouchUser(
         user,
         user,
@@ -47,12 +45,12 @@ class TestOAuth extends SohvaTestSpec with BeforeAndAfterAll {
           )
         )
       )
-    )
+    ))
   }
 
   override def afterAll(): Unit = try {
     val userDb = session.database("_users")
-    userDb.deleteDoc("org.couchdb.user:" + user)
+    synced(userDb.deleteDoc("org.couchdb.user:" + user))
   } finally {
     super.afterAll()
   }
@@ -62,27 +60,27 @@ class TestOAuth extends SohvaTestSpec with BeforeAndAfterAll {
     val oauthSession = couch.startOAuthSession(consumerKey1, consumerSecret1, token1, secret1)
     val cookieSession = couch.startCookieSession
 
-    val oauthUser = oauthSession.currentUser
+    val oauthUser = synced(oauthSession.currentUser)
 
-    val anonUser = cookieSession.currentUser
+    val anonUser = synced(cookieSession.currentUser)
 
     oauthUser should not be (anonUser)
 
-    val loggedin = cookieSession.login(user, user)
+    val loggedin = synced(cookieSession.login(user, user))
 
     loggedin should be(true)
 
-    val cookieUser = cookieSession.currentUser
+    val cookieUser = synced(cookieSession.currentUser)
 
     oauthUser should be(cookieUser)
 
     val cookieUserDb = cookieSession.database("_users")
-    val cookieRev = cookieUserDb.getDocRevision("org.couchdb.user:" + user)
+    val cookieRev = synced(cookieUserDb.getDocRevision("org.couchdb.user:" + user))
 
     cookieRev should be('defined)
 
     val oauthUserDb = oauthSession.database("_users")
-    val oauthRev = oauthUserDb.getDocRevision("org.couchdb.user:" + user)
+    val oauthRev = synced(oauthUserDb.getDocRevision("org.couchdb.user:" + user))
 
     oauthRev should be('defined)
     oauthRev should be(cookieRev)

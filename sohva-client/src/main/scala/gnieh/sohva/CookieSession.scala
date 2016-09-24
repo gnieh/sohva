@@ -15,7 +15,12 @@
 */
 package gnieh.sohva
 
-import scala.language.higherKinds
+import spray.http._
+import spray.client.pipelining._
+
+import akka.actor.ActorRef
+
+import scala.concurrent.Future
 
 /** An instance of a Couch session that allows the user to login and
  *  send request identified with the login credentials.
@@ -26,24 +31,82 @@ import scala.language.higherKinds
  *  @author Lucas Satabin
  *
  */
-trait CookieSession[Result[_]] extends CouchDB[Result] with Session[Result] {
+class CookieSession protected[sohva] (val couch: CouchClient) extends CouchDB with Session {
+
+  val host =
+    couch.host
+
+  val port =
+    couch.port
+
+  val ssl =
+    couch.ssl
+
+  val version =
+    couch.version
+
+  val system =
+    couch.system
+
+  implicit def ec =
+    couch.ec
 
   /** Performs a login and returns true if login succeeded.
    *  from now on, if login succeeded the couch instance is identified and
    *  all requests will be done with the given credentials.
    *  This performs a cookie authentication.
    */
-  def login(name: String, password: String): Result[Boolean]
+  def login(name: String, password: String): Future[Boolean] =
+    for (
+      res <- rawHttp(Post(uri / "_session",
+        FormData(Map("name" -> name, "password" -> password))) <:<
+        Map("Accept" -> "application/json, text/javascript, */*")) withFailureMessage f"Problem logging in to $uri"
+    ) yield res.status.isSuccess
 
   /** Logs the session out */
-  def logout: Result[Boolean]
+  def logout: Future[Boolean] =
+    for (res <- rawHttp(Delete(uri / "_session")) withFailureMessage f"Problem logging out from $uri")
+      yield res.status.isSuccess
 
-  /** Returns the user associated to the current session, if any */
-  def currentUser: Result[Option[UserInfo]]
+  def isLoggedIn: Future[Boolean] =
+    isAuthenticated
+
+  // helper methods
+
+  protected[sohva] val pipeline =
+    couch.pipeline.andThen(_.map(withCookie))
+
+  protected[sohva] def prepare(req: HttpRequest) =
+    req <:< Map("Cookie" -> cookie)
+
+  private var _cookie = "AuthSession="
+
+  private def cookie = _cookie.synchronized {
+    _cookie
+  }
+
+  private def cookie_=(c: String) = _cookie.synchronized {
+    _cookie = c
+  }
+
+  protected[sohva] def uri =
+    couch.uri
+
+  private def withCookie[T](resp: HttpResponse): HttpResponse = {
+    for (
+      HttpHeaders.`Set-Cookie`(cookie) <- resp.headers.find {
+        case HttpHeaders.`Set-Cookie`(_) =>
+          true
+        case _ =>
+          false
+      }
+    ) this.cookie = cookie.toString
+    resp
+  }
 
 }
 
-/** Result of the authentication request */
+/** Future of the authentication request */
 case class AuthResult(ok: Boolean, userCtx: UserCtx, info: Option[AuthInfo])
 
 /** The user context giving his name and roles */

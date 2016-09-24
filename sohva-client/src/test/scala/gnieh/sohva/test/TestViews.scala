@@ -19,7 +19,7 @@ package test
 import org.scalatest._
 import org.scalatest.OptionValues._
 
-import sync._
+import scala.concurrent.ExecutionContext.Implicits.global
 
 import spray.json._
 
@@ -42,7 +42,7 @@ class TestViews extends SohvaTestSpec with Matchers with BeforeAndAfterEach {
     try {
       super.beforeEach()
     } finally {
-      db.saveDocs(docs)
+      synced(db.saveDocs(docs))
     }
   }
 
@@ -50,7 +50,7 @@ class TestViews extends SohvaTestSpec with Matchers with BeforeAndAfterEach {
     try {
       super.afterEach()
     } finally {
-      db.deleteDocs(docs.map(_._id))
+      synced(db.deleteDocs(docs.map(_._id)))
     }
   }
 
@@ -58,9 +58,9 @@ class TestViews extends SohvaTestSpec with Matchers with BeforeAndAfterEach {
 
     val design = db.design("test_design")
 
-    design.saveView("test_view", "function(doc) { if(doc._id.indexOf('view_doc') == 0) emit(doc._id, null); }")
+    synced(design.saveView("test_view", "function(doc) { if(doc._id.indexOf('view_doc') == 0) emit(doc._id, null); }"))
 
-    val updated = design.getDesignDocument
+    val updated = synced(design.getDesignDocument)
     updated should be('defined)
 
     updated.value.views.contains("test_view") should be(true)
@@ -71,7 +71,7 @@ class TestViews extends SohvaTestSpec with Matchers with BeforeAndAfterEach {
 
     val view = db.design("test_design").view("test_view")
 
-    val viewResult = view.query[String, Null, TestDoc]()
+    val viewResult = synced(view.query[String, Null, TestDoc]())
 
     viewResult.total_rows should be(docs.size)
     viewResult.offset should be(0)
@@ -83,7 +83,7 @@ class TestViews extends SohvaTestSpec with Matchers with BeforeAndAfterEach {
 
     val view = db.design("test_design").view("test_view")
 
-    val viewResult = view.query[String, Null, TestDoc](startkey = Some("view_doc7"), endkey = Some("view_doc9"))
+    val viewResult = synced(view.query[String, Null, TestDoc](startkey = Some("view_doc7"), endkey = Some("view_doc9")))
 
     val filtered =
       for {
@@ -99,7 +99,7 @@ class TestViews extends SohvaTestSpec with Matchers with BeforeAndAfterEach {
 
   "querying a built-in view" should "be similar to querying user defined view" in {
 
-    val all = db._all_docs(startkey = Some("view_doc"), endkey = Some("view_docZ"))
+    val all = synced(db._all_docs(startkey = Some("view_doc"), endkey = Some("view_docZ")))
 
     all.size should be(docs.size)
     all should be(docs.map(doc => doc._id).sorted)
@@ -111,7 +111,7 @@ class TestViews extends SohvaTestSpec with Matchers with BeforeAndAfterEach {
     val design = db.design("test_design")
 
     val saved =
-      design.saveView("test_complex_key", "function(doc) { if(doc._id.indexOf('view_doc') == 0) emit([ doc.toto - 1, doc.toto] , null); }")
+      synced(design.saveView("test_complex_key", "function(doc) { if(doc._id.indexOf('view_doc') == 0) emit([ doc.toto - 1, doc.toto] , null); }"))
 
     val view = design.view("test_complex_key")
 
@@ -121,7 +121,7 @@ class TestViews extends SohvaTestSpec with Matchers with BeforeAndAfterEach {
         j <- math.max(5, i) to 10
       } yield Row(Some("view_doc" + i + j), List(j - 1, j), null)
 
-    val viewResult = view.query[List[Int], Null, TestDoc](startkey = Some(List(3, 5)))
+    val viewResult = synced(view.query[List[Int], Null, TestDoc](startkey = Some(List(3, 5))))
 
     viewResult.total_rows should be(docs.size)
     viewResult.offset should be(10)
@@ -136,35 +136,22 @@ class TestViews extends SohvaTestSpec with Matchers with BeforeAndAfterEach {
 
     implicit val testReduceFormat = couchFormat[TestReduce]
 
-    db.saveDoc(TestReduce("A1", "A", 1))
-    db.saveDoc(TestReduce("A2", "A", 2))
-    db.saveDoc(TestReduce("A3", "A", 3))
-
-    db.saveDoc(TestReduce("B4", "B", 4))
-    db.saveDoc(TestReduce("B5", "B", 5))
+    synced(for {
+      _ <- db.saveDoc(TestReduce("A1", "A", 1))
+      _ <- db.saveDoc(TestReduce("A2", "A", 2))
+      _ <- db.saveDoc(TestReduce("A3", "A", 3))
+      _ <- db.saveDoc(TestReduce("B4", "B", 4))
+      _ <- db.saveDoc(TestReduce("B5", "B", 5))
+    } yield ())
 
     val design = db.design("reduce_design")
-    design.saveView("counts", "function(doc) { if(doc.name && doc.count) emit(doc.name, doc.count); }", Some("_sum"))
+    synced(design.saveView("counts", "function(doc) { if(doc.name && doc.count) emit(doc.name, doc.count); }", Some("_sum")))
     val view = design.view("counts")
 
-    val result = view.query[String, Int, TestReduce](group_level = 2)
+    val result = synced(view.query[String, Int, TestReduce](group_level = 2))
 
     result.rows should be(List(Row(None, "A", 6), Row(None, "B", 9)))
 
-  }
-
-  "querying a temporary view" should "yield same result as querying identical permanent view" in {
-    // Get existing view specification as ViewDoc
-    val viewDoc = db.design("reduce_design").getDesignDocument.get.views("counts")
-
-    val tempView = db.temporaryView(viewDoc)
-    val permanentView = db.design("reduce_design").view("counts")
-
-    val Seq(testViewResult, permanentViewResult) = Seq(tempView, permanentView).map { view =>
-      view.query[List[Int], Null, TestDoc](startkey = Some(List(3, 5)))
-    }
-
-    testViewResult should equal(permanentViewResult)
   }
 
 }

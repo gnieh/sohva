@@ -18,8 +18,6 @@ package test
 
 import org.scalatest._
 
-import sync._
-
 class TestBasicAuth extends SohvaTestSpec with BeforeAndAfterAll {
 
   val username = "test-basic"
@@ -30,18 +28,18 @@ class TestBasicAuth extends SohvaTestSpec with BeforeAndAfterAll {
   } finally {
     // add a user with OAuth data
     val userDb = session.database("_users")
-    userDb.saveDoc(
+    synced(userDb.saveDoc(
       CouchUser(
         username,
         password,
         List()
       )
-    )
+    ))
   }
 
   override def afterAll(): Unit = try {
     val userDb = session.database("_users")
-    userDb.deleteDoc("org.couchdb.user:" + username)
+    synced(userDb.deleteDoc("org.couchdb.user:" + username))
   } finally {
     super.afterAll()
   }
@@ -51,27 +49,27 @@ class TestBasicAuth extends SohvaTestSpec with BeforeAndAfterAll {
     val basicSession = couch.startBasicSession(username, password)
     val cookieSession = couch.startCookieSession
 
-    val basicUser = basicSession.currentUser
+    val basicUser = synced(basicSession.currentUser)
 
-    val anonUser = cookieSession.currentUser
+    val anonUser = synced(cookieSession.currentUser)
 
     basicUser should not be (anonUser)
 
-    val loggedin = cookieSession.login(username, password)
+    val loggedin = synced(cookieSession.login(username, password))
 
     loggedin should be(true)
 
-    val cookieUser = cookieSession.currentUser
+    val cookieUser = synced(cookieSession.currentUser)
 
     basicUser should be(cookieUser)
 
     val cookieUserDb = cookieSession.database("_users")
-    val cookieRev = cookieUserDb.getDocRevision("org.couchdb.user:" + username)
+    val cookieRev = synced(cookieUserDb.getDocRevision("org.couchdb.user:" + username))
 
     cookieRev should be('defined)
 
     val basicUserDb = basicSession.database("_users")
-    val basicRev = basicUserDb.getDocRevision("org.couchdb.user:" + username)
+    val basicRev = synced(basicUserDb.getDocRevision("org.couchdb.user:" + username))
 
     basicRev should be('defined)
     basicRev should be(cookieRev)

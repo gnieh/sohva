@@ -3,7 +3,6 @@ package gnieh.sohva.test
 import scala.reflect.ClassTag
 
 /**
- *
  *  @author Matthew Pocock
  */
 object CauseMatchers {

@@ -34,7 +34,7 @@ trait SprayJsonSupport {
         jsonReader[T].read(json)
     }
 
-  implicit def sprayJsonMarshallerConverter[T](writer: JsonWriter[T])(implicit printer: JsonPrinter = PrettyPrinter) =
+  implicit def sprayJsonMarshallerConverter[T](writer: JsonWriter[T])(implicit printer: JsonPrinter = PrettyPrinter): Marshaller[T] =
     sprayJsonMarshaller[T](writer, printer)
 
   implicit def sprayJsonMarshaller[T](implicit writer: JsonWriter[T], printer: JsonPrinter = PrettyPrinter) =

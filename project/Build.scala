@@ -34,7 +34,7 @@ object SohvaBuild extends Build {
       packagedArtifacts :=  Map()
     )
     settings(unidocSettings: _*)
-  ) aggregate(client, testing, entities, dm)
+  ) aggregate(client)
 
   lazy val scalariform = scalariformSettings ++ Seq(
     ScalariformKeys.preferences :=
@@ -119,71 +119,4 @@ object SohvaBuild extends Build {
     "org.slf4j" % "slf4j-api" % "1.7.21",
     "com.netflix.rxjava" % "rxjava-scala" % "0.20.7"
   )
-
-  lazy val testing = Project(id = "sohva-testing",
-    base = file("sohva-testing")) settings(globalSettings: _*) settings(
-      description := "Couchdb testing library",
-      libraryDependencies ++= testingDependencies
-    ) dependsOn(client)
-
-  lazy val testingDependencies = Seq(
-    "org.scalatest" %% "scalatest" % "2.2.5"
-  )
-
-  lazy val entities = Project(id = "sohva-entities",
-    base = file("sohva-entities")) settings(globalSettings: _*) settings(
-      description := "Entity Component System storing entities in a couchdb instance",
-      libraryDependencies ++= entitiesDependencies(scalaVersion.value)
-    ) settings(osgiSettings: _*) settings(scalariform: _*) settings(
-      OsgiKeys.exportPackage := Seq(
-        "gnieh.sohva.async.entities",
-        "gnieh.sohva.sync.entities",
-        "gnieh.sohva.control.entities",
-        "gnieh.sohva.entities"
-      ),
-      OsgiKeys.additionalHeaders := Map (
-        "Bundle-Name" -> "Sohva Entity Component System"
-      ),
-      OsgiKeys.bundleSymbolicName := "org.gnieh.sohva.entities",
-      OsgiKeys.privatePackage := Seq("gnieh.sohva.async.entities.impl")
-    ) dependsOn(client)
-
-  def entitiesDependencies(scalaVersion: String) = clientDependencies ++ Seq(
-    CrossVersion.partialVersion(scalaVersion) match {
-      case Some((2, 10)) =>
-        "com.github.scala-incubator.io" %% "scala-io-core" % "0.4.3"
-      case _ =>
-        "com.github.scala-incubator.io" %% "scala-io-core" % "0.4.3-1"
-    },
-    "ch.qos.logback" % "logback-classic" % "1.1.3" % "test"
-  )
-
-  lazy val dm = Project(id = "sohva-dm",
-    base = file("sohva-dm")) settings(globalSettings: _*) settings(
-      description := "Design documents manager based on Sohva",
-      libraryDependencies ++= dmDependencies(scalaVersion.value)
-    ) settings(osgiSettings: _*) settings(scalariform: _*) settings(
-      OsgiKeys.exportPackage := Seq(
-        "gnieh.sohva.dm",
-        "gnieh.sohva.async.dm",
-        "gnieh.sohva.sync.dm",
-        "gnieh.sohva.control.dm"
-      ),
-      OsgiKeys.additionalHeaders := Map (
-        "Bundle-Name" -> "Sohva Design Manager"
-      ),
-      OsgiKeys.bundleSymbolicName := "org.gnieh.sohva.dm"
-    ) dependsOn(client)
-
-  def dmDependencies(scalaVersion: String) = clientDependencies ++ Seq(
-    CrossVersion.partialVersion(scalaVersion) match {
-      case Some((2, 10)) =>
-        "com.github.scala-incubator.io" %% "scala-io-file" % "0.4.3"
-      case _ =>
-        "com.github.scala-incubator.io" %% "scala-io-file" % "0.4.3-1"
-    },
-    "ch.qos.logback" % "logback-classic" % "1.1.3" % "test",
-    "com.typesafe" % "config" % "1.3.0"
-  )
-
 }

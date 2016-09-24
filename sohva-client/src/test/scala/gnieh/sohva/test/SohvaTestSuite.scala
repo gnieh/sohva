@@ -16,8 +16,6 @@
 package gnieh.sohva
 package test
 
-import sync._
-
 import gnieh.sohva.strategy._
 
 import org.scalatest._
@@ -25,6 +23,7 @@ import org.scalatest._
 import akka.actor.ActorSystem
 import akka.util.Timeout
 import scala.concurrent.duration._
+import scala.concurrent.ExecutionContext.Implicits.global
 
 import spray.json._
 
@@ -41,17 +40,21 @@ abstract class SohvaTestSpec(retry: Int = 0, strategy: Strategy = BarneyStinsonS
   val db = session.database("sohva-tests", credit = retry, strategy = strategy)
 
   override def beforeAll() {
-    // login
-    session.login("admin", "admin")
-    // create database
-    db.create
+    synced(for {
+      // login
+      _ <- session.login("admin", "admin")
+      // create database
+      _ <- db.create
+    } yield ())
   }
 
   override def afterAll() {
-    // cleanup database
-    db.delete
-    // logout
-    session.logout
+    synced(for {
+      // cleanup database
+      _ <- db.delete
+      // logout
+      _ <- session.logout
+    } yield ())
     couch.shutdown()
     system.terminate()
   }

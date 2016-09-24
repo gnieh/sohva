@@ -25,6 +25,13 @@ import rx.lang.scala._
 
 import spray.json._
 
+import spray.http._
+import spray.httpx._
+import spray.client.pipelining._
+
+import java.io.File
+import scala.concurrent.{ ExecutionContext, Future }
+
 /** Contains all the classes needed to interact with a couchdb server.
  *  Classes in this package allows the user to:
  *  - create/delete new databases into a couchdb instance,
@@ -38,6 +45,53 @@ import spray.json._
  *
  */
 package object sohva {
+
+  // register the COPY method
+  val COPY = HttpMethod.custom("COPY", true, true, false)
+  HttpMethods.register(COPY)
+  val Copy = new RequestBuilding.RequestBuilder(COPY)
+
+  private[sohva] implicit class EnhancedUri(val uri: Uri) extends AnyVal {
+
+    def /(part: String) =
+      uri.withPath(part.split("/").foldLeft(uri.path)(_ / _))
+
+    def /(part: Option[String]) = part match {
+      case Some(part) => uri.withPath(part.split("/").foldLeft(uri.path)(_ / _))
+      case None       => uri
+    }
+
+    def <<?(params: Map[String, String]): Uri =
+      uri.withQuery(params)
+
+    def <<?(params: Seq[(String, String)]): Uri =
+      uri.withQuery(params: _*)
+
+    def <<?(param: Option[(String, String)]): Uri =
+      param match {
+        case Some(param) => uri.withQuery(param)
+        case None        => uri
+      }
+
+  }
+
+  private[sohva] implicit class Req(val req: HttpRequest) extends AnyVal {
+
+    def <:<(headers: Iterable[(String, String)]): HttpRequest =
+      headers.foldLeft(req) {
+        case (acc, (name, value)) =>
+          acc ~> addHeader(name, value)
+      }
+
+  }
+
+  private[sohva] implicit class EnhancedFuture[T](val f: Future[T]) {
+
+    def withFailureMessage[U](msg: String)(implicit ec: ExecutionContext) = f.recover {
+      case e: Exception =>
+        throw new SohvaException(msg, e)
+    }
+  }
 
   protected[sohva] def bytes2string(bytes: Array[Byte]) =
     bytes.foldLeft(new StringBuilder) {

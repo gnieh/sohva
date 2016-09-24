@@ -20,7 +20,6 @@ package strategy
 import org.scalatest._
 import org.scalatest.OptionValues._
 
-import sync._
 import gnieh.sohva.strategy.StructuralMergeStrategy
 
 import spray.json._

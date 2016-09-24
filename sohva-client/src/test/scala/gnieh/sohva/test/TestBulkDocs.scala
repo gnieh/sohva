@@ -19,8 +19,6 @@ package test
 import org.scalatest._
 import org.scalatest.OptionValues._
 
-import sync._
-
 class TestBulkDocs extends SohvaTestSpec with Matchers {
 
   val docs: List[TestDoc] =
@@ -28,18 +26,18 @@ class TestBulkDocs extends SohvaTestSpec with Matchers {
       yield TestDoc("doc" + i, i)).toList
 
   "saving several documents at once" should "result in all the documents being saved in the db" in {
-    val result = db.saveDocs(docs)
+    val result = synced(db.saveDocs(docs))
 
     result.filter {
       case OkResult(_, _, _)    => false
       case ErrorResult(_, _, _) => true
     }.size should be(0)
 
-    val saved = db.getDocsById[TestDoc](docs.map(_._id))
+    val saved = synced(db.getDocsById[TestDoc](docs.map(_._id)))
 
     saved should be(docs)
 
-    val revisions = db.getDocRevisions(docs.map(_._id))
+    val revisions = synced(db.getDocRevisions(docs.map(_._id)))
 
     revisions should have size (saved.size)
     revisions.map(_._2) should not contain ("")
@@ -58,14 +56,14 @@ class TestBulkDocs extends SohvaTestSpec with Matchers {
       (for (i <- 1 to 5)
         yield DocWithList("doc_string_list:" + i, strings(i))).toList
 
-    val result1 = db.saveDocs(docsString)
+    val result1 = synced(db.saveDocs(docsString))
 
     result1.filter {
       case OkResult(_, _, _)    => false
       case ErrorResult(_, _, _) => true
     }.size should be(0)
 
-    val saved1 = db.getDocsById[DocWithList](docsString.map(_._id))
+    val saved1 = synced(db.getDocsById[DocWithList](docsString.map(_._id)))
 
     saved1 should be(docsString)
 
@@ -73,43 +71,43 @@ class TestBulkDocs extends SohvaTestSpec with Matchers {
 
   "deleting several documents at once" should "result in all documents being deleted in the db" in {
 
-    db.saveDocs(docs)
+    synced(db.saveDocs(docs))
 
     val ids = docs.map(_._id)
 
-    val saved = db.getDocsById[TestDoc](ids)
+    val saved = synced(db.getDocsById[TestDoc](ids))
 
     saved should be(docs)
 
-    val deleted = db.deleteDocs(ids)
+    val deleted = synced(db.deleteDocs(ids))
 
     deleted.filter {
       case OkResult(_, _, _)    => false
       case ErrorResult(_, _, _) => true
     }.size should be(0)
 
-    db.getDocsById[TestDoc](docs.map(_._id)) should be(Nil)
+    synced(db.getDocsById[TestDoc](docs.map(_._id))) should be(Nil)
 
   }
 
   "deleting several documents at once" should "delete only documents for which an id was provided" in {
 
-    db.saveDocs(docs)
+    synced(db.saveDocs(docs))
 
     val ids = docs.map(_._id)
 
-    val saved = db.getDocsById[TestDoc](ids)
+    val saved = synced(db.getDocsById[TestDoc](ids))
 
     saved should be(docs)
 
-    val deleted = db.deleteDocs(ids.take(5))
+    val deleted = synced(db.deleteDocs(ids.take(5)))
 
     deleted.filter {
       case OkResult(_, _, _)    => false
       case ErrorResult(_, _, _) => true
     }.size should be(0)
 
-    db.getDocsById[TestDoc](docs.map(_._id)) should be(docs.drop(5))
+    synced(db.getDocsById[TestDoc](docs.map(_._id))) should be(docs.drop(5))
 
   }
 

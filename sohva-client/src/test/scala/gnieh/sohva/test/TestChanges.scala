@@ -21,21 +21,19 @@ import OptionValues._
 import concurrent._
 import time.SpanSugar._
 
-import sync._
-
 import java.util.concurrent.atomic.AtomicBoolean
 import rx.lang.scala.Subscription
 
 class TestChanges extends SohvaTestSpec with Matchers with Waiters with BeforeAndAfterEach {
 
   override def beforeEach {
-    if (db.exists)
-      db.delete
-    db.create
+    if (synced(db.exists))
+      synced(db.delete)
+    synced(db.create)
   }
 
   override def afterEach {
-    db.delete
+    synced(db.delete)
   }
 
   def withChanges(test: ChangeStream => Any): Unit = {
@@ -58,7 +56,7 @@ class TestChanges extends SohvaTestSpec with Matchers with Waiters with BeforeAn
         w.dismiss()
     }
 
-    db.saveDoc(TestDoc("new-doc", 17))
+    synced(db.saveDoc(TestDoc("new-doc", 17)))
 
     w.await(timeout(10.seconds))
 
@@ -70,7 +68,7 @@ class TestChanges extends SohvaTestSpec with Matchers with Waiters with BeforeAn
 
     val w = new Waiter
 
-    val saved = db.saveDoc(TestDoc("new-doc", 17))
+    val saved = synced(db.saveDoc(TestDoc("new-doc", 17)))
 
     val sub = changes.subscribe {
       case (id, doc) =>
@@ -83,7 +81,7 @@ class TestChanges extends SohvaTestSpec with Matchers with Waiters with BeforeAn
         w.dismiss()
     }
 
-    db.saveDoc(saved.copy(toto = 5).withRev(saved._rev))
+    synced(db.saveDoc(saved.copy(toto = 5).withRev(saved._rev)))
 
     w.await(timeout(5.seconds))
 
@@ -94,7 +92,7 @@ class TestChanges extends SohvaTestSpec with Matchers with Waiters with BeforeAn
 
     val w = new Waiter
 
-    val saved = db.saveDoc(TestDoc("new-doc", 17))
+    val saved = synced(db.saveDoc(TestDoc("new-doc", 17)))
 
     val sub = changes.subscribe {
       case (id, doc) =>
@@ -105,7 +103,7 @@ class TestChanges extends SohvaTestSpec with Matchers with Waiters with BeforeAn
         w.dismiss()
     }
 
-    db.deleteDoc(saved)
+    synced(db.deleteDoc(saved))
 
     w.await(timeout(5.seconds))
 
@@ -121,11 +119,11 @@ class TestChanges extends SohvaTestSpec with Matchers with Waiters with BeforeAn
         w.dismiss()
     }
 
-    val saved = db.saveDoc(TestDoc("new-doc", 17))
+    val saved = synced(db.saveDoc(TestDoc("new-doc", 17)))
 
-    val changed = db.saveDoc(saved.copy(toto = 5).withRev(saved._rev))
+    val changed = synced(db.saveDoc(saved.copy(toto = 5).withRev(saved._rev)))
 
-    db.deleteDoc(changed)
+    synced(db.deleteDoc(changed))
 
     w.await(timeout(5.seconds))
 
@@ -150,10 +148,10 @@ class TestChanges extends SohvaTestSpec with Matchers with Waiters with BeforeAn
     println(f"sub: $sub")
 
     println("saveDoc")
-    val saved = db.saveDoc(TestDoc("new-doc", 17))
+    val saved = synced(db.saveDoc(TestDoc("new-doc", 17)))
 
     println("changeDoc")
-    val changed = db.saveDoc(saved.copy(toto = 5).withRev(saved._rev))
+    val changed = synced(db.saveDoc(saved.copy(toto = 5).withRev(saved._rev)))
 
     println(f"Is unsubscribed: ${sub.isUnsubscribed}")
 
@@ -163,7 +161,7 @@ class TestChanges extends SohvaTestSpec with Matchers with Waiters with BeforeAn
     println(f"Is unsubscribed: ${sub.isUnsubscribed}")
 
     println("deleteDoc")
-    db.deleteDoc(changed)
+    synced(db.deleteDoc(changed))
 
     w.await(timeout(5.seconds), dismissals(2))
 
@@ -174,7 +172,7 @@ class TestChanges extends SohvaTestSpec with Matchers with Waiters with BeforeAn
     // register a design with a filter
     val design = db.design("test")
 
-    val ok = design.saveFilter("my_filter", "function(doc, req) { if(doc.toto > 10) { return true; } else { return false; } }")
+    val ok = synced(design.saveFilter("my_filter", "function(doc, req) { if(doc.toto > 10) { return true; } else { return false; } }"))
 
     val w = new Waiter
 
@@ -188,13 +186,13 @@ class TestChanges extends SohvaTestSpec with Matchers with Waiters with BeforeAn
           w.dismiss()
       }
 
-      val d1 = db.saveDoc(TestDoc("doc1", 8))
+      val d1 = synced(db.saveDoc(TestDoc("doc1", 8)))
 
-      val d2 = db.saveDoc(TestDoc("doc2", 17))
+      val d2 = synced(db.saveDoc(TestDoc("doc2", 17)))
 
-      val d3 = db.saveDoc(d1.copy(toto = 14).withRev(d1._rev))
+      val d3 = synced(db.saveDoc(d1.copy(toto = 14).withRev(d1._rev)))
 
-      val deleted = db.deleteDoc("doc1")
+      val deleted = synced(db.deleteDoc("doc1"))
 
       deleted should be(true)
 
@@ -228,7 +226,7 @@ class TestChanges extends SohvaTestSpec with Matchers with Waiters with BeforeAn
         w.dismiss()
     }
 
-    db.saveDoc(TestDoc("new-doc", 17))
+    synced(db.saveDoc(TestDoc("new-doc", 17)))
 
     w.await(timeout(15.seconds), dismissals(4))
 
@@ -256,9 +254,9 @@ class TestChanges extends SohvaTestSpec with Matchers with Waiters with BeforeAn
       w.dismiss()
     }
 
-    val saved = db.saveDoc(TestDoc("doc", 23))
+    val saved = synced(db.saveDoc(TestDoc("doc", 23)))
 
-    val ok = db.deleteDoc(saved)
+    val ok = synced(db.deleteDoc(saved))
 
     ok should be(true)
 

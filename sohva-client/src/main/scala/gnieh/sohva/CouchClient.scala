@@ -15,7 +15,22 @@
 */
 package gnieh.sohva
 
-import scala.language.higherKinds
+import spray.json._
+
+import spray.http._
+import spray.client.pipelining._
+import spray.can._
+
+import scala.concurrent.{
+  Future,
+  ExecutionContext
+}
+
+import akka.actor._
+import akka.util.Timeout
+import akka.io.IO
+
+import org.slf4j.LoggerFactory
 
 /** A CouchDB instance.
  *  Allows users to access the different databases and instance information.
@@ -26,18 +41,70 @@ import scala.language.higherKinds
  *  @author Lucas Satabin
  *
  */
-trait CouchClient[Result[_]] extends CouchDB[Result] {
+class CouchClient(val host: String = "localhost",
+    val port: Int = 5984,
+    val ssl: Boolean = false,
+    val version: String = "1.4")(
+        implicit val system: ActorSystem,
+        val timeout: Timeout) extends CouchDB {
+
+  implicit def ec: ExecutionContext =
+    system.dispatcher
 
   /** Starts a new cookie based session */
-  def startCookieSession: CookieSession[Result]
+  def startCookieSession: CookieSession =
+    new CookieSession(this)
 
   /** Starts a new OAuth session */
-  def startOAuthSession(consumerKey: String, consumerSecret: String, token: String, secret: String): OAuthSession[Result]
+  def startOAuthSession(consumerKey: String, consumerSecret: String, token: String, secret: String): OAuthSession =
+    new OAuthSession(consumerKey, consumerSecret, token, secret, this)
+
+  /** Starts a new HTTP Basic authentication session */
+  def startBasicSession(username: String, password: String) =
+    new BasicSession(username, password, this)
 
   /** Starts a new session with the given credential */
-  def withCredentials(credentials: CouchCredentials): Result[Session[Result]]
+  def withCredentials(credentials: CouchCredentials): Future[Session] = credentials match {
+    case LoginPasswordCredentials(username, password, false) =>
+      Future.successful(startBasicSession(username, password))
+    case LoginPasswordCredentials(username, password, true) =>
+      val session = startCookieSession
+      for (true <- session.login(username, password))
+        yield session
+    case OAuthCredentials(consumerKey, consumerSecret, token, secret) =>
+      Future.successful(startOAuthSession(consumerKey, consumerSecret, token, secret))
+  }
 
   /** Shuts down this instance of couchdb client. */
-  def shutdown()
+  def shutdown() =
+    IO(Http) ! Http.CloseAll
+
+  // ========== internals ==========
+
+  lazy val pipeline: HttpRequest => Future[HttpResponse] =
+    sendReceive
+
+  protected[sohva] def prepare(req: HttpRequest) =
+    req
+
+  // the base uri to this couch instance
+  protected[sohva] def uri =
+    if (ssl)
+      Uri("https", Uri.Authority(Uri.Host(host), port))
+    else
+      Uri("http", Uri.Authority(Uri.Host(host), port))
+
+}
+
+private case class CouchVersion(raw: String) {
+
+  val Array(major, minor, rest) = raw.split("\\.", 3)
+
+  override def equals(other: Any): Boolean = other match {
+    case that: CouchVersion =>
+      this.major == that.major && this.minor == that.minor
+    case _ =>
+      false
+  }
 
 }

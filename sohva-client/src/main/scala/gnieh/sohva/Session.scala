@@ -15,28 +15,52 @@
 */
 package gnieh.sohva
 
-import scala.language.higherKinds
+import scala.concurrent.Future
+
+import scala.util.Try
+
+import spray.json._
+
+import spray.client.pipelining._
 
 /** Methods that must be implemented by a session.
  *
  *  @author Lucas Satabin
  */
-trait Session[Result[_]] extends CouchDB[Result] {
+trait Session extends CouchDB {
+
+  import SohvaProtocol._
 
   /** Returns the user associated to the current session, if any */
-  def currentUser: Result[Option[UserInfo]]
+  def currentUser: Future[Option[UserInfo]] = userContext.flatMap {
+    case UserCtx(Some(name), _) =>
+      http(Get(uri / "_users" / (s"org.couchdb.user:$name"))).map(user)
+    case _ => Future.successful(None)
+  }
 
   /** Indicates whether the current session is authenticated with the couch server */
-  def isAuthenticated: Result[Boolean]
+  def isAuthenticated: Future[Boolean] = userContext.map {
+    case UserCtx(Some(name), _) => true
+    case _                      => false
+  }
 
   /** Indicates whether the current session gives the given role to the user */
-  def hasRole(role: String): Result[Boolean]
+  def hasRole(role: String): Future[Boolean] = userContext.map {
+    case UserCtx(_, roles) => roles.contains(role)
+    case _                 => false
+  }
 
   /** Indicates whether the current session is a server admin session */
-  def isServerAdmin: Result[Boolean]
+  def isServerAdmin: Future[Boolean] = hasRole("_admin")
 
   /** Returns the current user context */
-  def userContext: Result[UserCtx]
+  def userContext: Future[UserCtx] =
+    http(Get(uri / "_session")).map(userCtx)
+
+  private def user(json: JsValue) =
+    Try(json.convertTo[UserInfo]).toOption
+
+  private def userCtx(json: JsValue) =
+    json.convertTo[AuthResult].userCtx
 
 }
-

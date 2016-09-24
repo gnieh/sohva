@@ -18,8 +18,6 @@ package test
 
 import org.scalatest._
 
-import sync._
-
 /** @author satabin
  *
  */
@@ -36,29 +34,29 @@ class TestSecurity extends SohvaTestSpec with Matchers with BeforeAndAfterEach {
   override def beforeEach() {
     // create the database for tests
     adminSecDb = session.database("sohva_test_security")
-    adminSecDb.create
+    synced(adminSecDb.create)
     // add the test users
-    session.users.add("secUser1", "secUser1", List("role1", "role2"))
-    session.users.add("secUser2", "secUser2", List("role2"))
+    synced(session.users.add("secUser1", "secUser1", List("role1", "role2")))
+    synced(session.users.add("secUser2", "secUser2", List("role2")))
   }
 
   override def afterEach() {
     // delete the database
-    adminSecDb.delete
+    synced(adminSecDb.delete)
     // delete the test user
-    session.users.delete("secUser1")
-    session.users.delete("secUser2")
+    synced(session.users.delete("secUser1"))
+    synced(session.users.delete("secUser2"))
   }
 
   "a database with no security document" should "be readable by everybody" in {
 
-    secDb.info should be('defined)
+    synced(secDb.info) should be('defined)
 
   }
 
   it should "be writtable to anybody" in {
 
-    val saved = secDb.saveDoc(TestDoc("some_doc", 17))
+    val saved = synced(secDb.saveDoc(TestDoc("some_doc", 17)))
 
     saved should have(
       '_id("some_doc"),
@@ -68,26 +66,26 @@ class TestSecurity extends SohvaTestSpec with Matchers with BeforeAndAfterEach {
 
   "server admin" should "be able to add a security document" in {
 
-    adminSecDb.saveSecurityDoc(secDoc1) should be(true)
+    synced(adminSecDb.saveSecurityDoc(secDoc1)) should be(true)
 
   }
 
   "database admin" should "be able to update the security document" in {
-    adminSecDb.saveSecurityDoc(secDoc1) should be(true)
+    synced(adminSecDb.saveSecurityDoc(secDoc1)) should be(true)
 
     val session2 = couch.startCookieSession
-    session2.login("secUser2", "secUser2")
+    synced(session2.login("secUser2", "secUser2"))
 
-    session2.database("sohva_test_security").saveSecurityDoc(secDoc2) should be(true)
+    synced(session2.database("sohva_test_security").saveSecurityDoc(secDoc2)) should be(true)
   }
 
   "anonymous user" should "not be able to read a database with a members list" in {
 
-    secDb.saveDoc(TestDoc("some_doc", 13))
-    adminSecDb.saveSecurityDoc(secDoc3) should be(true)
+    synced(secDb.saveDoc(TestDoc("some_doc", 13)))
+    synced(adminSecDb.saveSecurityDoc(secDoc3)) should be(true)
 
     val thrown = the[SohvaException] thrownBy {
-      secDb.getDocById[TestDoc]("some_doc")
+      synced(secDb.getDocById[TestDoc]("some_doc"))
     }
 
     val ce = CauseMatchers.findExpectedExceptionRecursively[CouchException](thrown)
@@ -98,10 +96,10 @@ class TestSecurity extends SohvaTestSpec with Matchers with BeforeAndAfterEach {
 
   it should "not be able to write into a database with a member list" in {
 
-    adminSecDb.saveSecurityDoc(secDoc3) should be(true)
+    synced(adminSecDb.saveSecurityDoc(secDoc3)) should be(true)
 
     val thrown = the[SohvaException] thrownBy {
-      secDb.saveDoc(TestDoc("some_doc", 13))
+      synced(secDb.saveDoc(TestDoc("some_doc", 13)))
     }
 
     val ce = CauseMatchers.findExpectedExceptionRecursively[CouchException](thrown)

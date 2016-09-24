@@ -15,19 +15,39 @@
 */
 package gnieh.sohva
 
-import spray.httpx.unmarshalling.Unmarshaller
+import scala.concurrent.Future
 
-import scala.language.higherKinds
+import spray.client.pipelining._
+import spray.httpx.unmarshalling._
+import spray.http.StatusCodes
 
 /** A list that can be queried for a given view.
  *
  *  @author Lucas Satabin
  */
-trait CList[Result[_]] {
+class CList(
+    val design: String,
+    val db: Database,
+    val list: String) {
+
+  import db.ec
+
+  protected[this] def uri = db.uri / "_design" / design / "_list" / list
 
   /** Indicates whether this view exists */
-  def exists: Result[Boolean]
+  def exists: Future[Boolean] =
+    for (h <- db.couch.rawHttp(Head(uri)))
+      yield h.status == StatusCodes.OK
 
-  def query[T: Unmarshaller](viewName: String, format: Option[String] = None): Result[T]
+  def query[T: Unmarshaller](viewName: String, format: Option[String] = None): Future[T] =
+    for {
+      resp <- db.couch.rawHttp(Get(uri / viewName <<? format.map(f => ("format", f))))
+    } yield resp.as[T] match {
+      case Left(error) => throw new SohvaException(f"Unable to deserialize list result for list function $list and format $format: $error")
+      case Right(v)    => v
+    }
+
+  override def toString =
+    uri.toString
 
 }

@@ -15,20 +15,54 @@
 */
 package gnieh.sohva
 
-import scala.language.higherKinds
+import akka.actor.ActorRef
+
+import scala.concurrent.Future
+import spray.http._
 
 /** An instance of a Couch session that allows the user to perform authenticated
  *  operations using OAuth.
  *
  *  @author Lucas Satabin
  */
-trait OAuthSession[Result[_]] extends CouchDB[Result] with Session[Result] {
+class OAuthSession protected[sohva] (
+  val consumerKey: String,
+  consumerSecret: String,
+  val token: String,
+  secret: String,
+  val couch: CouchClient)
+    extends CouchDB
+    with Session {
 
-  /** The current session consumer key */
-  val consumerKey: String
+  val host =
+    couch.host
 
-  /** The current session token */
-  val token: String
+  val port =
+    couch.port
+
+  val ssl =
+    couch.ssl
+
+  val version =
+    couch.version
+
+  val system =
+    couch.system
+
+  implicit def ec = couch.ec
+
+  // helper methods
+
+  protected[sohva] val pipeline =
+    couch.pipeline
+
+  private val oauth = OAuth.oAuthAuthorizer(consumerKey, consumerSecret, token, secret)
+
+  // sign all requests sent to CouchDB
+  protected[sohva] def prepare(req: HttpRequest) =
+    oauth(req)
+
+  protected[sohva] def uri =
+    couch.uri
 
 }
-
