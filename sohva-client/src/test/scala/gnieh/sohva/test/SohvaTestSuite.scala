@@ -36,25 +36,17 @@ abstract class SohvaTestSpec(retry: Int = 0, strategy: Strategy = BarneyStinsonS
   implicit val testDoc2Format = couchFormat[TestDoc2]
 
   val couch = new CouchClient
-  val session = couch.startCookieSession
+  val session = couch.startBasicSession("admin", "admin")
   val db = session.database("sohva-tests", credit = retry, strategy = strategy)
 
   override def beforeAll() {
-    synced(for {
-      // login
-      _ <- session.login("admin", "admin")
-      // create database
-      _ <- db.create
-    } yield ())
+    // create database
+    synced(db.create)
   }
 
   override def afterAll() {
-    synced(for {
-      // cleanup database
-      _ <- db.delete
-      // logout
-      _ <- session.logout
-    } yield ())
+    // cleanup database
+    synced(db.delete)
     couch.shutdown()
     system.terminate()
   }

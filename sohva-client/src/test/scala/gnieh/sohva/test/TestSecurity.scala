@@ -73,8 +73,7 @@ class TestSecurity extends SohvaTestSpec with Matchers with BeforeAndAfterEach {
   "database admin" should "be able to update the security document" in {
     synced(adminSecDb.saveSecurityDoc(secDoc1)) should be(true)
 
-    val session2 = couch.startCookieSession
-    synced(session2.login("secUser2", "secUser2"))
+    val session2 = couch.startBasicSession("secUser2", "secUser2")
 
     synced(session2.database("sohva_test_security").saveSecurityDoc(secDoc2)) should be(true)
   }

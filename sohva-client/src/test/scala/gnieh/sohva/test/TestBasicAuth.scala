@@ -44,35 +44,18 @@ class TestBasicAuth extends SohvaTestSpec with BeforeAndAfterAll {
     super.afterAll()
   }
 
-  "A basic session" should "give access to same rights as the cookie authenticated user" in {
+  "A basic session" should "give access to user document" in {
 
     val basicSession = couch.startBasicSession(username, password)
-    val cookieSession = couch.startCookieSession
 
     val basicUser = synced(basicSession.currentUser)
 
-    val anonUser = synced(cookieSession.currentUser)
-
-    basicUser should not be (anonUser)
-
-    val loggedin = synced(cookieSession.login(username, password))
-
-    loggedin should be(true)
-
-    val cookieUser = synced(cookieSession.currentUser)
-
-    basicUser should be(cookieUser)
-
-    val cookieUserDb = cookieSession.database("_users")
-    val cookieRev = synced(cookieUserDb.getDocRevision("org.couchdb.user:" + username))
-
-    cookieRev should be('defined)
+    basicUser should be('defined)
 
     val basicUserDb = basicSession.database("_users")
     val basicRev = synced(basicUserDb.getDocRevision("org.couchdb.user:" + username))
 
     basicRev should be('defined)
-    basicRev should be(cookieRev)
 
   }
 

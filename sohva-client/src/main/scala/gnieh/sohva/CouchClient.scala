@@ -51,10 +51,6 @@ class CouchClient(val host: String = "localhost",
   implicit def ec: ExecutionContext =
     system.dispatcher
 
-  /** Starts a new cookie based session */
-  def startCookieSession: CookieSession =
-    new CookieSession(this)
-
   /** Starts a new OAuth session */
   def startOAuthSession(consumerKey: String, consumerSecret: String, token: String, secret: String): OAuthSession =
     new OAuthSession(consumerKey, consumerSecret, token, secret, this)
@@ -64,15 +60,11 @@ class CouchClient(val host: String = "localhost",
     new BasicSession(username, password, this)
 
   /** Starts a new session with the given credential */
-  def withCredentials(credentials: CouchCredentials): Future[Session] = credentials match {
-    case LoginPasswordCredentials(username, password, false) =>
-      Future.successful(startBasicSession(username, password))
-    case LoginPasswordCredentials(username, password, true) =>
-      val session = startCookieSession
-      for (true <- session.login(username, password))
-        yield session
+  def withCredentials(credentials: CouchCredentials): Session = credentials match {
+    case LoginPasswordCredentials(username, password) =>
+      startBasicSession(username, password)
     case OAuthCredentials(consumerKey, consumerSecret, token, secret) =>
-      Future.successful(startOAuthSession(consumerKey, consumerSecret, token, secret))
+      startOAuthSession(consumerKey, consumerSecret, token, secret)
   }
 
   /** Shuts down this instance of couchdb client. */

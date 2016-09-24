@@ -55,35 +55,27 @@ class TestOAuth extends SohvaTestSpec with BeforeAndAfterAll {
     super.afterAll()
   }
 
-  "An OAuth session" should "give access to same rights as the cookie authenticated user" in {
+  "An OAuth session" should "give access to same rights as the basic authenticated user" in {
 
     val oauthSession = couch.startOAuthSession(consumerKey1, consumerSecret1, token1, secret1)
-    val cookieSession = couch.startCookieSession
+    val basicSession = couch.startBasicSession(user, user)
 
     val oauthUser = synced(oauthSession.currentUser)
 
-    val anonUser = synced(cookieSession.currentUser)
+    val basicUser = synced(basicSession.currentUser)
 
-    oauthUser should not be (anonUser)
+    oauthUser should be(basicUser)
 
-    val loggedin = synced(cookieSession.login(user, user))
+    val basicUserDb = basicSession.database("_users")
+    val basicRev = synced(basicUserDb.getDocRevision("org.couchdb.user:" + user))
 
-    loggedin should be(true)
-
-    val cookieUser = synced(cookieSession.currentUser)
-
-    oauthUser should be(cookieUser)
-
-    val cookieUserDb = cookieSession.database("_users")
-    val cookieRev = synced(cookieUserDb.getDocRevision("org.couchdb.user:" + user))
-
-    cookieRev should be('defined)
+    basicRev should be('defined)
 
     val oauthUserDb = oauthSession.database("_users")
     val oauthRev = synced(oauthUserDb.getDocRevision("org.couchdb.user:" + user))
 
     oauthRev should be('defined)
-    oauthRev should be(cookieRev)
+    oauthRev should be(basicRev)
 
   }
 
