@@ -540,12 +540,17 @@ final case class InfoResult(
   compact_running: Boolean,
   db_name: String,
   disk_format_version: Int,
-  disk_size: Int,
-  doc_count: Int,
-  doc_del_count: Int,
+  disk_size: Long,
+  doc_count: Long,
+  doc_del_count: Long,
+  data_size: Long,
   instance_start_time: String,
-  purge_seq: Int,
-  update_seq: Int)
+  purge_seq: Long,
+  update_seq: JsValue,
+  sizes: Option[Sizes],
+  other: Option[Map[String, JsValue]])
+
+final case class Sizes(file: Long, external: Long, active: Long)
 
 final case class DocUpdate(
   ok: Boolean,

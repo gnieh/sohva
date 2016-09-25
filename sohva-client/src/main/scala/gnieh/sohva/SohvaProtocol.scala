@@ -29,7 +29,9 @@ trait SohvaProtocol extends DefaultJsonProtocol with CouchFormatImpl {
 
   implicit val docUpdateFormat = jsonFormat3(DocUpdate)
 
-  implicit val infoResultFormat = jsonFormat9(InfoResult)
+  implicit val sizesFormat = jsonFormat3(Sizes)
+
+  implicit val infoResultFormat = jsonFormat12(InfoResult)
 
   implicit val bulkSaveFormat = jsonFormat2(BulkSave)
 
