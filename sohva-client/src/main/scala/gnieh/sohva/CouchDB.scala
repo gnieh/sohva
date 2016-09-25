@@ -56,9 +56,6 @@ abstract class CouchDB extends SprayJsonSupport {
   /** Whether to use ssl */
   val ssl: Boolean
 
-  /** The couchdb instance version. */
-  val version: String
-
   /** Returns the couchdb instance information */
   def info: Future[CouchInfo] =
     for (

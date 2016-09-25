@@ -43,8 +43,7 @@ import org.slf4j.LoggerFactory
  */
 class CouchClient(val host: String = "localhost",
     val port: Int = 5984,
-    val ssl: Boolean = false,
-    val version: String = "1.4")(
+    val ssl: Boolean = false)(
         implicit val system: ActorSystem,
         val timeout: Timeout) extends CouchDB {
 

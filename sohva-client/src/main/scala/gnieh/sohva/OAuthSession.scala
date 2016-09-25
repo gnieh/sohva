@@ -43,9 +43,6 @@ class OAuthSession protected[sohva] (
   val ssl =
     couch.ssl
 
-  val version =
-    couch.version
-
   val system =
     couch.system
 
