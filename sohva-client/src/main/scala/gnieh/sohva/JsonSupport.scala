@@ -38,7 +38,7 @@ trait SprayJsonSupport {
     sprayJsonMarshaller[T](writer, printer)
 
   implicit def sprayJsonMarshaller[T](implicit writer: JsonWriter[T], printer: JsonPrinter = PrettyPrinter) =
-    Marshaller.delegate[T, String](ContentTypes.`application/json`) { value ⇒
+    Marshaller.delegate[T, String](ContentTypes.`application/json`.withCharset(HttpCharsets.`UTF-8`)) { value =>
       val json = writer.write(value)
       printer(json)
     }

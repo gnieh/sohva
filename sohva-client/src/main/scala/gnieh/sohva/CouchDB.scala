@@ -160,7 +160,7 @@ abstract class CouchDB extends SprayJsonSupport {
     rawHttp(req).flatMap(handleOptionalCouchResponse)
 
   private def handleCouchResponse(response: HttpResponse): Future[JsValue] = {
-    val json = JsonParser(response.entity.asString)
+    val json = JsonParser(response.entity.asString(defaultCharset = HttpCharsets.`UTF-8`))
     if (response.status.isSuccess) {
       Future.successful(json)
     } else {
