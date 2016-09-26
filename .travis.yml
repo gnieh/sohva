@@ -16,9 +16,6 @@ services: couchdb
 script:
   - sbt clean coverage test coverageReport coverageAggregate
 
-before_install:
-  - pip install --user codecov
-
 # create an admin user
 before_script:
   - curl -X PUT -d '"true"' localhost:5984/_config/couch_httpd_oauth/use_users_db
@@ -26,4 +23,4 @@ before_script:
 # optional: create a user document...  - curl -X PUT -d '{ "_id": "org.couchdb.user:admin", "password": null, "name": "admin", "roles": [], "type": "user" }' localhost:5984/_users/org.couchdb.user:admin
 
 after_success:
- - codecov
+ - bash <(curl -s https://codecov.io/bash)
