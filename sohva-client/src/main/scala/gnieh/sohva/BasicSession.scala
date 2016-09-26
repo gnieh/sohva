@@ -15,20 +15,46 @@
 */
 package gnieh.sohva
 
-import scala.language.higherKinds
+import scala.concurrent.Future
+
+import spray.http._
+import spray.client.pipelining._
 
 /** An instance of a Couch session that allows the user to perform authenticated
  *  operations using HTTP basic authentication.
  *
  *  @author Lucas Satabin
  */
-trait BasicSession[Result[_]] extends CouchDB[Result] with Session[Result] {
+class BasicSession protected[sohva] (
+  val username: String,
+  val password: String,
+  val couch: CouchClient)
+    extends CouchDB
+    with Session {
 
-  /** The current session user name */
-  val username: String
+  val host =
+    couch.host
 
-  /** The current session password */
-  val password: String
+  val port =
+    couch.port
+
+  val ssl =
+    couch.ssl
+
+  val system =
+    couch.system
+
+  implicit def ec = couch.ec
+
+  // helper methods
+
+  protected[sohva] val pipeline =
+    addCredentials(BasicHttpCredentials(username, password)) ~> couch.pipeline
+
+  protected[sohva] def prepare(req: HttpRequest) =
+    req
+
+  protected[sohva] def uri =
+    couch.uri
 
 }
-

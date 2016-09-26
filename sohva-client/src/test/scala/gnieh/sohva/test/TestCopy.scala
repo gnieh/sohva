@@ -17,26 +17,23 @@ package gnieh.sohva
 package test
 
 import org.scalatest._
-import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.OptionValues._
-
-import sync._
 
 class TestCopy extends SohvaTestSpec with Matchers {
 
   "the target document" should "be created if it does not exist yet" in {
     val doc = TestDoc2("my-doc", 4)
-    val saved = db.saveDoc(doc)
+    val saved = synced(db.saveDoc(doc))
 
-    val targetUnknown = db.getDocById[TestDoc2]("my-doc-copy")
+    val targetUnknown = synced(db.getDocById[TestDoc2]("my-doc-copy"))
 
     targetUnknown should not be ('defined)
 
-    val ok = db.copy("my-doc", "my-doc-copy")
+    val ok = synced(db.copy("my-doc", "my-doc-copy"))
 
     ok should be(true)
 
-    val target = db.getDocById[TestDoc2]("my-doc-copy")
+    val target = synced(db.getDocById[TestDoc2]("my-doc-copy"))
 
     target should be('defined)
     target.value.toto should be(4)
@@ -45,21 +42,21 @@ class TestCopy extends SohvaTestSpec with Matchers {
 
   "the target document" should "be update if it already exists" in {
 
-    val saved = db.getDocById[TestDoc2]("my-doc")
+    val saved = synced(db.getDocById[TestDoc2]("my-doc"))
     saved should be('defined)
 
     val target = TestDoc2("my-doc-target", 5432)
 
-    val targetSaved = db.saveDoc(target)
+    val targetSaved = synced(db.saveDoc(target))
 
     targetSaved.toto should be(5432)
     targetSaved._rev should be('defined)
 
-    val ok = db.copy("my-doc", "my-doc-target", targetRev = targetSaved._rev)
+    val ok = synced(db.copy("my-doc", "my-doc-target", targetRev = targetSaved._rev))
 
     ok should be(true)
 
-    val targetUpdated = db.getDocById[TestDoc2]("my-doc-target")
+    val targetUpdated = synced(db.getDocById[TestDoc2]("my-doc-target"))
 
     targetUpdated.value.toto should be(4)
     targetUpdated.value._rev should not be (targetSaved._rev)

@@ -15,37 +15,49 @@
 */
 package gnieh.sohva
 
+import scala.concurrent.Future
+
+import scala.util.Try
+
 import java.util.Date
 
-import scala.language.higherKinds
+import spray.json._
+
+import spray.client.pipelining._
 
 /** The users database, exposing the interface for managing couchdb users.
  *
  *  @author Lucas Satabin
  */
-trait Users[Result[_]] {
+class Users(couch: CouchDB) {
 
-  var dbName: String
+  import couch._
+
+  import SohvaProtocol._
+
+  var dbName: String = "_users"
+
+  private def userDb = couch.database(dbName)
 
   /** Adds a new user with the given role list to the user database,
    *  and returns the new instance.
    */
   def add(name: String,
     password: String,
-    roles: List[String] = Nil): Result[Boolean]
+    roles: List[String] = Nil): Future[Boolean] = {
+
+    val user = CouchUser(name, password, roles)
+
+    for (res <- http(Put(uri / dbName / user._id, user.toJson)))
+      yield ok(res)
+
+  }
 
   /** Deletes the given user from the database. */
-  def delete(name: String): Result[Boolean]
+  def delete(name: String): Future[Boolean] =
+    database(dbName).deleteDoc("org.couchdb.user:" + name)
 
-  /** Generates a password reset token for the given user with the given validity and returns it */
-  def generateResetToken(name: String, until: Date): Result[String]
-
-  /** Resets the user password to the given one if:
-   *   - a password reset token exists in the database
-   *   - the token is still valid
-   *   - the saved token matches the one given as parameter
-   */
-  def resetPassword(name: String, token: String, password: String): Result[Boolean]
+  override def toString =
+    userDb.toString
 
 }
-

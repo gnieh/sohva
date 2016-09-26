@@ -17,7 +17,19 @@ package gnieh.sohva
 
 import strategy._
 
-import scala.language.higherKinds
+import scala.concurrent.{
+  Future,
+  ExecutionContext
+}
+
+import scala.util.Try
+
+import spray.http._
+import spray.client.pipelining._
+
+import akka.actor._
+
+import spray.json._
 
 /** A CouchDB instance.
  *  Allows users to access the different databases and information.
@@ -27,7 +39,13 @@ import scala.language.higherKinds
  *  @author Lucas Satabin
  *
  */
-trait CouchDB[Result[_]] {
+abstract class CouchDB extends SprayJsonSupport {
+
+  implicit def ec: ExecutionContext
+
+  import SohvaProtocol._
+
+  def system: ActorSystem
 
   /** The couchdb instance host name. */
   val host: String
@@ -35,53 +53,149 @@ trait CouchDB[Result[_]] {
   /** The couchdb instance port. */
   val port: Int
 
-  /** The couchdb instance version. */
-  val version: String
+  /** Whether to use ssl */
+  val ssl: Boolean
 
   /** Returns the couchdb instance information */
-  def info: Result[CouchInfo]
+  def info: Future[CouchInfo] =
+    for (
+      json <- http(Get(uri)) withFailureMessage
+        f"Unable to fetch info from $uri"
+    ) yield asCouchInfo(json)
 
   /** Returns the database on the given couch instance. */
-  def database(name: String, credit: Int = 0, strategy: Strategy = BarneyStinsonStrategy): Database[Result]
+  def database(name: String, credit: Int = 0, strategy: Strategy = BarneyStinsonStrategy): Database =
+    new Database(name, this, credit, strategy)
 
   /** Returns the replicator database */
-  def replicator(name: String = "_replicator", credit: Int = 0, strategy: Strategy = BarneyStinsonStrategy): Replicator[Result]
+  def replicator(name: String = "_replicator", credit: Int = 0, strategy: Strategy = BarneyStinsonStrategy): Replicator =
+    new Replicator(name, this, credit, strategy)
 
   /** Returns the names of all databases in this couch instance. */
-  def _all_dbs: Result[List[String]]
+  def _all_dbs: Future[List[String]] =
+    for (
+      dbs <- http(Get(uri / "_all_dbs")) withFailureMessage
+        f"Unable to fetch databases list from $uri"
+    ) yield asStringList(dbs)
 
   /** Returns one UUID */
-  def _uuid: Result[String]
+  def _uuid: Future[String] =
+    for (uuid <- _uuids(1))
+      yield uuid.head
 
   /** Returns the requested number of UUIDS (by default 1). */
-  def _uuids(count: Int = 1): Result[List[String]]
+  def _uuids(count: Int = 1): Future[List[String]] =
+    for (
+      uuids <- http(Get(uri / "_uuids" <<? Map("count" -> count.toString))) withFailureMessage
+        f"Failed to fetch $count uuids from $uri"
+    ) yield asUuidsList(uuids)
 
   /** Returns the configuration object for this CouchDB instance */
-  def _config: Result[Configuration]
+  def _config: Future[Configuration] =
+    for (
+      config <- http(Get(uri / "_config")) withFailureMessage
+        f"Failed to fetch config from $uri"
+    ) yield config.convertTo[Configuration]
 
   /** Returns the configuration section identified by its name
    *  (an empty map is returned if the section does not exist)
    */
-  def _config(section: String): Result[Map[String, String]]
+  def _config(section: String): Future[Map[String, String]] =
+    for (
+      section <- http(Get(uri / "_config" / section)) withFailureMessage
+        f"Failed to fetch config for $section from $uri"
+    ) yield section.convertTo[Map[String, String]]
 
   /** Returns the configuration value
    *  Returns `None` if the value does not exist
    */
-  def _config(section: String, key: String): Result[Option[String]]
+  def _config(section: String, key: String): Future[Option[String]] =
+    for (
+      section <- _config(section) withFailureMessage
+        f"Failed to fetch config for $section with key `$key' from $uri"
+    ) yield section.get(key)
 
   /** Saves the given key/value association in the specified section
    *  The section and/or the key is created if it does not exist
    */
-  def saveConfigValue(section: String, key: String, value: String): Result[Boolean]
+  def saveConfigValue(section: String, key: String, value: String): Future[Boolean] =
+    for (
+      res <- http(Put(uri / "_config" / section / key, value.toJson)) withFailureMessage
+        f"Failed to save config $section with key `$key' and value `$value' to $uri"
+    ) yield ok(res)
 
   /** Deletes the given configuration key inthe specified section */
-  def deleteConfigValue(section: String, key: String): Result[Boolean]
+  def deleteConfigValue(section: String, key: String): Future[Boolean] =
+    for (
+      res <- http(Delete(uri / "_config" / section / key)) withFailureMessage
+        f"Failed to delete config $section with key `$key' from $uri"
+    ) yield ok(res)
 
   /** Indicates whether this couchdb instance contains the given database */
-  def contains(dbName: String): Result[Boolean]
+  def contains(dbName: String): Future[Boolean] =
+    for (dbs <- _all_dbs)
+      yield dbs.contains(dbName)
 
   /** Exposes the interface for managing couchdb users. */
-  val users: Users[Result]
+  object users extends Users(this)
+
+  // helper methods
+
+  protected[sohva] def uri: Uri
+
+  protected[sohva] def prepare(req: HttpRequest): HttpRequest
+
+  protected[sohva] val pipeline: HttpRequest => Future[HttpResponse]
+
+  protected[sohva] def rawHttp(req: HttpRequest): Future[HttpResponse] =
+    pipeline(prepare(req))
+
+  protected[sohva] def http(req: HttpRequest): Future[JsValue] =
+    rawHttp(req).flatMap(handleCouchResponse)
+
+  protected[sohva] def optHttp(req: HttpRequest): Future[Option[JsValue]] =
+    rawHttp(req).flatMap(handleOptionalCouchResponse)
+
+  private def handleCouchResponse(response: HttpResponse): Future[JsValue] = {
+    val json = JsonParser(response.entity.asString(defaultCharset = HttpCharsets.`UTF-8`))
+    if (response.status.isSuccess) {
+      Future.successful(json)
+    } else {
+      // something went wrong...
+      val code = response.status.intValue
+      val error = Try(json.convertTo[ErrorResult]).toOption
+      Future.failed(CouchException(code, error))
+    }
+  }
+
+  private def handleOptionalCouchResponse(response: HttpResponse): Future[Option[JsValue]] =
+    handleCouchResponse(response) map (Some(_)) recoverWith {
+      case CouchException(404, _) => Future.successful(None)
+      case err                    => Future.failed(err)
+    }
+
+  @inline
+  protected[sohva] def ok(json: JsValue) =
+    json.convertTo[OkResult].ok
+
+  @inline
+  private def asCouchInfo(json: JsValue) =
+    json.convertTo[CouchInfo]
+
+  @inline
+  private def asStringList(json: JsValue) =
+    json.convertTo[List[String]]
+
+  @inline
+  private def asUuidsList(json: JsValue) =
+    json.convertTo[Uuids].uuids
+
+  @inline
+  private def asConfiguration(json: JsValue) =
+    json.convertTo[Configuration]
+
+  override def toString =
+    uri.toString
 
 }
 

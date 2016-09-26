@@ -14,7 +14,6 @@
 * limitations under the License.
 */
 package gnieh.sohva
-package async
 
 import javax.crypto
 import java.nio.charset.Charset

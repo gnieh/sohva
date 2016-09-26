@@ -20,12 +20,11 @@ package strategy
 import org.scalatest._
 import org.scalatest.OptionValues._
 
-import sync._
 import gnieh.sohva.strategy.StructuralMergeStrategy
 
 import spray.json._
 
-class TestStructuralMergeStrategy extends FlatSpec with ShouldMatchers {
+class TestStructuralMergeStrategy extends FlatSpec with Matchers {
 
   "a path deleted by a first patch" should "not be modified by a subsequent patch" in {
     val json1 = "[1, 2, 3]".parseJson

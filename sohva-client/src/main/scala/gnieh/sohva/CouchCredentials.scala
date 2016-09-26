@@ -19,8 +19,7 @@ sealed trait CouchCredentials
 
 final case class LoginPasswordCredentials(
   username: String,
-  password: String,
-  cookie: Boolean) extends CouchCredentials
+  password: String) extends CouchCredentials
 
 final case class OAuthCredentials(
   consumerKey: String,

@@ -15,7 +15,7 @@
 */
 package gnieh.sohva
 
-import scala.reflect.macros.Context
+import scala.reflect.macros.whitebox.Context
 
 import scala.language.experimental.macros
 
@@ -46,25 +46,25 @@ object CouchFormatImpl {
     if(!tpe.typeSymbol.asClass.isCaseClass)
       c.abort(c.enclosingPosition, s"${tpe} is not a case class. `couchFormat' can only generate a RootJsonFormat[T] for case classes!")
 
-    val methodNames = tpe.declarations.toList.collect {
+    val methodNames = tpe.decls.toList.collect {
       case method: MethodSymbol if method.isCaseAccessor => q"${method.name.toString}"
     }
 
     val attachments =
-      tpe.member(newTermName("_attachments")) match {
+      tpe.member(TermName("_attachments")) match {
         case NoSymbol => q"Map.empty[String, gnieh.sohva.Attachment]"
         case _        => q"v._attachments"
       }
 
     val withAttachments =
-      tpe.member(newTermName("withAttachments")) match {
+      tpe.member(TermName("withAttachments")) match {
         case NoSymbol => q"v"
         case _        => q"v.withAttachments(atts)"
       }
 
     c.Expr[CouchFormat[T]](q"""new gnieh.sohva.CouchFormat[$tpe] {
 
-      val inner = jsonFormat(${tpe.typeSymbol.companionSymbol}, ..$methodNames)
+      val inner = jsonFormat(${tpe.typeSymbol.companion}, ..$methodNames)
       def _id(v: $tpe) = v._id
       def _rev(v: $tpe) = v._rev
       def _attachments(v: $tpe) = $attachments

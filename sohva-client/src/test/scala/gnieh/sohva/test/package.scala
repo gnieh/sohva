@@ -14,23 +14,17 @@
 * limitations under the License.
 */
 package gnieh.sohva
-package sync
 
-import gnieh.sohva.async.{
-  CList => ACList
-}
+import scala.concurrent._
+import duration._
 
-import spray.httpx.unmarshalling.Unmarshaller
+package object test {
 
-class CList(val wrapped: ACList) extends gnieh.sohva.CList[Identity] {
-
-  def exists: Boolean =
-    synced(wrapped.exists)
-
-  def query[T: Unmarshaller](viewName: String, format: Option[String] = None): T =
-    synced(wrapped.query[T](viewName, format))
-
-  override def toString =
-    wrapped.toString
+  def synced[T](result: Future[T]): T =
+    try {
+      Await.result(result, Duration.Inf)
+    } catch {
+      case t: SohvaException => throw t
+    }
 
 }

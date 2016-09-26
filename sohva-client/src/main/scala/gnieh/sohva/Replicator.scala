@@ -19,7 +19,7 @@ import strategy._
 
 import java.net.URL
 
-import scala.language.higherKinds
+import scala.concurrent.Future
 
 /** A replicator database that allows people to manage replications:
  *   - start replication
@@ -28,21 +28,39 @@ import scala.language.higherKinds
  *
  *  @author Lucas Satabin
  */
-trait Replicator[Result[_]] extends Database[Result] {
+class Replicator(name: String, couch: CouchDB, credit: Int, strategy: Strategy)
+    extends Database(name, couch, credit, strategy) {
+
+  import SohvaProtocol._
 
   /** Starts a new replication from `source` to `target`. if a replication
    *  task already exists for the same source and target, the document is added
    *  but the replication is not started again. The result only contains the identifier
    *  of the actual replication task, not its state.
    */
-  def start(replication: Replication): Result[Replication]
+  def start(replication: Replication): Future[Replication] =
+    saveDoc(replication)
 
   /** Stops the replication identified by the given replication document id.
    *  if the identifier does not describe the document that started the replication,
    *  it is deleted from the replicator database, but the replication task is not stopped.
    *  It returns `true` only if the replication was actually stopped, `false` otherwise.
    */
-  def stop(id: String): Result[Boolean]
+  def stop(id: String): Future[Boolean] =
+    for {
+      repl <- getDocById[Replication](id)
+      ok <- deleteReplication(repl)
+    } yield ok
+
+  private def deleteReplication(repl: Option[Replication]) = repl match {
+    case Some(r) =>
+      for {
+        ok <- deleteDoc(r)
+        // is this the original document that started the replication task?
+      } yield r._replication_state.isDefined && ok
+    case None =>
+      Future.successful(false)
+  }
 
 }
 

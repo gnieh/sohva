@@ -17,10 +17,7 @@ package gnieh.sohva
 package test
 
 import org.scalatest._
-import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.OptionValues._
-
-import sync._
 
 import java.io.{ ByteArrayInputStream, File, FileWriter }
 
@@ -35,7 +32,7 @@ class TestAttachments extends SohvaTestSpec with Matchers {
   "a document with no attached file" should "have an empty attachment field" in {
 
     val doc = TestDocAtt("doc-with-attachments", 4)
-    val saved = db.saveDoc(doc)
+    val saved = synced(db.saveDoc(doc))
 
     saved._attachments should be('empty)
 
@@ -43,18 +40,18 @@ class TestAttachments extends SohvaTestSpec with Matchers {
 
   "a document for which a file was attached" should "contain the attachment information" in {
 
-    val saved = db.getDocById[TestDocAtt]("doc-with-attachments")
+    val saved = synced(db.getDocById[TestDocAtt]("doc-with-attachments"))
 
     val f = File.createTempFile("sohva", "test")
     val content = "this is the content"
     for (fw <- managed(new FileWriter(f)))
       fw.write(content)
 
-    val ok = db.attachTo("doc-with-attachments", f, "text/plain")
+    val ok = synced(db.attachTo("doc-with-attachments", f, "text/plain"))
 
     ok should be(true)
 
-    val withAttachment = db.getDocById[TestDocAtt]("doc-with-attachments")
+    val withAttachment = synced(db.getDocById[TestDocAtt]("doc-with-attachments"))
     withAttachment should be('defined)
     withAttachment.value._rev should not be (saved.value._rev)
     withAttachment.value._attachments should not be ('empty)
@@ -69,13 +66,13 @@ class TestAttachments extends SohvaTestSpec with Matchers {
 
   "an attachment supplied by inputstream" should "have predictable ID" in {
     val doc = TestDocAtt("doc-with-stream-attachments", 5)
-    val saved = db.saveDoc(doc)
+    val saved = synced(db.saveDoc(doc))
     saved._attachments should be('empty)
 
     val is = new ByteArrayInputStream("attachment-contents".getBytes("utf8"))
 
-    db.attachTo(doc._id, "attachment-id", is, "text/plain")
-    val withAttachment = db.getDocById[TestDocAtt](doc._id)
+    synced(db.attachTo(doc._id, "attachment-id", is, "text/plain"))
+    val withAttachment = synced(db.getDocById[TestDocAtt](doc._id))
     withAttachment.value._attachments.headOption match {
       case Some(a) => a._1 should equal("attachment-id")
       case None    => fail("no attachment")

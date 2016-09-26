@@ -20,7 +20,7 @@ import org.scalatest._
 
 import spray.json._
 
-class TestSerializer extends SohvaTestSpec with ShouldMatchers {
+class TestSerializer extends SohvaTestSpec with Matchers {
 
   "a string" should "be correctly serialized" in {
     "this is my string to serialize".toJson should be(JsString("this is my string to serialize"))

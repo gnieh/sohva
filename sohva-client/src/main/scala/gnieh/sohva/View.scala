@@ -15,23 +15,33 @@
 */
 package gnieh.sohva
 
-import spray.json.{
-  JsValue,
-  JsObject,
-  JsonReader,
-  JsonFormat
-}
+import spray.json._
 
-import scala.language.higherKinds
+import scala.concurrent.Future
+
+import spray.client.pipelining._
+
+import spray.http.StatusCodes
 
 /** A view can be queried to get the result.
  *
  *  @author Lucas Satabin
  */
-trait View[Result[_]] {
+class View(
+    val design: String,
+    val db: Database,
+    val view: String) {
+
+  import db.ec
+
+  import SohvaProtocol._
+
+  protected[this] def uri = db.uri / "_design" / design / "_view" / view
 
   /** Indicates whether this view exists */
-  def exists: Result[Boolean]
+  def exists: Future[Boolean] =
+    for (h <- db.couch.rawHttp(Head(uri)))
+      yield h.status == StatusCodes.OK
 
   /** Queries the view on the server and returned the untyped result. */
   def queryRaw(
@@ -50,7 +60,38 @@ trait View[Result[_]] {
     reduce: Boolean = true,
     include_docs: Boolean = false,
     inclusive_end: Boolean = true,
-    update_seq: Boolean = false): Result[RawViewResult]
+    update_seq: Boolean = false): Future[RawViewResult] = {
+
+    // build options
+    val options = List(
+      key.map(k => "key" -> k.toJson.compactPrint),
+      if (keys.nonEmpty) Some("keys" -> keys.toJson.compactPrint) else None,
+      startkey.map(k => "startkey" -> k.toJson.compactPrint),
+      startkey_docid.map("startkey_docid" -> _),
+      endkey.map(k => "endkey" -> k.toJson.compactPrint),
+      endkey_docid.map("endkey_docid" -> _),
+      if (limit > 0) Some("limit" -> limit) else None,
+      stale.map("stale" -> _),
+      if (descending) Some("descending" -> true) else None,
+      if (skip > 0) Some("skip" -> skip) else None,
+      if (group) Some("group" -> true) else None,
+      if (group_level >= 0) Some("group_level" -> group_level) else None,
+      if (reduce) None else Some("reduce" -> false),
+      if (include_docs) Some("include_docs" -> true) else None,
+      if (inclusive_end) None else Some("inclusive_end" -> false),
+      if (update_seq) Some("update_seq" -> true) else None
+    )
+      .flatten
+      .filter(_ != null) // just in case somebody gave Some(null)...
+      .map { case (name, value) => (name, value.toString) }
+      .toMap
+
+    for (
+      res <- db.couch.http(buildReq(options)) withFailureMessage
+        f"Raw query failed for view `$view' in design `$design' at $db"
+    ) yield res.convertTo[RawViewResult]
+
+  }
 
   /** Queries the view on the server and returned the typed result.
    *  BE CAREFUL: If the types given to the constructor are not correct,
@@ -72,10 +113,84 @@ trait View[Result[_]] {
     reduce: Boolean = true,
     include_docs: Boolean = false,
     inclusive_end: Boolean = true,
-    update_seq: Boolean = false): Result[ViewResult[Key, Value, Doc]]
+    update_seq: Boolean = false): Future[ViewResult[Key, Value, Doc]] = {
+
+    // build options
+    val options = List(
+      key.map(k => "key" -> k.toJson.compactPrint),
+      if (keys.nonEmpty) Some("keys" -> keys.toJson.compactPrint) else None,
+      startkey.map(k => "startkey" -> k.toJson.compactPrint),
+      startkey_docid.map("startkey_docid" -> _),
+      endkey.map(k => "endkey" -> k.toJson.compactPrint),
+      endkey_docid.map("endkey_docid" -> _),
+      if (limit > 0) Some("limit" -> limit) else None,
+      stale.map("stale" -> _),
+      if (descending) Some("descending" -> true) else None,
+      if (skip > 0) Some("skip" -> skip) else None,
+      if (group) Some("group" -> true) else None,
+      if (group_level >= 0) Some("group_level" -> group_level) else None,
+      if (reduce) None else Some("reduce" -> false),
+      if (include_docs) Some("include_docs" -> true) else None,
+      if (inclusive_end) None else Some("inclusive_end" -> false),
+      if (update_seq) Some("update_seq" -> true) else None
+    )
+      .flatten
+      .filter(_ != null) // just in case somebody gave Some(null)...
+      .map { case (name, value) => (name, value.toString) }
+      .toMap
+
+    for (
+      res <- db.couch.http(buildReq(options)) withFailureMessage
+        f"Query failed for view `$view' in design `$design' at $db"
+    ) yield viewResult[Key, Value, Doc](res)
+
+  }
+
+  // helper methods
+  protected def buildReq(options: Map[String, String]) = Get(uri <<? options)
+
+  private def viewResult[Key: JsonReader, Value: JsonReader, Doc: JsonReader](json: JsValue) = {
+    val RawViewResult(total_rows, offset, rawRows, update_seq) = json.convertTo[RawViewResult]
+    val rows =
+      for (RawRow(id, key, value, doc) <- rawRows)
+        yield Row(id, key.convertTo[Key], value.convertTo[Value], doc.map(_.convertTo[Doc]))
+    ViewResult(total_rows.toInt, offset.toInt, rows, update_seq.map(_.toInt))
+  }
+
+  override def toString =
+    uri.toString
+}
+
+/** Used to query built-in view such as `_all_docs`.
+ *
+ *  @author Lucas Satabin
+ */
+private class BuiltInView(
+  db: Database,
+  view: String)
+    extends View("", db, view) {
+
+  override protected[this] def uri = db.uri / view
 
 }
 
+private class TemporaryView(
+  db: Database,
+  viewDoc: ViewDoc)
+    extends BuiltInView(db, "_temp_view") {
+
+  import spray.http.HttpEntity
+  import spray.http.ContentTypes._
+
+  import SohvaProtocol._
+
+  override protected def buildReq(options: Map[String, String]) =
+    Post(uri <<? options)
+      .withEntity(HttpEntity(`application/json`, postData))
+
+  lazy val postData: String = viewDoc.toJson.compactPrint
+
+}
 case class ViewDoc(map: String, reduce: Option[String])
 
 final case class RawViewResult(

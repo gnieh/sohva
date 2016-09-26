@@ -16,8 +16,6 @@
 package gnieh.sohva
 package test
 
-import sync._
-
 import gnieh.sohva.strategy._
 
 import org.scalatest._
@@ -25,10 +23,11 @@ import org.scalatest._
 import akka.actor.ActorSystem
 import akka.util.Timeout
 import scala.concurrent.duration._
+import scala.concurrent.ExecutionContext.Implicits.global
 
 import spray.json._
 
-abstract class SohvaTestSpec(retry: Int = 0, strategy: Strategy = BarneyStinsonStrategy) extends FlatSpec with ShouldMatchers with BeforeAndAfterAll with SohvaProtocol {
+abstract class SohvaTestSpec(retry: Int = 0, strategy: Strategy = BarneyStinsonStrategy) extends FlatSpec with Matchers with BeforeAndAfterAll with SohvaProtocol {
 
   implicit val system = ActorSystem()
   implicit val timeout = Timeout(5.seconds)
@@ -37,23 +36,19 @@ abstract class SohvaTestSpec(retry: Int = 0, strategy: Strategy = BarneyStinsonS
   implicit val testDoc2Format = couchFormat[TestDoc2]
 
   val couch = new CouchClient
-  val session = couch.startCookieSession
+  val session = couch.startBasicSession("admin", "admin")
   val db = session.database("sohva-tests", credit = retry, strategy = strategy)
 
   override def beforeAll() {
-    // login
-    session.login("admin", "admin")
     // create database
-    db.create
+    synced(db.create)
   }
 
   override def afterAll() {
     // cleanup database
-    db.delete
-    // logout
-    session.logout
+    synced(db.delete)
     couch.shutdown()
-    system.shutdown()
+    system.terminate()
   }
 
 }

@@ -19,8 +19,6 @@ package test
 import org.scalatest._
 import org.scalatest.OptionValues._
 
-import sync._
-
 import gnieh.diffson._
 
 import spray.json._
@@ -28,32 +26,32 @@ import spray.json._
 class TestBasic extends SohvaTestSpec with Matchers {
 
   "an unknown document" should "not be retrieved" in {
-    db.getDocById[TestDoc]("unknown-doc") should be(None)
+    synced(db.getDocById[TestDoc]("unknown-doc")) should be(None)
   }
 
   it should "be added correctly and can then be retrieved" in {
     val doc = TestDoc2("new-doc", 4)
-    val saved = db.saveDoc(doc)
+    val saved = synced(db.saveDoc(doc))
 
     saved should have(
       '_id("new-doc"),
       'toto(4))
 
-    db.getDocById[TestDoc2]("new-doc") should be(Some(saved))
+    synced(db.getDocById[TestDoc2]("new-doc")) should be(Some(saved))
   }
 
   "an existing document" should "have a revision" in {
-    db.getDocById[TestDoc2]("new-doc") match {
+    synced(db.getDocById[TestDoc2]("new-doc")) match {
       case Some(doc) => doc._rev should not be (None)
       case None      => fail("The document with id `new-doc` should exist")
     }
   }
 
   it should "not be saved if we have an outdated version" in {
-    db.getDocById[TestDoc2]("new-doc") match {
+    synced(db.getDocById[TestDoc2]("new-doc")) match {
       case Some(doc) =>
         val thrown = the[SohvaException] thrownBy {
-          db.saveDoc(doc.copy(toto = 1).withRev(Some("0-0")))
+          synced(db.saveDoc(doc.copy(toto = 1).withRev(Some("0-0"))))
         }
 
         val cause = CauseMatchers.findExpectedExceptionRecursively[ConflictException](thrown)
@@ -64,9 +62,9 @@ class TestBasic extends SohvaTestSpec with Matchers {
   }
 
   it should "be saved if we have the last version and then get a new revision" in {
-    db.getDocById[TestDoc2]("new-doc") match {
+    synced(db.getDocById[TestDoc2]("new-doc")) match {
       case Some(doc) =>
-        val newest = db.saveDoc(doc.copy(toto = 1).withRev(doc._rev))
+        val newest = synced(db.saveDoc(doc.copy(toto = 1).withRev(doc._rev)))
         newest.toto should be(1)
         newest._rev.value should not be (doc._rev.get)
       case None =>
@@ -75,10 +73,10 @@ class TestBasic extends SohvaTestSpec with Matchers {
   }
 
   it should "be patchable" in {
-    db.getDocRevision("new-doc") match {
+    synced(db.getDocRevision("new-doc")) match {
       case Some(rev) =>
         val patch = JsonPatch.parse("""[{ "op": "replace", "path": "/toto", "value": 453 }]""")
-        val newest = db.patchDoc[TestDoc2]("new-doc", rev, patch)
+        val newest = synced(db.patchDoc[TestDoc2]("new-doc", rev, patch))
         newest.toto should be(453)
         newest._rev.value should not be (rev)
       case None =>
@@ -94,7 +92,7 @@ class TestBasic extends SohvaTestSpec with Matchers {
 
     val doc = StringDoc("utf8-doc", "éßèüäöàç€ẞÐẞŁª€ªÐŁ")
 
-    val saved = db.saveDoc(doc)
+    val saved = synced(db.saveDoc(doc))
 
     saved._rev should be('defined)
     saved.value should be(doc.value)
@@ -107,11 +105,11 @@ class TestBasic extends SohvaTestSpec with Matchers {
 
     implicit val noCouchDoc = jsonFormat1(NoCouchDoc)
 
-    db.createDoc(doc) match {
+    synced(db.createDoc(doc)) match {
       case OkResult(true, id, rev) =>
 
         val newId = id.value
-        val saved = db.getRawDocById(newId)
+        val saved = synced(db.getRawDocById(newId))
         saved.value match {
           case JsObject(fields) =>
             fields.get("value").value should be(JsNumber(3))
