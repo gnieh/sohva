@@ -17,11 +17,8 @@ package gnieh.sohva
 
 import scala.concurrent.Future
 
-import spray.client.pipelining._
-
-import spray.httpx.unmarshalling._
-
-import spray.http.StatusCodes
+import akka.http.scaladsl.model._
+import akka.http.scaladsl.unmarshalling._
 
 /** A show function that can be queried.
  *
@@ -34,23 +31,23 @@ class Show(
 
   import db.ec
 
+  import db.couch.materializer
+
   protected[this] def uri = db.uri / "_design" / design / "_show" / show
 
   /** Indicates whether this view exists */
   def exists: Future[Boolean] =
-    for (h <- db.couch.rawHttp(Head(uri)))
+    for (h <- db.couch.rawHttp(HttpRequest(HttpMethods.HEAD, uri = uri)))
       yield h.status == StatusCodes.OK
 
   /** Returns the result of querying the show function with the document with the given identifier
    *  or `None` for the `null` document.
    */
-  def query[T: Unmarshaller](docId: Option[String] = None, format: Option[String] = None): Future[T] =
+  def query[T: FromEntityUnmarshaller](docId: Option[String] = None, format: Option[String] = None): Future[T] =
     for {
-      resp <- db.couch.rawHttp(Get(uri / docId <<? format.map(f => ("format", f))))
-    } yield resp.as[T] match {
-      case Left(error) => throw new SohvaException(f"Unable to deserialize show result for show function $show and format $format: $error")
-      case Right(v)    => v
-    }
+      resp <- db.couch.rawHttp(HttpRequest(uri = uri / docId <<? format.map(f => ("format", f))))
+      t <- Unmarshal(resp).to[T]
+    } yield t
 
   override def toString =
     uri.toString

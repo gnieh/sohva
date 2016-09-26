@@ -19,9 +19,7 @@ import spray.json._
 
 import scala.concurrent.Future
 
-import spray.client.pipelining._
-
-import spray.http.StatusCodes
+import akka.http.scaladsl.model._
 
 /** A view can be queried to get the result.
  *
@@ -40,7 +38,7 @@ class View(
 
   /** Indicates whether this view exists */
   def exists: Future[Boolean] =
-    for (h <- db.couch.rawHttp(Head(uri)))
+    for (h <- db.couch.rawHttp(HttpRequest(HttpMethods.HEAD, uri = uri)))
       yield h.status == StatusCodes.OK
 
   /** Queries the view on the server and returned the untyped result. */
@@ -147,7 +145,7 @@ class View(
   }
 
   // helper methods
-  protected def buildReq(options: Map[String, String]) = Get(uri <<? options)
+  protected def buildReq(options: Map[String, String]) = HttpRequest(uri = uri <<? options)
 
   private def viewResult[Key: JsonReader, Value: JsonReader, Doc: JsonReader](json: JsValue) = {
     val RawViewResult(total_rows, offset, rawRows, update_seq) = json.convertTo[RawViewResult]
@@ -179,14 +177,11 @@ private class TemporaryView(
   viewDoc: ViewDoc)
     extends BuiltInView(db, "_temp_view") {
 
-  import spray.http.HttpEntity
-  import spray.http.ContentTypes._
-
   import SohvaProtocol._
 
   override protected def buildReq(options: Map[String, String]) =
-    Post(uri <<? options)
-      .withEntity(HttpEntity(`application/json`, postData))
+    HttpRequest(HttpMethods.POST, uri = uri <<? options)
+      .withEntity(HttpEntity(ContentTypes.`application/json`, postData))
 
   lazy val postData: String = viewDoc.toJson.compactPrint
 

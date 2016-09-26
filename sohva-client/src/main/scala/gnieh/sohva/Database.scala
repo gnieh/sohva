@@ -35,13 +35,22 @@ import gnieh.diffson.JsonPatch
 
 import scala.concurrent.Future
 
-import scala.util.Try
+import scala.util.{
+  Try,
+  Success,
+  Failure
+}
 
-import spray.http._
-import spray.client.pipelining._
-import spray.httpx.marshalling._
+import akka.http.scaladsl.model._
+import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
+import akka.http.scaladsl.marshalling._
+import akka.http.scaladsl.unmarshalling._
+
+import akka.stream.scaladsl._
 
 import akka.actor._
+
+import akka.util.ByteString
 
 /** Gives the user access to the different operations available on a database.
  *  Among other operations this is the key class to get access to the documents
@@ -64,6 +73,8 @@ class Database private[sohva] (
   implicit def ec =
     couch.ec
 
+  import couch.materializer
+
   import SohvaProtocol._
 
   /* the resolver is responsible for applying the merging strategy on conflict and retrying
@@ -73,7 +84,10 @@ class Database private[sohva] (
       LoggerFactory.getLogger(getClass).info("No document to save")
       Future.successful(DocUpdate(true, docId, baseRev.getOrElse("")).toJson)
     case _ =>
-      couch.http(Put(uri / docId, current)).recoverWith {
+      (for {
+        entity <- Marshal(current).to[RequestEntity]
+        res <- couch.http(HttpRequest(HttpMethods.PUT, uri = uri / docId, entity = entity))
+      } yield res).recoverWith {
         case exn @ ConflictException(_) if credit > 0 =>
           LoggerFactory.getLogger(getClass).info("Conflict occurred, try to resolve it")
           // try to resolve the conflict and save again
@@ -97,12 +111,12 @@ class Database private[sohva] (
 
   /** Returns the information about this database */
   def info: Future[Option[InfoResult]] =
-    for (info <- couch.optHttp(Get(uri)) withFailureMessage f"info failed for $uri")
+    for (info <- couch.optHttp(HttpRequest(uri = uri)) withFailureMessage f"info failed for $uri")
       yield info.map(infoResult)
 
   /** Indicates whether this database exists */
   def exists: Future[Boolean] =
-    for (r <- couch.rawHttp(Head(uri)) withFailureMessage f"exists failed for $uri")
+    for (r <- couch.rawHttp(HttpRequest(HttpMethods.HEAD, uri = uri)) withFailureMessage f"exists failed for $uri")
       yield r.status == StatusCodes.OK
 
   /** Registers to the change stream of this database with potential filter and
@@ -125,7 +139,7 @@ class Database private[sohva] (
     if (exist) {
       Future.successful(false)
     } else {
-      for (result <- couch.http(Put(uri)) withFailureMessage f"Failed while creating database at $uri")
+      for (result <- couch.http(HttpRequest(HttpMethods.PUT, uri = uri)) withFailureMessage f"Failed while creating database at $uri")
         yield couch.ok(result)
     }
 
@@ -140,7 +154,7 @@ class Database private[sohva] (
 
   private[this] def delete(exist: Boolean) =
     if (exist) {
-      for (result <- couch.http(Delete(uri)) withFailureMessage f"Failed to delete database at $uri")
+      for (result <- couch.http(HttpRequest(HttpMethods.DELETE, uri = uri)) withFailureMessage f"Failed to delete database at $uri")
         yield couch.ok(result)
     } else {
       Future.successful(false)
@@ -182,7 +196,7 @@ class Database private[sohva] (
 
   /** Returns the raw repsentation of the document identified by the given id if it exists */
   def getRawDocById(id: String, revision: Option[String] = None): Future[Option[JsValue]] =
-    couch.optHttp(Get(uri / id <<? revision.flatMap(r => if (r.nonEmpty) Some("rev" -> r) else None))) withFailureMessage
+    couch.optHttp(HttpRequest(uri = uri / id <<? revision.flatMap(r => if (r.nonEmpty) Some("rev" -> r) else None))) withFailureMessage
       f"Failed to fetch the raw document by ID $id at revision $revision from $uri"
 
   /** Returns all the documents with given identifiers and of the given type.
@@ -196,7 +210,7 @@ class Database private[sohva] (
 
   /** Returns the current revision of the document if it exists */
   def getDocRevision(id: String): Future[Option[String]] =
-    couch.rawHttp(Head(uri / id)).flatMap(extractRev _) withFailureMessage
+    couch.rawHttp(HttpRequest(HttpMethods.HEAD, uri = uri / id)).flatMap(extractRev _) withFailureMessage
       f"Failed to fetch document revision by ID $id from $uri"
 
   /** Returns the current revision of the documents */
@@ -255,13 +269,15 @@ class Database private[sohva] (
   /** Creates or updates a bunch of documents into the database. */
   def saveDocs[T: CouchFormat](docs: List[T], all_or_nothing: Boolean = false): Future[List[DbResult]] =
     for {
-      raw <- couch.http(Post(uri / "_bulk_docs", BulkSave(all_or_nothing, docs.map(_.toJson)).toJson)) withFailureMessage
+      entity <- Marshal(BulkSave(all_or_nothing, docs.map(_.toJson))).to[RequestEntity]
+      raw <- couch.http(HttpRequest(HttpMethods.POST, uri = uri / "_bulk_docs", entity = entity)) withFailureMessage
         f"Failed to bulk save documents to $uri"
     } yield bulkSaveResult(raw)
 
   def saveRawDocs(docs: List[JsValue], all_or_nothing: Boolean = false): Future[List[DbResult]] =
     for {
-      raw <- couch.http(Post(uri / "_bulk_docs", JsObject(Map("all_or_nothing" -> JsBoolean(all_or_nothing), "docs" -> JsArray(docs.toVector))))) withFailureMessage
+      entity <- Marshal(JsObject(Map("all_or_nothing" -> JsBoolean(all_or_nothing), "docs" -> JsArray(docs.toVector)))).to[RequestEntity]
+      raw <- couch.http(HttpRequest(HttpMethods.POST, uri = uri / "_bulk_docs", entity = entity)) withFailureMessage
         f"Failed to bulk save documents to $uri"
     } yield bulkSaveResult(raw)
 
@@ -279,7 +295,8 @@ class Database private[sohva] (
           yield res.convertTo[DbResult]
       case json =>
         for {
-          raw <- couch.http(Post(uri, json)).withFailureMessage(f"Failed to create new document into $uri")
+          entity <- Marshal(json).to[RequestEntity]
+          raw <- couch.http(HttpRequest(HttpMethods.POST, uri = uri, entity = entity)).withFailureMessage(f"Failed to create new document into $uri")
           DocUpdate(ok, id, rev) = docUpdateResult(raw)
         } yield OkResult(ok, Some(id), Some(rev))
     }
@@ -297,7 +314,7 @@ class Database private[sohva] (
    */
   def copy(origin: String, target: String, originRev: Option[String] = None, targetRev: Option[String] = None): Future[Boolean] =
     for (
-      res <- couch.http(Copy(uri / origin <<? originRev.map("rev" -> _))
+      res <- couch.http(HttpRequest(COPY, uri = uri / origin <<? originRev.map("rev" -> _))
         <:< Map("Destination" -> (target + targetRev.map("?rev=" + _).getOrElse("")))
       ) withFailureMessage f"Failed to copy from $origin at $originRev to $target at $targetRev from $uri"
     ) yield couch.ok(res)
@@ -327,7 +344,7 @@ class Database private[sohva] (
   def deleteDoc[T: CouchFormat](doc: T): Future[Boolean] = {
     val format = implicitly[CouchFormat[T]]
     for (
-      res <- couch.http(Delete(uri / format._id(doc) <<? Map("rev" -> format._rev(doc).getOrElse("")))) withFailureMessage
+      res <- couch.http(HttpRequest(HttpMethods.DELETE, uri = uri / format._id(doc) <<? Map("rev" -> format._rev(doc).getOrElse("")))) withFailureMessage
         f"Failed to delete document with ID ${format._id(doc)} at revision ${format._rev(doc)} from $uri"
     ) yield couch.ok(res)
   }
@@ -346,7 +363,7 @@ class Database private[sohva] (
     rev match {
       case Some(rev) =>
         for (
-          res <- couch.http(Delete(uri / id <<? Map("rev" -> rev))) withFailureMessage
+          res <- couch.http(HttpRequest(HttpMethods.DELETE, uri = uri / id <<? Map("rev" -> rev))) withFailureMessage
             f"Failed to delete document with ID $id from $uri"
         ) yield couch.ok(res)
       case None =>
@@ -360,39 +377,34 @@ class Database private[sohva] (
   def deleteDocs(ids: List[String], all_or_nothing: Boolean = false): Future[List[DbResult]] =
     for {
       revs <- getDocRevisions(ids)
-      raw <- couch.http(
-        Post(uri / "_bulk_docs",
-          JsObject(
-            Map(
-              "all_or_nothing" -> all_or_nothing.toJson,
-              "docs" -> revs.map {
-                case (id, rev) => JsObject(
-                  "_id" -> id.toJson,
-                  "_rev" -> rev.toJson,
-                  "_deleted" -> true.toJson)
-              }.toJson
-            )
-          )
+      entity <- Marshal(JsObject(
+        Map(
+          "all_or_nothing" -> all_or_nothing.toJson,
+          "docs" -> revs.map {
+            case (id, rev) => JsObject(
+              "_id" -> id.toJson,
+              "_rev" -> rev.toJson,
+              "_deleted" -> true.toJson)
+          }.toJson
         )
-      ) withFailureMessage f"Failed to bulk delete docs $ids from $uri"
+      )).to[RequestEntity]
+      raw <- couch.http(
+        HttpRequest(HttpMethods.POST, uri = uri / "_bulk_docs", entity = entity)).withFailureMessage(f"Failed to bulk delete docs $ids from $uri")
     } yield bulkSaveResult(raw)
 
   /** Attaches the given file to the given document id.
    *  This method returns `true` iff the file was attached to the document.
    */
   def attachTo(docId: String, file: File, contentType: String): Future[Boolean] = {
-    import MultipartMarshallers._
     // first get the last revision of the document (if it exists)
     for {
+      mime <- ContentType.parse(contentType) match {
+        case Left(_)     => Future.failed(new SohvaException(f"Wrong media type $contentType"))
+        case Right(mime) => Future.successful(mime)
+      }
       rev <- getDocRevision(docId)
       res <- couch.http(
-        Put(uri / docId / file.getName <<? rev.map("rev" -> _),
-          HttpEntity(
-            ContentType(MediaType.custom(contentType)),
-            HttpData(file)
-          )
-        )
-      ) withFailureMessage f"Failed to attach file ${file.getName} to document with ID $docId at $uri"
+        HttpRequest(HttpMethods.PUT, uri = uri / docId / file.getName <<? rev.map("rev" -> _), entity = HttpEntity.fromPath(mime, file.toPath, 1000000))).withFailureMessage(f"Failed to attach file ${file.getName} to document with ID $docId at $uri")
     } yield couch.ok(res)
   }
 
@@ -422,8 +434,8 @@ class Database private[sohva] (
    *  It returns the mime type if any given in the response and the input stream
    *  to read the response from the server.
    */
-  def getAttachment(docId: String, attachment: String): Future[Option[(String, InputStream)]] =
-    couch.rawHttp(Get(uri / docId / attachment)).flatMap(readFile) withFailureMessage
+  def getAttachment(docId: String, attachment: String): Future[Option[(String, ByteString)]] =
+    couch.rawHttp(HttpRequest(uri = uri / docId / attachment)).flatMap(readFile) withFailureMessage
       f"Failed to get attachment $attachment for document ID $docId from $uri"
 
   /** Deletes the given attachment for the given docId */
@@ -438,7 +450,7 @@ class Database private[sohva] (
     rev match {
       case Some(r) =>
         for (
-          res <- couch.http(Delete(uri / docId / attachment <<?
+          res <- couch.http(HttpRequest(HttpMethods.DELETE, uri = uri / docId / attachment <<?
             Map("rev" -> r))) withFailureMessage
             f"Failed to delete attachment $attachment for document ID $docId at revision $rev from $uri"
         ) yield couch.ok(res)
@@ -450,7 +462,7 @@ class Database private[sohva] (
   /** Returns the security document of this database if any defined */
   def securityDoc: Future[SecurityDoc] =
     for (
-      doc <- couch.http(Get(uri / "_security")) withFailureMessage
+      doc <- couch.http(HttpRequest(uri = uri / "_security")) withFailureMessage
         f"Failed to fetch security doc from $uri"
     ) yield extractSecurityDoc(doc)
 
@@ -458,10 +470,11 @@ class Database private[sohva] (
    *  Security documents are special documents with no `_id` nor `_rev` fields.
    */
   def saveSecurityDoc(doc: SecurityDoc): Future[Boolean] =
-    for (
-      res <- couch.http(Put(uri / "_security", doc.toJson)) withFailureMessage
+    for {
+      entity <- Marshal(doc).to[RequestEntity]
+      res <- couch.http(HttpRequest(HttpMethods.PUT, uri = uri / "_security", entity = entity)) withFailureMessage
         f"failed to save security document for $uri"
-    ) yield couch.ok(res)
+    } yield couch.ok(res)
 
   /** Returns a design object that allows user to work with views */
   def design(designName: String, language: String = "javascript"): Design =
@@ -482,19 +495,23 @@ class Database private[sohva] (
   protected[sohva] def uri =
     couch.uri / name
 
-  private def readFile(response: HttpResponse): Future[Option[(String, InputStream)]] = {
+  private def readFile(response: HttpResponse): Future[Option[(String, ByteString)]] = {
     if (response.status.intValue == 404) {
       Future.successful(None)
     } else if (response.status.isSuccess) {
-      Future.successful(
+      Unmarshal(response.entity).to[ByteString].map { is =>
         Some(
-          response.headers.find(_.is("content-type")).map(_.value).getOrElse("application/json") ->
-            new ByteArrayInputStream(response.entity.data.toByteArray)))
+          response.headers.find(_.is("content-type")).map(_.value).getOrElse("application/json") -> is)
+      }
     } else {
       val code = response.status.intValue
       // something went wrong...
-      val error = Try(JsonParser(response.entity.asString).convertTo[ErrorResult]).toOption
-      Future.failed(CouchException(code, error))
+      Unmarshal(response.entity).to[JsValue].flatMap { json =>
+        // something went wrong...
+        val code = response.status.intValue
+        val error = Try(json.convertTo[ErrorResult]).toOption
+        Future.failed(CouchException(code, error))
+      }
     }
   }
 
@@ -523,8 +540,7 @@ class Database private[sohva] (
     } else {
       // something went wrong...
       val code = response.status.intValue
-      val error = Try(JsonParser(response.entity.asString).convertTo[ErrorResult]).toOption
-      Future.failed(new CouchException(code, error))
+      Unmarshal(response.entity).to[ErrorResult].map(Some(_)).recover { case _: Exception => None }.flatMap(error => Future.failed(new CouchException(code, error)))
     }
   }
 

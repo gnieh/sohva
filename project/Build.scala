@@ -46,8 +46,7 @@ object SohvaBuild extends Build {
   )
 
   lazy val globalDependencies = Seq(
-    "org.scalatest" %% "scalatest" % "3.0.0" % "test",
-    "com.typesafe.akka" %% "akka-osgi" % "2.4.10" % "test"
+    "org.scalatest" %% "scalatest" % "3.0.0" % "test"
   )
 
   lazy val publishSettings = Seq(
@@ -111,8 +110,7 @@ object SohvaBuild extends Build {
     )
 
   lazy val clientDependencies = globalDependencies ++ Seq(
-    "io.spray" %% "spray-client" % "1.3.3",
-    "com.typesafe.akka" %% "akka-actor" % "2.4.10" % "provided",
+    "com.typesafe.akka" %% "akka-http-spray-json-experimental" % "2.4.10",
     "org.gnieh" %% "diffson" % "1.1.0",
     "com.jsuereth" %% "scala-arm" % "1.4",
     "io.spray" %% "spray-json" % "1.3.2",

@@ -19,11 +19,7 @@ import scala.concurrent.Future
 
 import spray.json._
 
-import spray.client.pipelining._
-
-import spray.http.StatusCodes
-
-import spray.httpx.unmarshalling.Unmarshaller
+import akka.http.scaladsl.model._
 
 /** A design gives access to the different views.
  *  Use this class to get or create new views.
@@ -45,7 +41,7 @@ class Design(val db: Database,
    *  @return true if it does, false otherwise
    */
   def exists: Future[Boolean] =
-    for (h <- db.couch.rawHttp(Head(uri)))
+    for (h <- db.couch.rawHttp(HttpRequest(HttpMethods.HEAD, uri = uri)))
       yield h.status == StatusCodes.OK
 
   /** Create an empty design document if none exists.
@@ -65,7 +61,7 @@ class Design(val db: Database,
    */
   def getDesignDocument: Future[Option[DesignDoc]] =
     for (
-      design <- db.couch.optHttp(Get(uri)) withFailureMessage
+      design <- db.couch.optHttp(HttpRequest(uri = uri)) withFailureMessage
         f"Failed to fetch design document from $uri"
     ) yield design.map(designDoc)
 

@@ -17,10 +17,6 @@ package gnieh.sohva
 
 import spray.json._
 
-import spray.http._
-import spray.client.pipelining._
-import spray.can._
-
 import scala.concurrent.{
   Future,
   ExecutionContext
@@ -28,9 +24,14 @@ import scala.concurrent.{
 
 import akka.actor._
 import akka.util.Timeout
-import akka.io.IO
 
-import org.slf4j.LoggerFactory
+import akka.stream.{
+  ActorMaterializer,
+  Materializer
+}
+
+import akka.http.scaladsl.Http
+import akka.http.scaladsl.model._
 
 /** A CouchDB instance.
  *  Allows users to access the different databases and instance information.
@@ -50,6 +51,9 @@ class CouchClient(val host: String = "localhost",
   implicit def ec: ExecutionContext =
     system.dispatcher
 
+  implicit val materializer: Materializer =
+    ActorMaterializer()
+
   /** Starts a new OAuth session */
   def startOAuthSession(consumerKey: String, consumerSecret: String, token: String, secret: String): OAuthSession =
     new OAuthSession(consumerKey, consumerSecret, token, secret, this)
@@ -66,14 +70,7 @@ class CouchClient(val host: String = "localhost",
       startOAuthSession(consumerKey, consumerSecret, token, secret)
   }
 
-  /** Shuts down this instance of couchdb client. */
-  def shutdown() =
-    IO(Http) ! Http.CloseAll
-
   // ========== internals ==========
-
-  lazy val pipeline: HttpRequest => Future[HttpResponse] =
-    sendReceive
 
   protected[sohva] def prepare(req: HttpRequest) =
     req
