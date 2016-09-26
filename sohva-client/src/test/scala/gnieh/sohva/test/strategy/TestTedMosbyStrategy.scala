@@ -24,7 +24,7 @@ import sync._
 
 import gnieh.sohva.strategy.TedMosbyStrategy
 
-class TestTedMosbyStrategy extends SohvaTestSpec(1, TedMosbyStrategy) with ShouldMatchers with BeforeAndAfterEach {
+class TestTedMosbyStrategy extends SohvaTestSpec(1, TedMosbyStrategy) with Matchers with BeforeAndAfterEach {
 
   override def afterEach {
     db.deleteDoc("conflicting_doc")

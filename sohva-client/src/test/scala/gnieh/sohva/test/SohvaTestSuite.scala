@@ -28,7 +28,7 @@ import scala.concurrent.duration._
 
 import spray.json._
 
-abstract class SohvaTestSpec(retry: Int = 0, strategy: Strategy = BarneyStinsonStrategy) extends FlatSpec with ShouldMatchers with BeforeAndAfterAll with SohvaProtocol {
+abstract class SohvaTestSpec(retry: Int = 0, strategy: Strategy = BarneyStinsonStrategy) extends FlatSpec with Matchers with BeforeAndAfterAll with SohvaProtocol {
 
   implicit val system = ActorSystem()
   implicit val timeout = Timeout(5.seconds)
@@ -53,7 +53,7 @@ abstract class SohvaTestSpec(retry: Int = 0, strategy: Strategy = BarneyStinsonS
     // logout
     session.logout
     couch.shutdown()
-    system.shutdown()
+    system.terminate()
   }
 
 }

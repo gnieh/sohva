@@ -17,7 +17,6 @@ package gnieh.sohva
 package test
 
 import org.scalatest._
-import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.OptionValues._
 
 import sync._

@@ -19,8 +19,7 @@ object SohvaBuild extends Build {
     licenses += ("The Apache Software License, Version 2.0" -> url("http://www.apache.org/licenses/LICENSE-2.0.txt")),
     homepage := Some(url("https://github.com/gnieh/sohva")),
     version := "2.0.0-SNAPSHOT",
-    scalaVersion := "2.11.6",
-    crossScalaVersions := Seq("2.10.4", "2.11.6"),
+    scalaVersion := "2.11.8",
     libraryDependencies ++= globalDependencies,
     parallelExecution := false,
     fork in Test := true,
@@ -47,8 +46,8 @@ object SohvaBuild extends Build {
   )
 
   lazy val globalDependencies = Seq(
-    "org.scalatest" %% "scalatest" % "2.2.5" % "test",
-    "com.typesafe.akka" %% "akka-osgi" % "2.3.11" % "test"
+    "org.scalatest" %% "scalatest" % "3.0.0" % "test",
+    "com.typesafe.akka" %% "akka-osgi" % "2.4.10" % "test"
   )
 
   lazy val publishSettings = Seq(
@@ -89,19 +88,7 @@ object SohvaBuild extends Build {
   lazy val json = Project(id = "sohva-json",
     base = file("sohva-json")) settings(globalSettings: _*) settings(
       libraryDependencies ++= clientDependencies,
-      libraryDependencies <+= scalaVersion("org.scala-lang" % "scala-reflect" % _),
-      libraryDependencies := {
-        CrossVersion.partialVersion(scalaVersion.value) match {
-          // if scala 2.11+ is used, quasiquotes are merged into scala-reflect
-          case Some((2, scalaMajor)) if scalaMajor >= 11 =>
-            libraryDependencies.value
-          // in Scala .10, quasiquotes are provided by macro paradise
-          case Some((2, 10)) =>
-            libraryDependencies.value ++ Seq(
-              compilerPlugin("org.scalamacros" % "paradise" % "2.0.1" cross CrossVersion.full),
-              "org.scalamacros" %% "quasiquotes" % "2.0.0" cross CrossVersion.binary)
-        }
-      })
+      libraryDependencies <+= scalaVersion("org.scala-lang" % "scala-reflect" % _))
 
   lazy val client = Project(id = "sohva-client",
     base = file("sohva-client")) dependsOn(json % "compile-internal, test-internal") settings(globalSettings: _*) settings(
@@ -125,11 +112,11 @@ object SohvaBuild extends Build {
 
   lazy val clientDependencies = globalDependencies ++ Seq(
     "io.spray" %% "spray-client" % "1.3.3",
-    "com.typesafe.akka" %% "akka-actor" % "2.3.11" % "provided",
-    "org.gnieh" %% "diffson" % "1.0.0",
+    "com.typesafe.akka" %% "akka-actor" % "2.4.10" % "provided",
+    "org.gnieh" %% "diffson" % "1.1.0",
     "com.jsuereth" %% "scala-arm" % "1.4",
     "io.spray" %% "spray-json" % "1.3.2",
-    "org.slf4j" % "slf4j-api" % "1.7.12",
+    "org.slf4j" % "slf4j-api" % "1.7.21",
     "com.netflix.rxjava" % "rxjava-scala" % "0.20.7"
   )
 

@@ -26,7 +26,7 @@ import sync._
 import java.util.concurrent.atomic.AtomicBoolean
 import rx.lang.scala.Subscription
 
-class TestChanges extends SohvaTestSpec with ShouldMatchers with AsyncAssertions with BeforeAndAfterEach {
+class TestChanges extends SohvaTestSpec with Matchers with Waiters with BeforeAndAfterEach {
 
   override def beforeEach {
     if (db.exists)
