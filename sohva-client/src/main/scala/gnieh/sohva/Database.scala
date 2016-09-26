@@ -19,6 +19,15 @@ import resource._
 
 import strategy.Strategy
 
+import mango.{
+  Selector,
+  Sort,
+  Query,
+  Index,
+  UseIndex,
+  Explanation
+}
+
 import java.io.{
   File,
   InputStream,
@@ -68,14 +77,12 @@ class Database private[sohva] (
     val name: String,
     val couch: CouchDB,
     val credit: Int,
-    val strategy: Strategy) extends SprayJsonSupport {
+    val strategy: Strategy) extends SohvaProtocol with SprayJsonSupport {
 
   implicit def ec =
     couch.ec
 
   import couch.materializer
-
-  import SohvaProtocol._
 
   /* the resolver is responsible for applying the merging strategy on conflict and retrying
    * to save the document after resolution process */
@@ -219,6 +226,27 @@ class Database private[sohva] (
       res <- builtInView("_all_docs").query[String, Map[String, String], JsObject](keys = ids) withFailureMessage
         f"Failed to fetch document revisions by IDs $ids from $uri"
     } yield res.rows.map { case Row(Some(id), _, value, _) => (id, value("rev")) }
+
+  /** Finds documents using the declarative mango query syntax. See [[sohva.mango]] for details. */
+  def find[T: JsonReader](selector: Selector, fields: List[String] = Nil, sort: List[Sort], limit: Option[Int] = None, skip: Option[Int] = None, use_index: Option[UseIndex] = None): Future[Vector[T]] =
+    find[T](Query(selector, fields, sort, limit, skip, use_index))
+
+  /** Finds documents using the declarative mango query syntax. See [[sohva.mango]] for details. */
+  def find[T: JsonReader](query: Query): Future[Vector[T]] =
+    for {
+      entity <- Marshal(query).to[RequestEntity]
+      docs <- couch.http(HttpRequest(HttpMethods.POST, uri = uri / "_find", entity = entity)).withFailureMessage(f"Failed while querying document on database $uri")
+    } yield findResult[T](docs)
+
+  /** Explains how the query is run by the CouchDB server. */
+  def explain(query: Query): Future[Explanation] =
+    for {
+      entity <- Marshal(query).to[RequestEntity]
+      expl <- couch.http(HttpRequest(HttpMethods.POST, uri = uri / "_find", entity = entity)).withFailureMessage(f"Failed while querying document on database $uri")
+    } yield expl.convertTo[Explanation]
+
+  /** Exposes the interface for managing indices. */
+  object index extends Index(this)
 
   /** Creates or updates the given object as a document into this database
    *  The given object must have an `_id` and an optional `_rev` fields
@@ -492,7 +520,7 @@ class Database private[sohva] (
 
   // helper methods
 
-  protected[sohva] def uri =
+  protected[sohva] val uri =
     couch.uri / name
 
   private def readFile(response: HttpResponse): Future[Option[(String, ByteString)]] = {
@@ -523,6 +551,10 @@ class Database private[sohva] (
 
   private def docResult[T: JsonReader](json: JsValue) =
     json.convertTo[T]
+
+  private def findResult[T: JsonReader](json: JsValue) =
+    // XXX there is a format for vector but no reader,,,
+    json.asJsObject.fields("docs").convertTo[Vector[JsValue]].map(_.convertTo[T])
 
   private def docResultOpt[T: JsonReader](json: JsValue) =
     Try(docResult[T](json)).toOption
