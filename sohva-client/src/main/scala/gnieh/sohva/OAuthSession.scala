@@ -18,7 +18,8 @@ package gnieh.sohva
 import akka.actor.ActorRef
 
 import scala.concurrent.Future
-import spray.http._
+
+import akka.http.scaladsl.model._
 
 /** An instance of a Couch session that allows the user to perform authenticated
  *  operations using OAuth.
@@ -43,15 +44,15 @@ class OAuthSession protected[sohva] (
   val ssl =
     couch.ssl
 
-  val system =
+  implicit val system =
     couch.system
+
+  implicit val materializer =
+    couch.materializer
 
   implicit def ec = couch.ec
 
   // helper methods
-
-  protected[sohva] val pipeline =
-    couch.pipeline
 
   private val oauth = OAuth.oAuthAuthorizer(consumerKey, consumerSecret, token, secret)
 

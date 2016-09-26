@@ -47,7 +47,7 @@ class TestAttachments extends SohvaTestSpec with Matchers {
     for (fw <- managed(new FileWriter(f)))
       fw.write(content)
 
-    val ok = synced(db.attachTo("doc-with-attachments", f, "text/plain"))
+    val ok = synced(db.attachTo("doc-with-attachments", f, "text/plain; charset=UTF-8"))
 
     ok should be(true)
 
@@ -58,7 +58,7 @@ class TestAttachments extends SohvaTestSpec with Matchers {
     withAttachment.value._attachments.get(f.getName) should be('defined)
 
     val attachment = withAttachment.value._attachments.get(f.getName).value
-    attachment.content_type should be("text/plain")
+    attachment.content_type should be("text/plain; charset=UTF-8")
     attachment.revpos should be(2)
     attachment.length should be(content.length)
     attachment.stub should be(true)
@@ -71,7 +71,7 @@ class TestAttachments extends SohvaTestSpec with Matchers {
 
     val is = new ByteArrayInputStream("attachment-contents".getBytes("utf8"))
 
-    synced(db.attachTo(doc._id, "attachment-id", is, "text/plain"))
+    synced(db.attachTo(doc._id, "attachment-id", is, "text/plain; charset=UTF-8"))
     val withAttachment = synced(db.getDocById[TestDocAtt](doc._id))
     withAttachment.value._attachments.headOption match {
       case Some(a) => a._1 should equal("attachment-id")

@@ -25,9 +25,7 @@ import rx.lang.scala._
 
 import spray.json._
 
-import spray.http._
-import spray.httpx._
-import spray.client.pipelining._
+import akka.http.scaladsl.model._
 
 import java.io.File
 import scala.concurrent.{ ExecutionContext, Future }
@@ -47,9 +45,7 @@ import scala.concurrent.{ ExecutionContext, Future }
 package object sohva {
 
   // register the COPY method
-  val COPY = HttpMethod.custom("COPY", true, true, false)
-  HttpMethods.register(COPY)
-  val Copy = new RequestBuilding.RequestBuilder(COPY)
+  val COPY = HttpMethod.custom("COPY")
 
   private[sohva] implicit class EnhancedUri(val uri: Uri) extends AnyVal {
 
@@ -62,14 +58,14 @@ package object sohva {
     }
 
     def <<?(params: Map[String, String]): Uri =
-      uri.withQuery(params)
+      uri.withQuery(Uri.Query(params))
 
     def <<?(params: Seq[(String, String)]): Uri =
-      uri.withQuery(params: _*)
+      uri.withQuery(Uri.Query(params: _*))
 
     def <<?(param: Option[(String, String)]): Uri =
       param match {
-        case Some(param) => uri.withQuery(param)
+        case Some(param) => uri.withQuery(Uri.Query(param))
         case None        => uri
       }
 
@@ -80,7 +76,12 @@ package object sohva {
     def <:<(headers: Iterable[(String, String)]): HttpRequest =
       headers.foldLeft(req) {
         case (acc, (name, value)) =>
-          acc ~> addHeader(name, value)
+          HttpHeader.parse(name, value) match {
+            case HttpHeader.ParsingResult.Ok(header, _) =>
+              acc.addHeader(header)
+            case _ =>
+              acc
+          }
       }
 
   }

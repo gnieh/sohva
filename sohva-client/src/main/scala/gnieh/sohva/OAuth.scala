@@ -17,9 +17,15 @@ package gnieh.sohva
 
 import javax.crypto
 import java.nio.charset.Charset
-import spray.http.{ HttpEntity, MediaTypes, ContentType, HttpRequest }
-import spray.http.HttpHeaders.RawHeader
-import org.parboiled.common.Base64
+import akka.http.scaladsl.model.{
+  HttpEntity,
+  MediaTypes,
+  ContentType,
+  HttpCharsets,
+  HttpRequest
+}
+import akka.http.scaladsl.model.headers.RawHeader
+import akka.parboiled2.util.Base64
 import scala.collection.immutable.TreeMap
 import java.net.URLEncoder
 
@@ -28,7 +34,7 @@ object OAuth {
   def oAuthAuthorizer(consumerKey: String, consumerSecret: String, token: String, secret: String): HttpRequest => HttpRequest = {
     // construct the key and cryptographic entity
     val SHA1 = "HmacSHA1"
-    val keyString = percentEncode(consumerSecret :: secret :: Nil)
+    val keyString = percentEncode(List(consumerSecret, secret))
     val key = new crypto.spec.SecretKeySpec(bytes(keyString), SHA1)
     val mac = crypto.Mac.getInstance(SHA1)
 
@@ -39,13 +45,14 @@ object OAuth {
 
       // pick out x-www-form-urlencoded body
       val (requestParams, newEntity) = httpRequest.entity match {
-        case HttpEntity.NonEmpty(ContentType(MediaTypes.`application/x-www-form-urlencoded`, _), data) =>
-          val params = data.asString.split("&")
+        case HttpEntity.Strict(ContentType(MediaTypes.`application/x-www-form-urlencoded`, cs), data) =>
+          val charset = cs.getOrElse(HttpCharsets.`UTF-8`)
+          val params = data.decodeString(charset.value).split("&")
           val pairs = params.map { param =>
             val p = param.split("=")
             p(0) -> percentEncode(p(1))
           }
-          (pairs.toMap, HttpEntity(ContentType(MediaTypes.`application/x-www-form-urlencoded`), "%s=%s" format (pairs(0)._1, pairs(0)._2)))
+          (pairs.toMap, HttpEntity(ContentType(MediaTypes.`application/x-www-form-urlencoded`, charset), "%s=%s" format (pairs(0)._1, pairs(0)._2)))
         case e => (Map[String, String](), e)
       }
 
@@ -63,21 +70,21 @@ object OAuth {
       val encodedOrderedParams = (TreeMap[String, String]() ++ oauthParams ++ requestParams) map { case (k, v) => k + "=" + v } mkString "&"
       val url = httpRequest.uri.toString()
       // construct the signature base string
-      val signatureBaseString = percentEncode(httpRequest.method.toString() :: url :: encodedOrderedParams :: Nil)
+      val signatureBaseString = percentEncode(List(httpRequest.method.value, url, encodedOrderedParams))
 
       mac.init(key)
       val sig = Base64.rfc2045().encodeToString(mac.doFinal(bytes(signatureBaseString)), false)
       mac.reset()
 
-      val oauth = TreeMap[String, String]() ++ (oauthParams + ("oauth_signature" -> percentEncode(sig))) map { case (k, v) => "%s=\"%s\"" format (k, v) } mkString ", "
+      val oauth = TreeMap[String, String]() ++ (oauthParams + ("oauth_signature" -> percentEncode(sig))).map { case (k, v) => "%s=\"%s\"" format (k, v) } mkString ", "
 
       // return the signed request
       httpRequest.withHeaders(List(RawHeader("Authorization", "OAuth " + oauth))).withEntity(newEntity)
     }
   }
 
-  private def percentEncode(str: String): String = URLEncoder.encode(str, "UTF-8") replace ("+", "%20") replace ("%7E", "~")
-  private def percentEncode(s: Seq[String]): String = s map percentEncode mkString "&"
+  private def percentEncode(str: String): String = URLEncoder.encode(str, "UTF-8").replace("+", "%20").replace("%7E", "~")
+  private def percentEncode(s: Seq[String]): String = s.map(percentEncode).mkString("&")
   private def bytes(str: String) = str.getBytes(Charset.forName("UTF-8"))
 
 }

@@ -47,7 +47,6 @@ abstract class SohvaTestSpec(retry: Int = 0, strategy: Strategy = BarneyStinsonS
   override def afterAll() {
     // cleanup database
     synced(db.delete)
-    couch.shutdown()
     system.terminate()
   }
 

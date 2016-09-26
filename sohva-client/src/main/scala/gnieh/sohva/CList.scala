@@ -17,9 +17,10 @@ package gnieh.sohva
 
 import scala.concurrent.Future
 
-import spray.client.pipelining._
-import spray.httpx.unmarshalling._
-import spray.http.StatusCodes
+import akka.stream.ActorMaterializer
+
+import akka.http.scaladsl.model._
+import akka.http.scaladsl.unmarshalling._
 
 /** A list that can be queried for a given view.
  *
@@ -31,21 +32,21 @@ class CList(
     val list: String) {
 
   import db.ec
+  import db.couch.system
+  import db.couch.materializer
 
   protected[this] def uri = db.uri / "_design" / design / "_list" / list
 
   /** Indicates whether this view exists */
   def exists: Future[Boolean] =
-    for (h <- db.couch.rawHttp(Head(uri)))
+    for (h <- db.couch.rawHttp(HttpRequest(HttpMethods.HEAD, uri)))
       yield h.status == StatusCodes.OK
 
-  def query[T: Unmarshaller](viewName: String, format: Option[String] = None): Future[T] =
+  def query[T: FromEntityUnmarshaller](viewName: String, format: Option[String] = None): Future[T] =
     for {
-      resp <- db.couch.rawHttp(Get(uri / viewName <<? format.map(f => ("format", f))))
-    } yield resp.as[T] match {
-      case Left(error) => throw new SohvaException(f"Unable to deserialize list result for list function $list and format $format: $error")
-      case Right(v)    => v
-    }
+      resp <- db.couch.rawHttp(HttpRequest(uri = uri / viewName <<? format.map(f => ("format", f))))
+      t <- Unmarshal(resp).to[T]
+    } yield t
 
   override def toString =
     uri.toString

@@ -17,8 +17,8 @@ package gnieh.sohva
 
 import scala.concurrent.Future
 
-import spray.http._
-import spray.client.pipelining._
+import akka.http.scaladsl.model._
+import akka.http.scaladsl.model.headers.BasicHttpCredentials
 
 /** An instance of a Couch session that allows the user to perform authenticated
  *  operations using HTTP basic authentication.
@@ -41,18 +41,18 @@ class BasicSession protected[sohva] (
   val ssl =
     couch.ssl
 
-  val system =
+  implicit val system =
     couch.system
+
+  implicit val materializer =
+    couch.materializer
 
   implicit def ec = couch.ec
 
   // helper methods
 
-  protected[sohva] val pipeline =
-    addCredentials(BasicHttpCredentials(username, password)) ~> couch.pipeline
-
   protected[sohva] def prepare(req: HttpRequest) =
-    req
+    req.addCredentials(BasicHttpCredentials(username, password))
 
   protected[sohva] def uri =
     couch.uri

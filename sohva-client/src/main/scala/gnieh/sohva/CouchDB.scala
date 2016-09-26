@@ -24,8 +24,14 @@ import scala.concurrent.{
 
 import scala.util.Try
 
-import spray.http._
-import spray.client.pipelining._
+import akka.http.scaladsl.Http
+import akka.http.scaladsl.model._
+
+import akka.http.scaladsl.marshalling._
+import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
+import akka.http.scaladsl.unmarshalling._
+
+import akka.stream.Materializer
 
 import akka.actor._
 
@@ -45,7 +51,9 @@ abstract class CouchDB extends SprayJsonSupport {
 
   import SohvaProtocol._
 
-  def system: ActorSystem
+  implicit val system: ActorSystem
+
+  implicit val materializer: Materializer
 
   /** The couchdb instance host name. */
   val host: String
@@ -59,7 +67,7 @@ abstract class CouchDB extends SprayJsonSupport {
   /** Returns the couchdb instance information */
   def info: Future[CouchInfo] =
     for (
-      json <- http(Get(uri)) withFailureMessage
+      json <- http(HttpRequest(uri = uri)) withFailureMessage
         f"Unable to fetch info from $uri"
     ) yield asCouchInfo(json)
 
@@ -74,7 +82,7 @@ abstract class CouchDB extends SprayJsonSupport {
   /** Returns the names of all databases in this couch instance. */
   def _all_dbs: Future[List[String]] =
     for (
-      dbs <- http(Get(uri / "_all_dbs")) withFailureMessage
+      dbs <- http(HttpRequest(uri = uri / "_all_dbs")) withFailureMessage
         f"Unable to fetch databases list from $uri"
     ) yield asStringList(dbs)
 
@@ -86,14 +94,14 @@ abstract class CouchDB extends SprayJsonSupport {
   /** Returns the requested number of UUIDS (by default 1). */
   def _uuids(count: Int = 1): Future[List[String]] =
     for (
-      uuids <- http(Get(uri / "_uuids" <<? Map("count" -> count.toString))) withFailureMessage
+      uuids <- http(HttpRequest(uri = uri / "_uuids" <<? Map("count" -> count.toString))) withFailureMessage
         f"Failed to fetch $count uuids from $uri"
     ) yield asUuidsList(uuids)
 
   /** Returns the configuration object for this CouchDB instance */
   def _config: Future[Configuration] =
     for (
-      config <- http(Get(uri / "_config")) withFailureMessage
+      config <- http(HttpRequest(uri = uri / "_config")) withFailureMessage
         f"Failed to fetch config from $uri"
     ) yield config.convertTo[Configuration]
 
@@ -102,7 +110,7 @@ abstract class CouchDB extends SprayJsonSupport {
    */
   def _config(section: String): Future[Map[String, String]] =
     for (
-      section <- http(Get(uri / "_config" / section)) withFailureMessage
+      section <- http(HttpRequest(uri = uri / "_config" / section)) withFailureMessage
         f"Failed to fetch config for $section from $uri"
     ) yield section.convertTo[Map[String, String]]
 
@@ -119,15 +127,16 @@ abstract class CouchDB extends SprayJsonSupport {
    *  The section and/or the key is created if it does not exist
    */
   def saveConfigValue(section: String, key: String, value: String): Future[Boolean] =
-    for (
-      res <- http(Put(uri / "_config" / section / key, value.toJson)) withFailureMessage
+    for {
+      entity <- Marshal(value.toJson).to[RequestEntity]
+      res <- http(HttpRequest(HttpMethods.PUT, uri = uri / "_config" / section / key, entity = entity)) withFailureMessage
         f"Failed to save config $section with key `$key' and value `$value' to $uri"
-    ) yield ok(res)
+    } yield ok(res)
 
   /** Deletes the given configuration key inthe specified section */
   def deleteConfigValue(section: String, key: String): Future[Boolean] =
     for (
-      res <- http(Delete(uri / "_config" / section / key)) withFailureMessage
+      res <- http(HttpRequest(HttpMethods.DELETE, uri = uri / "_config" / section / key)) withFailureMessage
         f"Failed to delete config $section with key `$key' from $uri"
     ) yield ok(res)
 
@@ -143,12 +152,12 @@ abstract class CouchDB extends SprayJsonSupport {
 
   protected[sohva] def uri: Uri
 
+  private lazy val http = Http()
+
   protected[sohva] def prepare(req: HttpRequest): HttpRequest
 
-  protected[sohva] val pipeline: HttpRequest => Future[HttpResponse]
-
   protected[sohva] def rawHttp(req: HttpRequest): Future[HttpResponse] =
-    pipeline(prepare(req))
+    http.singleRequest(prepare(req))
 
   protected[sohva] def http(req: HttpRequest): Future[JsValue] =
     rawHttp(req).flatMap(handleCouchResponse)
@@ -156,20 +165,20 @@ abstract class CouchDB extends SprayJsonSupport {
   protected[sohva] def optHttp(req: HttpRequest): Future[Option[JsValue]] =
     rawHttp(req).flatMap(handleOptionalCouchResponse)
 
-  private def handleCouchResponse(response: HttpResponse): Future[JsValue] = {
-    val json = JsonParser(response.entity.asString(defaultCharset = HttpCharsets.`UTF-8`))
-    if (response.status.isSuccess) {
-      Future.successful(json)
-    } else {
-      // something went wrong...
-      val code = response.status.intValue
-      val error = Try(json.convertTo[ErrorResult]).toOption
-      Future.failed(CouchException(code, error))
+  private def handleCouchResponse(response: HttpResponse): Future[JsValue] =
+    Unmarshal(response.entity.withContentType(ContentTypes.`application/json`)).to[JsValue].flatMap { json =>
+      if (response.status.isSuccess) {
+        Future.successful(json)
+      } else {
+        // something went wrong...
+        val code = response.status.intValue
+        val error = Try(json.convertTo[ErrorResult]).toOption
+        Future.failed(CouchException(code, error))
+      }
     }
-  }
 
   private def handleOptionalCouchResponse(response: HttpResponse): Future[Option[JsValue]] =
-    handleCouchResponse(response) map (Some(_)) recoverWith {
+    handleCouchResponse(response).map(Some(_)).recoverWith {
       case CouchException(404, _) => Future.successful(None)
       case err                    => Future.failed(err)
     }

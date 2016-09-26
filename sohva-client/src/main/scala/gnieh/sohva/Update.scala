@@ -17,61 +17,50 @@ package gnieh.sohva
 
 import scala.concurrent.Future
 
-import spray.http._
-
 import spray.json._
 
-import spray.client.pipelining._
-
-import spray.httpx.unmarshalling._
+import akka.http.scaladsl.model._
+import akka.http.scaladsl.marshalling._
+import akka.http.scaladsl.unmarshalling._
+import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
 
 /** An update handler that can be queried.
  *
  *  @author Lucas Satabin
  */
 class Update(
-  val design: String,
-  val db: Database,
-  val update: String)
-    extends SprayJsonSupport {
+    val design: String,
+    val db: Database,
+    val update: String) extends SprayJsonSupport {
 
   import db.ec
+
+  import db.couch.materializer
 
   protected[this] def uri = db.uri / "_design" / design / "_update" / update
 
   /** Indicates whether this update handler exists */
   def exists: Future[Boolean] =
-    for (h <- db.couch.rawHttp(Head(uri)))
+    for (h <- db.couch.rawHttp(HttpRequest(HttpMethods.HEAD, uri = uri)))
       yield h.status == StatusCodes.OK
 
   /** Queries the update handler as a POST request.
    *  `body` is sent as a json value.
    */
-  def query[Body: RootJsonWriter, Resp: Unmarshaller](
+  def query[Body: RootJsonWriter, Resp: FromEntityUnmarshaller](
     body: Body,
     docId: Option[String] = None,
     parameters: Map[String, String] = Map()): Future[Resp] = {
-    val req = docId match {
-      case Some(docId) => Put(uri / docId <<? parameters, body)
-      case None        => Post(uri <<? parameters, body)
-    }
-    for (resp <- db.couch.rawHttp(req))
-      yield resp.as[Resp] match {
-      case Left(error) => throw new SohvaException(f"Unable to deserialize result for update function $update: $error")
-      case Right(v)    => v
-    }
+    for {
+      entity <- Marshal(body).to[RequestEntity]
+      req = docId match {
+        case Some(docId) => HttpRequest(HttpMethods.PUT, uri = uri / docId <<? parameters, entity = entity)
+        case None        => HttpRequest(HttpMethods.POST, uri = uri <<? parameters, entity = entity)
+      }
+      resp <- db.couch.rawHttp(req)
+      r <- Unmarshal(resp).to[Resp]
+    } yield r
   }
-
-  /** Queries the update handler as a POST form-data request. */
-  def queryForm[Resp: Unmarshaller](
-    data: Map[String, String],
-    docId: String,
-    parameters: Map[String, String] = Map()): Future[Resp] =
-    for (resp <- db.couch.rawHttp(Post(uri / docId <<? parameters, FormData(data))))
-      yield resp.as[Resp] match {
-      case Left(error) => throw new SohvaException(f"Unable to deserialize result for update function $update: $error")
-      case Right(v)    => v
-    }
 
   override def toString =
     uri.toString

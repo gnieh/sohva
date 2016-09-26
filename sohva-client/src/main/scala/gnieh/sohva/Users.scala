@@ -23,7 +23,9 @@ import java.util.Date
 
 import spray.json._
 
-import spray.client.pipelining._
+import akka.http.scaladsl.model._
+import akka.http.scaladsl.marshalling._
+import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
 
 /** The users database, exposing the interface for managing couchdb users.
  *
@@ -48,8 +50,10 @@ class Users(couch: CouchDB) {
 
     val user = CouchUser(name, password, roles)
 
-    for (res <- http(Put(uri / dbName / user._id, user.toJson)))
-      yield ok(res)
+    for {
+      entity <- Marshal(user).to[RequestEntity]
+      res <- http(HttpRequest(HttpMethods.PUT, uri = uri / dbName / user._id, entity = entity))
+    } yield ok(res)
 
   }
 

@@ -21,7 +21,7 @@ import scala.util.Try
 
 import spray.json._
 
-import spray.client.pipelining._
+import akka.http.scaladsl.model._
 
 /** Methods that must be implemented by a session.
  *
@@ -34,7 +34,7 @@ trait Session extends CouchDB {
   /** Returns the user associated to the current session, if any */
   def currentUser: Future[Option[UserInfo]] = userContext.flatMap {
     case UserCtx(Some(name), _) =>
-      http(Get(uri / "_users" / (s"org.couchdb.user:$name"))).map(user)
+      http(HttpRequest(uri = uri / "_users" / (s"org.couchdb.user:$name"))).map(user)
     case _ => Future.successful(None)
   }
 
@@ -55,7 +55,7 @@ trait Session extends CouchDB {
 
   /** Returns the current user context */
   def userContext: Future[UserCtx] =
-    http(Get(uri / "_session")).map(userCtx)
+    http(HttpRequest(uri = uri / "_session")).map(userCtx)
 
   private def user(json: JsValue) =
     Try(json.convertTo[UserInfo]).toOption
