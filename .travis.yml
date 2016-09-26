@@ -25,5 +25,5 @@ before_script:
   - curl -X PUT -d '"admin"' localhost:5984/_config/admins/admin
 # optional: create a user document...  - curl -X PUT -d '{ "_id": "org.couchdb.user:admin", "password": null, "name": "admin", "roles": [], "type": "user" }' localhost:5984/_users/org.couchdb.user:admin
 
- after_success:
+after_success:
  - codecov
