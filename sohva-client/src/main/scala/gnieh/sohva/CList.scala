@@ -35,7 +35,7 @@ class CList(
   import db.couch.system
   import db.couch.materializer
 
-  protected[this] def uri = db.uri / "_design" / design / "_list" / list
+  protected[this] val uri = db.uri / "_design" / design / "_list" / list
 
   /** Indicates whether this view exists */
   def exists: Future[Boolean] =

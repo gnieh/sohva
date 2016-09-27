@@ -77,7 +77,7 @@ class ChangeStream(database: Database, since: Option[Int], filter: Option[String
 //
 //  import SohvaProtocol._
 //
-//  private def uri = database.uri / "_changes"
+//  private val uri = database.uri / "_changes"
 //
 //  override def preStart(): Unit = {
 //    // ok so we just created a new change stream, connect to the `_changes` endpoint

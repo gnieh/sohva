@@ -76,7 +76,7 @@ class CouchClient(val host: String = "localhost",
     req
 
   // the base uri to this couch instance
-  protected[sohva] def uri =
+  protected[sohva] val uri =
     if (ssl)
       Uri("https", Uri.Authority(Uri.Host(host), port))
     else

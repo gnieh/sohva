@@ -60,7 +60,7 @@ class OAuthSession protected[sohva] (
   protected[sohva] def prepare(req: HttpRequest) =
     oauth(req)
 
-  protected[sohva] def uri =
+  protected[sohva] val uri =
     couch.uri
 
 }

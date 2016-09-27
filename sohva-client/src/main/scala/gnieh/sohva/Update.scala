@@ -37,7 +37,7 @@ class Update(
 
   import db.couch.materializer
 
-  protected[this] def uri = db.uri / "_design" / design / "_update" / update
+  protected[this] val uri = db.uri / "_design" / design / "_update" / update
 
   /** Indicates whether this update handler exists */
   def exists: Future[Boolean] =

@@ -34,7 +34,7 @@ class View(
 
   import SohvaProtocol._
 
-  protected[this] def uri = db.uri / "_design" / design / "_view" / view
+  protected[this] val uri = db.uri / "_design" / design / "_view" / view
 
   /** Indicates whether this view exists */
   def exists: Future[Boolean] =
@@ -168,7 +168,7 @@ private class BuiltInView(
   view: String)
     extends View("", db, view) {
 
-  override protected[this] def uri = db.uri / view
+  override protected[this] val uri = db.uri / view
 
 }
 
