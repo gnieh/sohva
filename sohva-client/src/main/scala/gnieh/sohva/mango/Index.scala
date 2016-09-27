@@ -61,6 +61,6 @@ final case class IndexCreationResult(result: String, id: String, name: String)
 
 final case class IndexInfo(total_rows: Int, indexes: Vector[IndexDef])
 
-final case class IndexDef(ddoc: String, name: String, `type`: String, `def`: Def)
+final case class IndexDef(ddoc: Option[String], name: String, `type`: String, `def`: Def)
 
 final case class Def(fields: Vector[Sort])

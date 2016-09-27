@@ -32,4 +32,16 @@ package object mango {
 
   }
 
+  /** Initiates a selector for the given field. */
+  def field(fld: String): SelectorBase =
+    new SelectorBase(fld)
+
+  /** Creates a sub selector applying within the given field. */
+  def within(fld: String)(sel: Selector): Selector =
+    Field(fld, sel)
+
+  /** Creates an empty query. */
+  def find: Query =
+    Query(Empty, Nil, Nil, None, None, None)
+
 }

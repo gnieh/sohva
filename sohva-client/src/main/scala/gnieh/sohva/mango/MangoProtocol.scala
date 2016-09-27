@@ -107,6 +107,7 @@ trait MangoProtocol extends DefaultJsonProtocol {
     }
 
     def write(selector: Selector): JsObject = selector match {
+      case Empty            => JsObject()
       case Field(name, sub) => JsObject(Map(name -> write(sub)))
       case And(sub)         => JsObject(Map("$and" -> JsArray(sub.map(write))))
       case Or(sub)          => JsObject(Map("$or" -> JsArray(sub.map(write))))
