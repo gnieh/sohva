@@ -23,9 +23,11 @@ import java.text.SimpleDateFormat
 
 import scala.util.Try
 
+import mango.MangoProtocol
+
 case class SohvaJsonException(msg: String, inner: Exception) extends Exception(msg, inner)
 
-trait SohvaProtocol extends DefaultJsonProtocol with CouchFormatImpl {
+trait SohvaProtocol extends DefaultJsonProtocol with MangoProtocol with CouchFormatImpl {
 
   implicit val docUpdateFormat = jsonFormat3(DocUpdate)
 

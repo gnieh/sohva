@@ -33,7 +33,7 @@ class Show(
 
   import db.couch.materializer
 
-  protected[this] def uri = db.uri / "_design" / design / "_show" / show
+  protected[this] val uri = db.uri / "_design" / design / "_show" / show
 
   /** Indicates whether this view exists */
   def exists: Future[Boolean] =

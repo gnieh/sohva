@@ -150,7 +150,7 @@ abstract class CouchDB extends SprayJsonSupport {
 
   // helper methods
 
-  protected[sohva] def uri: Uri
+  protected[sohva] val uri: Uri
 
   private lazy val http = Http()
 

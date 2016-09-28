@@ -34,7 +34,7 @@ class Design(val db: Database,
 
   import SohvaProtocol._
 
-  protected[sohva] def uri = db.uri / "_design" / name.trim
+  protected[sohva] val uri = db.uri / "_design" / name.trim
 
   /** Check if the design exists.
    *

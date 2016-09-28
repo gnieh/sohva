@@ -54,7 +54,7 @@ class BasicSession protected[sohva] (
   protected[sohva] def prepare(req: HttpRequest) =
     req.addCredentials(BasicHttpCredentials(username, password))
 
-  protected[sohva] def uri =
+  protected[sohva] val uri =
     couch.uri
 
 }
