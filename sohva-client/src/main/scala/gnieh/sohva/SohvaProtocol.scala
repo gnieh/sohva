@@ -205,6 +205,24 @@ trait SohvaProtocol extends DefaultJsonProtocol with MangoProtocol with CouchFor
 
   implicit val replicationFormat = couchFormat[Replication]
 
+  implicit val membershipFormat = jsonFormat2(Membership)
+
+  implicit object revDiffFormat extends JsonFormat[RevDiff] {
+
+    def read(value: JsValue): RevDiff = value match {
+      case JsObject(fields) =>
+        val missing = fields.getOrElse("missing", deserializationError(f"expected a rev diff object but got $value")).convertTo[Vector[String]]
+        val ancestors = fields.getOrElse("possible_ancestors", JsArray()).convertTo[Vector[String]]
+        RevDiff(missing, ancestors)
+      case _ =>
+        deserializationError(f"expected a rev diff object but got $value")
+    }
+
+    def write(rd: RevDiff): JsObject =
+      JsObject(Map("missing" -> rd.missing.toJson, "possible_ancestors" -> rd.possible_ancestors.toJson))
+
+  }
+
   implicit object ConfigurationFormat extends RootJsonFormat[Configuration] {
 
     def read(value: JsValue): Configuration =

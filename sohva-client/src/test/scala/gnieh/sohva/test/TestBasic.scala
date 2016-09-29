@@ -109,7 +109,7 @@ class TestBasic extends SohvaTestSpec with Matchers {
       case OkResult(true, id, rev) =>
 
         val newId = id.value
-        val saved = synced(db.getRawDocById(newId))
+        val saved = synced(db.getDocById[JsValue](newId))
         saved.value match {
           case JsObject(fields) =>
             fields.get("value").value should be(JsNumber(3))

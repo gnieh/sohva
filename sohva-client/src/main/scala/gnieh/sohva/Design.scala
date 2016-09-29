@@ -322,6 +322,11 @@ class Design(val db: Database,
       case None    => Nil
     }
 
+  /** Requests compaction of this design. */
+  def compact: Future[Boolean] =
+    for (resp <- db.couch.http(HttpRequest(HttpMethods.POST, uri = db.uri / "_compact" / name)).withFailureMessage(f""))
+      yield resp.asJsObject("ok").convertTo[Boolean]
+
   // helper methods
 
   private def designDoc(json: JsValue) =
