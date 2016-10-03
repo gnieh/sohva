@@ -93,12 +93,8 @@ class Database private[sohva] (
     for (r <- couch.rawHttp(HttpRequest(HttpMethods.HEAD, uri = uri)) withFailureMessage f"exists failed for $uri")
       yield r.status == StatusCodes.OK
 
-  /** Registers to the change stream of this database with potential filter and
-   *  since some revision. If no revision is given changes that occurred before the
-   *  connection was established are not sent
-   */
-  def changes(since: Option[Int] = None, filter: Option[String] = None): ChangeStream =
-    new ChangeStream(this, since, filter)
+  /** Exposes the interface to change stream for this database. */
+  object changes extends ChangeStream(this)
 
   /** Creates this database in the couchdb instance if it does not already exist.
    *  Returns <code>true</code> iff the database was actually created.
