@@ -36,8 +36,6 @@ import java.io.{
   BufferedInputStream
 }
 
-import org.slf4j.LoggerFactory
-
 import spray.json._
 
 import gnieh.diffson.JsonPatch
@@ -77,44 +75,12 @@ class Database private[sohva] (
     val name: String,
     val couch: CouchDB,
     val credit: Int,
-    val strategy: Strategy) extends SohvaProtocol with SprayJsonSupport {
+    val strategy: Strategy) extends DocumentOps with SohvaProtocol with SprayJsonSupport {
 
-  implicit def ec =
+  implicit val ec =
     couch.ec
 
   import couch.materializer
-
-  /* the resolver is responsible for applying the merging strategy on conflict and retrying
-   * to save the document after resolution process */
-  private def resolver(credit: Int, docId: String, baseRev: Option[String], current: JsValue): Future[JsValue] = current match {
-    case JsNull =>
-      LoggerFactory.getLogger(getClass).info("No document to save")
-      Future.successful(DocUpdate(true, docId, baseRev.getOrElse("")).toJson)
-    case _ =>
-      (for {
-        entity <- Marshal(current).to[RequestEntity]
-        res <- couch.http(HttpRequest(HttpMethods.PUT, uri = uri / docId, entity = entity))
-      } yield res).recoverWith {
-        case exn @ ConflictException(_) if credit > 0 =>
-          LoggerFactory.getLogger(getClass).info("Conflict occurred, try to resolve it")
-          // try to resolve the conflict and save again
-          for {
-            // get the base document if any
-            base <- getRawDocById(docId, baseRev)
-            // get the last document
-            last <- getRawDocById(docId)
-            // apply the merge strategy between base, last and current revision of the document
-            lastRev = last collect {
-              case JsObject(fs) if fs.contains("_rev") => fs("_rev").convertTo[String]
-            }
-            resolved = strategy(base, last, current)
-            res <- resolved match {
-              case Some(resolved) => resolver(credit - 1, docId, lastRev, resolved)
-              case None           => Future.failed(exn)
-            }
-          } yield res
-      } withFailureMessage f"Unable to resolve document with ID $docId at revision $baseRev"
-  }
 
   /** Returns the information about this database */
   def info: Future[Option[InfoResult]] =
@@ -195,16 +161,10 @@ class Database private[sohva] (
       ) withFailureMessage f"Failed to access _all_docs view for $uri"
     } yield for (Row(Some(id), _, _, _) <- res.rows) yield id
 
-  /** Returns the document identified by the given id if it exists */
-  def getDocById[T: JsonReader](id: String, revision: Option[String] = None): Future[Option[T]] =
-    (for (raw <- getRawDocById(id, revision))
-      yield raw.map(docResult[T])
-    ) withFailureMessage f"Failed to fetch document by ID $id and revision $revision"
-
-  /** Returns the raw repsentation of the document identified by the given id if it exists */
+  /** Returns the raw repsentation of the document identified by the given id if it exists. */
+  @deprecated("2.0.0", "Use `getDocById` with return type `JsValue` instead")
   def getRawDocById(id: String, revision: Option[String] = None): Future[Option[JsValue]] =
-    couch.optHttp(HttpRequest(uri = uri / id <<? revision.flatMap(r => if (r.nonEmpty) Some("rev" -> r) else None))) withFailureMessage
-      f"Failed to fetch the raw document by ID $id at revision $revision from $uri"
+    getDocById[JsValue](id, revision)
 
   /** Returns all the documents with given identifiers and of the given type.
    *  If the document with an identifier exists in the database but has not the
@@ -227,72 +187,41 @@ class Database private[sohva] (
         f"Failed to fetch document revisions by IDs $ids from $uri"
     } yield res.rows.map { case Row(Some(id), _, value, _) => (id, value("rev")) }
 
-  /** Finds documents using the declarative mango query syntax. See [[sohva.mango]] for details. */
+  /** Finds documents using the declarative mango query syntax. See [[sohva.mango]] for details.
+   *
+   *  @group CouchDB2
+   */
   def find[T: JsonReader](selector: Selector, fields: List[String] = Nil, sort: List[Sort], limit: Option[Int] = None, skip: Option[Int] = None, use_index: Option[UseIndex] = None): Future[Vector[T]] =
     find[T](Query(selector, fields, sort, limit, skip, use_index))
 
-  /** Finds documents using the declarative mango query syntax. See [[sohva.mango]] for details. */
+  /** Finds documents using the declarative mango query syntax. See [[sohva.mango]] for details.
+   *
+   *  @group CouchDB2
+   */
   def find[T: JsonReader](query: Query): Future[Vector[T]] =
     for {
       entity <- Marshal(query).to[RequestEntity]
       docs <- couch.http(HttpRequest(HttpMethods.POST, uri = uri / "_find", entity = entity)).withFailureMessage(f"Failed while querying document on database $uri")
     } yield findResult[T](docs)
 
-  /** Explains how the query is run by the CouchDB server. */
+  /** Explains how the query is run by the CouchDB server.
+   *
+   *  @group CouchDB2
+   */
   def explain(query: Query): Future[Explanation] =
     for {
       entity <- Marshal(query).to[RequestEntity]
       expl <- couch.http(HttpRequest(HttpMethods.POST, uri = uri / "_find", entity = entity)).withFailureMessage(f"Failed while querying document on database $uri")
     } yield expl.convertTo[Explanation]
 
-  /** Exposes the interface for managing indices. */
+  /** Exposes the interface for managing indices.
+   *
+   *  @group CouchDB2
+   */
   object index extends Index(this)
 
-  /** Creates or updates the given object as a document into this database
-   *  The given object must have an `_id` and an optional `_rev` fields
-   *  to conform to the couchdb document structure.
-   *  The saved revision is returned. If something went wrong, an exception is raised
-   */
-  def saveDoc[T: CouchFormat](doc: T): Future[T] = {
-    val format = implicitly[CouchFormat[T]]
-    (for {
-      upd <- resolver(credit, format._id(doc), format._rev(doc), doc.toJson)
-      res <- update[T](upd.convertTo[DocUpdate])
-    } yield res) withFailureMessage f"Unable to save document with ID ${format._id(doc)} at revision ${format._rev(doc)}"
-  }
-
-  def saveRawDoc(doc: JsValue): Future[JsValue] = doc match {
-    case JsObject(fields) =>
-      val idRev = for {
-        id <- fields.get("_id").map(_.convertTo[String])
-        rev = fields.get("_rev").map(_.convertTo[String])
-      } yield (id, rev)
-      idRev match {
-        case Some((id, rev)) =>
-          (for {
-            upd <- resolver(credit, id, rev, doc)
-            res <- updateRaw(docUpdateResult(upd))
-          } yield res) withFailureMessage f"Failed to update raw document with ID $id and revision $rev"
-        case None =>
-          Future.failed(new SohvaException(f"Not a couchdb document: ${doc.prettyPrint}"))
-      }
-    case _ =>
-      Future.failed(new SohvaException(f"Not a couchdb document: ${doc.prettyPrint}"))
-  }
-
-  private[this] def update[T: JsonReader](res: DocUpdate) = res match {
-    case DocUpdate(true, id, rev) =>
-      getDocById[T](id, Some(rev)).map(_.get)
-    case DocUpdate(false, id, _) =>
-      Future.failed(new SohvaException(f"Document $id could not be saved"))
-  }
-
-  private[this] def updateRaw(res: DocUpdate) = res match {
-    case DocUpdate(true, id, rev) =>
-      getRawDocById(id, Some(rev)).map(_.get)
-    case DocUpdate(false, id, _) =>
-      Future.failed(new SohvaException("Document $id could not be saved"))
-  }
+  /** Exposes the interface for managing local (non-replicating) documents. */
+  object local extends Local(this)
 
   /** Creates or updates a bunch of documents into the database. */
   def saveDocs[T: CouchFormat](docs: List[T], all_or_nothing: Boolean = false): Future[List[DbResult]] =
@@ -302,7 +231,7 @@ class Database private[sohva] (
         f"Failed to bulk save documents to $uri"
     } yield bulkSaveResult(raw)
 
-  def saveRawDocs(docs: List[JsValue], all_or_nothing: Boolean = false): Future[List[DbResult]] =
+  private def saveRawDocs(docs: List[JsValue], all_or_nothing: Boolean = false): Future[List[DbResult]] =
     for {
       entity <- Marshal(JsObject(Map("all_or_nothing" -> JsBoolean(all_or_nothing), "docs" -> JsArray(docs.toVector)))).to[RequestEntity]
       raw <- couch.http(HttpRequest(HttpMethods.POST, uri = uri / "_bulk_docs", entity = entity)) withFailureMessage
@@ -364,17 +293,6 @@ class Database private[sohva] (
       saveDoc(format.withRev(patch(doc), format._rev(doc)))
     case None =>
       Future.failed(new SohvaException("Uknown document to patch: " + id))
-  }
-
-  /** Deletes the document from the database.
-   *  The document will only be deleted if the caller provided the last revision
-   */
-  def deleteDoc[T: CouchFormat](doc: T): Future[Boolean] = {
-    val format = implicitly[CouchFormat[T]]
-    for (
-      res <- couch.http(HttpRequest(HttpMethods.DELETE, uri = uri / format._id(doc) <<? Map("rev" -> format._rev(doc).getOrElse("")))) withFailureMessage
-        f"Failed to delete document with ID ${format._id(doc)} at revision ${format._rev(doc)} from $uri"
-    ) yield couch.ok(res)
   }
 
   /** Deletes the document identified by the given id from the database.
@@ -514,14 +432,66 @@ class Database private[sohva] (
   def builtInView(view: String): View =
     new BuiltInView(this, view)
 
-  /** Returns a temporary view of this database, specified by the `ViewDoc`. */
+  /** Returns a temporary view of this database, specified by the `ViewDoc`.
+   *
+   *  @group CouchDB1
+   */
+  @deprecated("2.0.0", "Temporary view were removed in CouchDB 2.0 and should not be used")
   def temporaryView(viewDoc: ViewDoc): View =
     new TemporaryView(this, viewDoc)
+
+  /** Requests a database compaction. */
+  def compact: Future[Boolean] =
+    for (resp <- couch.http(HttpRequest(HttpMethods.POST, uri = uri / "_compact")).withFailureMessage(f"Unable to compact database at $uri"))
+      yield resp.asJsObject.fields("ok").convertTo[Boolean]
+
+  /** Ensures that all changes are written to disk. */
+  @deprecated("2.0.0", "You shouldn't need to call this if you have the recommended setting `delayed_commits=false`")
+  def ensureFullCommit: Future[Boolean] =
+    for (resp <- couch.http(HttpRequest(HttpMethods.POST, uri = uri / "_ensure_full_commit" / name)).withFailureMessage(f"Unable to ensure full commit at $uri"))
+      yield resp.asJsObject.fields("ok").convertTo[Boolean]
+
+  /** Cleanups old views. */
+  def viewCleanup: Future[Boolean] =
+    for (resp <- couch.http(HttpRequest(HttpMethods.POST, uri = uri / "_view_cleanup" / name)).withFailureMessage(f"Unable to perform view cleanup at $uri"))
+      yield resp.asJsObject.fields("ok").convertTo[Boolean]
+
+  /** Returns the revision for each document in the map that are not present in this node. */
+  def missingRevs(revs: Map[String, Vector[String]]): Future[Map[String, Vector[String]]] =
+    for {
+      entity <- Marshal(revs).to[RequestEntity]
+      resp <- couch.http(HttpRequest(HttpMethods.POST, uri = uri / "_missing_revs", entity = entity)).withFailureMessage(f"Unable to get missing revisions from $uri")
+    } yield resp.asJsObject.fields("missing_revs").convertTo[Map[String, Vector[String]]]
+
+  /** Given a list of documents and revisions, returns the revision that are missing in this node. */
+  def revsDiff(revs: Map[String, Vector[String]]): Future[Map[String, RevDiff]] =
+    for {
+      entity <- Marshal(revs).to[RequestEntity]
+      resp <- couch.http(HttpRequest(HttpMethods.POST, uri = uri / "_revs_diff", entity = entity)).withFailureMessage(f"Unable to get revision difffrom $uri")
+    } yield resp.convertTo[Map[String, RevDiff]]
+
+  /** Gets the current database revision limit. */
+  def getRevsLimit: Future[Int] =
+    for (resp <- couch.http(HttpRequest(uri = uri / "_revs_limit")).withFailureMessage(f"Unable to get revision limit at $uri"))
+      yield resp.convertTo[Int]
+
+  /** Sets the current database revision limit. */
+  def setRevsLimit(l: Int): Future[Boolean] =
+    for {
+      entity <- Marshal(JsNumber(l)).to[RequestEntity]
+      resp <- couch.http(HttpRequest(HttpMethods.PUT, uri = uri / "_revs_limit", entity = entity)).withFailureMessage(f"Unable to get revision limit at $uri")
+    } yield resp.asJsObject.fields("ok").convertTo[Boolean]
 
   // helper methods
 
   protected[sohva] val uri =
     couch.uri / name
+
+  protected[sohva] def http(req: HttpRequest): Future[JsValue] =
+    couch.http(req)
+
+  protected[sohva] def optHttp(req: HttpRequest): Future[Option[JsValue]] =
+    couch.optHttp(req)
 
   private def readFile(response: HttpResponse): Future[Option[(String, ByteString)]] = {
     if (response.status.intValue == 404) {
@@ -549,15 +519,9 @@ class Database private[sohva] (
   private def infoResult(json: JsValue) =
     json.convertTo[InfoResult]
 
-  private def docResult[T: JsonReader](json: JsValue) =
-    json.convertTo[T]
-
   private def findResult[T: JsonReader](json: JsValue) =
     // XXX there is a format for vector but no reader,,,
     json.asJsObject.fields("docs").convertTo[Vector[JsValue]].map(_.convertTo[T])
-
-  private def docResultOpt[T: JsonReader](json: JsValue) =
-    Try(docResult[T](json)).toOption
 
   private def docUpdateResult(json: JsValue) =
     json.convertTo[DocUpdate]
@@ -609,3 +573,5 @@ private[sohva] final case class BulkDocs[T](rows: List[BulkDocRow[T]])
 
 private[sohva] final case class BulkDocRow[T](id: String, rev: String, doc: Option[T])
 private[sohva] final case class BulkSave(all_or_nothing: Boolean, docs: List[JsValue])
+
+final case class RevDiff(missing: Vector[String], possible_ancestors: Vector[String])

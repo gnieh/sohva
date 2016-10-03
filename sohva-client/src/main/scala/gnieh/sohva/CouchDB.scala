@@ -86,6 +86,20 @@ abstract class CouchDB extends SprayJsonSupport {
         f"Unable to fetch databases list from $uri"
     ) yield asStringList(dbs)
 
+  /** Returns the list of nodes known by this node and the clusters.
+   *
+   *  @group CouchDB2
+   */
+  def membership: Future[Membership] =
+    for {
+      mem <- http(HttpRequest(uri = uri / "_membership")).withFailureMessage(f"Unable to fetch membership frin $uri")
+    } yield mem.convertTo[Membership]
+
+  /** Restarts the CouchDB instance. */
+  def restart: Future[Boolean] =
+    for (resp <- http(HttpRequest(HttpMethods.POST, uri = uri / "_restart")).withFailureMessage(f"Unable to restart instance at $uri"))
+      yield resp.asJsObject("ok").convertTo[Boolean]
+
   /** Returns one UUID */
   def _uuid: Future[String] =
     for (uuid <- _uuids(1))
@@ -220,3 +234,4 @@ final case class CouchInfo(couchdb: String, version: String)
 
 private[sohva] final case class Uuids(uuids: List[String])
 
+final case class Membership(all_nodes: Vector[String], cluster_nodes: Vector[String])
