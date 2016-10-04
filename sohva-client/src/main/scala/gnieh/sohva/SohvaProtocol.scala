@@ -145,26 +145,35 @@ trait SohvaProtocol extends DefaultJsonProtocol with MangoProtocol with CouchFor
 
   }
 
-  implicit object ChangeFormat extends RootJsonReader[Change] {
+  implicit val revFormat = jsonFormat1(Rev)
+
+  implicit object ChangeFormat extends RootJsonFormat[Change] {
 
     def read(value: JsValue): Change = value match {
       case JsObject(fields) =>
         val c = for {
-          seq <- fields.get("seq").map(_.convertTo[Int])
+          seq <- fields.get("seq")
           id <- fields.get("id").map(_.convertTo[String])
-          // changes of the form [{"rev": "1-ef334230a0d99ee043"}]
-          JsArray(Vector(JsObject(revFields))) <- fields.get("changes")
-          rev <- revFields.get("rev").map(_.convertTo[String])
+          changes <- Some(fields("changes").convertTo[Vector[Rev]])
           deleted = fields.get("deleted").map(_.convertTo[Boolean]).getOrElse(false)
           doc = if (deleted) None else fields.get("doc").collect { case o: JsObject => o }
-        } yield new Change(seq, id, rev, deleted, doc)
+        } yield new Change(seq, id, changes, deleted, doc)
 
         c.getOrElse(deserializationError(s"Malformed change object: ${value.prettyPrint}"))
       case _ =>
         deserializationError(s"Malformed change object: ${value.prettyPrint}")
     }
 
+    def write(change: Change): JsValue = change match {
+      case Change(seq, id, changes, deleted, None) =>
+        JsObject(Map("seq" -> seq, "id" -> id.toJson, "changes" -> changes.toJson, "deleted" -> deleted.toJson))
+      case Change(seq, id, changes, deleted, Some(doc)) =>
+        JsObject(Map("seq" -> seq, "id" -> id.toJson, "changes" -> changes.toJson, "deleted" -> deleted.toJson, "doc" -> doc))
+    }
+
   }
+
+  implicit val changesFormat = jsonFormat3(Changes)
 
   /** (De)Serialize a database reference (remote or local).
    *
@@ -255,6 +264,8 @@ trait SohvaProtocol extends DefaultJsonProtocol with MangoProtocol with CouchFor
     }
 
   }
+
+  implicit val dbUpdateFormat = jsonFormat3(DbUpdate)
 
 }
 

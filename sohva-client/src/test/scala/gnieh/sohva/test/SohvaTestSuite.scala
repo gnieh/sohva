@@ -27,7 +27,11 @@ import scala.concurrent.ExecutionContext.Implicits.global
 
 import spray.json._
 
-abstract class SohvaTestSpec(retry: Int = 0, strategy: Strategy = BarneyStinsonStrategy) extends FlatSpec with Matchers with BeforeAndAfterAll with SohvaProtocol {
+trait AbstractSohvaTestSpec extends BeforeAndAfterAll with Matchers with SohvaProtocol {
+  this: Suite =>
+
+  val retry: Int
+  val strategy: Strategy
 
   implicit val system = ActorSystem()
   implicit val timeout = Timeout(5.seconds)
@@ -51,6 +55,10 @@ abstract class SohvaTestSpec(retry: Int = 0, strategy: Strategy = BarneyStinsonS
   }
 
 }
+
+abstract class SohvaTestSpec(val retry: Int = 0, val strategy: Strategy = BarneyStinsonStrategy) extends FlatSpec with AbstractSohvaTestSpec
+
+abstract class AsyncSohvaTestSpec(val retry: Int = 0, val strategy: Strategy = BarneyStinsonStrategy) extends AsyncFlatSpec with AbstractSohvaTestSpec
 
 case class TestDoc(_id: String, toto: Int) extends IdRev
 case class TestDoc2(_id: String, toto: Int) extends IdRev

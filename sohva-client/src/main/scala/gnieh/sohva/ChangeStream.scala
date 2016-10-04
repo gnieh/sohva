@@ -17,15 +17,28 @@ package gnieh.sohva
 
 import spray.json._
 
-import akka.io._
 import akka.actor._
 
+import akka.http.scaladsl.Http
+import akka.http.scaladsl.settings._
 import akka.http.scaladsl.model._
+import akka.http.scaladsl.marshalling._
+import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
+
+import akka.stream.scaladsl._
+import akka.stream.{
+  KillSwitches,
+  UniqueKillSwitch
+}
+
+import akka.util._
 
 import scala.util.{
   Try,
   Success
 }
+
+import scala.concurrent._
 import scala.concurrent.duration.Duration
 
 import java.util.concurrent.atomic.AtomicLong
@@ -34,171 +47,118 @@ import java.util.concurrent.atomic.AtomicLong
  *
  *  @author Lucas Satabin
  */
-class ChangeStream(database: Database, since: Option[Int], filter: Option[String]) {
+class ChangeStream(database: Database) {
+
+  import SohvaProtocol._
+  import SprayJsonSupport._
 
   import database.couch.system
+  import database.couch.ec
 
-  // TODO re-implement with askka stream
+  /** Returns a one-shot view of changes for this database. */
+  def once(docIds: Vector[String] = Vector.empty[String],
+    conflicts: Boolean = false,
+    descending: Boolean = false,
+    filter: Option[String] = None,
+    includeDocs: Boolean = false,
+    attachments: Boolean = false,
+    attEncodingInfo: Boolean = false,
+    lastEventId: Option[Int] = None,
+    limit: Option[Int] = None,
+    since: Option[Either[String, JsValue]] = None,
+    style: Option[String] = None,
+    view: Option[String] = None): Future[Changes] = {
 
-  /** The `Observable` to subscribe to to be notified about changes over this stream.
-   *  This `Observable` can be combined with other ones, filtered, mapped, ...
-   *  See the [documentation](http://rxscala.github.io/scaladoc/index.html#rx.lang.scala.Observable) for more details.
+    val parameters = List(
+      if (conflicts) Some("conflicts" -> "true") else None,
+      if (descending) Some("descending" -> "true") else None,
+      filter.map(s => "filter" -> s),
+      if (includeDocs) Some("include_docs" -> "true") else None,
+      if (attachments) Some("attachments" -> "true") else None,
+      if (attEncodingInfo) Some("att_encoding_info" -> "true") else None,
+      lastEventId.map(n => "last-event-id" -> n.toString),
+      limit.map(n => "limit" -> n.toString),
+      since.map {
+        case Left("now") => "since" -> "now"
+        case Left(s)     => throw new SohvaException(f"Unsupported `since` value $s")
+        case Right(s)    => "since" -> CompactPrinter(s)
+      },
+      style.map(s => "style" -> s),
+      view.map(v => "view" -> v)).flatten
+
+    if (docIds.isEmpty)
+      for (resp <- database.http(HttpRequest(uri = uri <<? parameters)))
+        yield resp.convertTo[Changes]
+    else
+      for {
+        entity <- Marshal(docIds).to[RequestEntity]
+        resp <- database.http(HttpRequest(uri = uri <<? parameters))
+      } yield resp.convertTo[Changes]
+
+  }
+
+  /** Returns a continuous stream representing the changes in the database. Each change produces an element in the stream.
+   *  The returned stream can be cancelled using the kill switch returned by materializing it.
+   *  E.g. if you want to log the changes to the console and shut it down after a while, you can write
+   *  {{{
+   *  val stream = db.changes.stream()
+   *  val killSwitch = stream.toMat(Sink.foreach(println _))(Keep.left).run()
+   *  ...
+   *  killSwitch.shutdown()
+   *  }}}
    */
-  def stream: (String, Option[JsObject]) =
-    ???
+  def stream(docIds: Vector[String] = Vector.empty[String],
+    conflicts: Boolean = false,
+    descending: Boolean = false,
+    filter: Option[String] = None,
+    includeDocs: Boolean = false,
+    attachments: Boolean = false,
+    attEncodingInfo: Boolean = false,
+    lastEventId: Option[Int] = None,
+    limit: Option[Int] = None,
+    since: Option[Either[String, JsValue]] = None,
+    style: Option[String] = None,
+    view: Option[String] = None): Source[Change, UniqueKillSwitch] = {
 
-  /** Subscribe to the original change stream initiated with the database.
-   *  this is equivalent to calling `changes.stream.subscribe(obs)`
-   */
-  def subscribe(obs: ((String, Option[JsObject])) => Unit): Unit =
-    ???
+    val parameters = List(
+      Some("heartbeat" -> "5000"),
+      Some("feed" -> "continuous"),
+      if (conflicts) Some("conflicts" -> "true") else None,
+      if (descending) Some("descending" -> "true") else None,
+      filter.map(s => "filter" -> s),
+      if (includeDocs) Some("include_docs" -> "true") else None,
+      if (attachments) Some("attachments" -> "true") else None,
+      if (attEncodingInfo) Some("att_encoding_info" -> "true") else None,
+      lastEventId.map(n => "last-event-id" -> n.toString),
+      limit.map(n => "limit" -> n.toString),
+      since.map {
+        case Left("now") => "since" -> "now"
+        case Left(s)     => throw new SohvaException(f"Unsupported `since` value $s")
+        case Right(s)    => "since" -> CompactPrinter(s)
+      },
+      style.map(s => "style" -> s),
+      view.map(v => "view" -> v)).flatten
 
-  /** Closes this stream and the underlying `Observable`. Subscriber will receive a terminatio
-   *  message
-   */
-  def close(): Unit =
-    ???
+    Source.fromFuture(
+      for (entity <- if (docIds.isEmpty) Future.successful(HttpEntity.Empty) else Marshal(Map("doc_ids" -> docIds)).to[RequestEntity])
+        yield database.couch.prepare(HttpRequest(if (docIds.isEmpty) HttpMethods.GET else HttpMethods.POST, uri = uri <<? parameters, entity = entity)))
+      .via(database.couch.connectionFlow)
+      .flatMapConcat(_.entity.dataBytes)
+      .via(Framing.delimiter(ByteString("\n"), Int.MaxValue))
+      .mapConcat(bs => if (bs.isEmpty) collection.immutable.Seq() else collection.immutable.Seq(JsonParser(bs.utf8String).convertTo[Change]))
+      .viaMat(KillSwitches.single)(Keep.right)
+
+  }
 
   override def toString =
-    (database.uri / "_changes").toString
+    uri.toString
+
+  private val uri = database.uri / "_changes"
 
 }
 
-/** This actor is responsible for managing the connection to the change stream
- *  of the database.
- *  It opens an endless update feed that gets notified by the database whenever some change
- *  happens. It notifies the obervers that subscribed to the `Observable`.
- *
- *  @author Lucas Satabin
- */
-//private class ChangeActor(database: Database, filter: Option[String]) extends Actor with ActorLogging {
-//
-//  implicit def system = context.system
-//
-//  import SohvaProtocol._
-//
-//  private val uri = database.uri / "_changes"
-//
-//  override def preStart(): Unit = {
-//    // ok so we just created a new change stream, connect to the `_changes` endpoint
-//    // this connection expect a chunked response and no timeout
-//    val couch = database.couch
-//    val localSettings =
-//      ClientConnectionSettings(system).copy(responseChunkAggregationLimit = 0, requestTimeout = Duration.Inf)
-//    log.debug(s"change stream settings for database ${database.name}: $localSettings")
-//    IO(Http) ! Http.Connect(couch.host, port = couch.port, sslEncryption = couch.ssl, settings = Some(localSettings))
-//  }
-//
-//  def receive = connecting(Map())
-//
-//  def connecting(observers: Map[Long, Observer[(String, Option[JsObject])]]): Receive = {
-//    case _: Http.Connected =>
-//      // connection has been established, send the change stream request
-//      val params = {
-//        val base = Map(
-//          "feed" -> "continuous",
-//          "since" -> "now",
-//          "include_docs" -> "true",
-//          "heartbeat" -> "true"
-//        )
-//        filter match {
-//          case Some(filter) => base + ("filter" -> filter)
-//          case None         => base
-//        }
-//      }
-//      val req = HttpRequest(uri = uri <<? params)
-//
-//      sender ! req
-//
-//      // and now we are ready to receive update data
-//      context.become(receiving(sender, observers))
-//
-//    case Http.CommandFailed(Http.Connect(address, _, _, _, _)) =>
-//      val exn = new RuntimeException("Could not connect to $address")
-//      // notify the already subscribed observers
-//      for ((_, o) <- observers)
-//        o.onError(exn)
-//      // and notify the commander that initiated the conncetion
-//      sender ! Status.Failure(exn)
-//      // finally, stop myself
-//      context.stop(self)
-//
-//    case Subscribe(id, observer) =>
-//      // not so fast new subscriber, connection has not been established yet!
-//      // however, we are nice and still accept you
-//      context.become(connecting(observers + (id -> observer)))
-//
-//    case Unsubscribe(id) =>
-//      // oh, that was quick, but ok, if you wanna leave, just do it,
-//      // we'll connect without you anyway
-//      context.become(connecting(observers - id))
-//
-//  }
-//
-//  def receiving(commander: ActorRef, observers: Map[Long, Observer[(String, Option[JsObject])]]): Receive = {
-//    case MessageChunk(data, _) =>
-//      log.debug(s"Change stream for database ${database.name} received a message")
-//      for {
-//        Change(seq, id, rev, deleted, doc) <- Try(JsonParser(data.asString).convertTo[Change])
-//        (_, o) <- observers
-//      } o.onNext(id, doc)
-//
-//    case ChunkedMessageEnd(_, _) =>
-//      log.debug(s"Change stream for database ${database.name} received the end of stream message")
-//      // notify the observers that the stream has ended
-//      for ((_, o) <- observers)
-//        o.onCompleted()
-//      // and stop myself
-//      context.stop(self)
-//
-//    case Subscribe(id, observer) =>
-//      log.debug(s"Subscription received for observer $id and database ${database.name}")
-//      // we are pleased to welcome a new observer, let xour observations be successful
-//      context.become(receiving(commander, observers + (id -> observer)))
-//
-//    case Unsubscribe(id) =>
-//      log.debug(s"Unsubscription received for observer $id and database ${database.name}")
-//      // goodbye buddy!
-//      context.become(receiving(commander, observers - id))
-//
-//    case Http.SendFailed(_) | Timedout(_) =>
-//      // notify the observers that some error happened
-//      val exn = new RuntimeException("The change stream request to $uri failed")
-//      for ((_, o) <- observers)
-//        o.onError(exn)
-//      // notify the commander that initiated the request
-//      commander ! Status.Failure(exn)
-//      // and stop myself
-//      context.stop(self)
-//
-//    case CloseStream =>
-//      log.debug(s"Change stream of database ${database.name} was closed")
-//      // notify the observers that the stream has ended
-//      for ((_, o) <- observers)
-//        o.onCompleted()
-//      // close the connection
-//      commander ! Http.Close
-//      // and stop myself
-//      context.stop(self)
-//
-//  }
-//
-//}
-//
-//private case class Unsubscribe(id: Long)
-//private case class Subscribe(id: Long, observer: Observer[(String, Option[JsObject])])
-//private case object CloseStream
+case class Change(seq: JsValue, id: String, changes: Vector[Rev], deleted: Boolean, doc: Option[JsObject])
 
-object Change {
-  def unapply(json: JsValue)(implicit formats: JsonFormat[Change]): Option[(Int, String, String, Boolean, Option[JsObject])] =
-    Try(json.convertTo[Change]).toOption.flatMap(Change.unapply)
-}
+case class Rev(rev: String)
 
-object LastSeq {
-  def unapply(json: JsValue)(implicit formats: JsonFormat[LastSeq]): Option[Int] =
-    Try(json.convertTo[LastSeq]).toOption.flatMap(LastSeq.unapply)
-}
-
-case class Change(seq: Int, id: String, rev: String, deleted: Boolean, doc: Option[JsObject])
-
-case class LastSeq(last_seq: Int)
+case class Changes(last_seq: JsValue, pending: Int, results: Vector[Change])

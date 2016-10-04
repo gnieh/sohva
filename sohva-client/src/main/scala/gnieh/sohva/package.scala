@@ -47,6 +47,8 @@ package object sohva {
   // register the COPY method
   val COPY = HttpMethod.custom("COPY")
 
+  val now = Some(Left("now"))
+
   private[sohva] implicit class EnhancedUri(val uri: Uri) extends AnyVal {
 
     def /(part: String) =
