@@ -52,11 +52,12 @@ import spray.json._
  *  @author Lucas Satabin
  *
  */
-abstract class CouchDB extends SprayJsonSupport {
+abstract class CouchDB {
 
   implicit def ec: ExecutionContext
 
   import SohvaProtocol._
+  import SprayJsonSupport._
 
   implicit val system: ActorSystem
 

@@ -36,6 +36,7 @@ class Users(couch: CouchDB) {
   import couch._
 
   import SohvaProtocol._
+  import SprayJsonSupport._
 
   var dbName: String = "_users"
 

@@ -28,10 +28,9 @@ import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
  *
  *  @author Lucas Satabin
  */
-class Update(
-    val design: String,
-    val db: Database,
-    val update: String) extends SprayJsonSupport {
+class Update(val design: String, val db: Database, val update: String) {
+
+  import SprayJsonSupport._
 
   import db.ec
 

@@ -47,7 +47,10 @@ import java.util.concurrent.atomic.AtomicLong
  *
  *  @author Lucas Satabin
  */
-class ChangeStream(database: Database) extends SprayJsonSupport with SohvaProtocol {
+class ChangeStream(database: Database) {
+
+  import SohvaProtocol._
+  import SprayJsonSupport._
 
   import database.couch.system
   import database.couch.ec

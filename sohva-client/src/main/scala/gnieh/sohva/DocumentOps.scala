@@ -28,7 +28,10 @@ import scala.concurrent._
 
 import org.slf4j.LoggerFactory
 
-abstract class DocumentOps extends SohvaProtocol with SprayJsonSupport {
+abstract class DocumentOps {
+
+  import SohvaProtocol._
+  import SprayJsonSupport._
 
   implicit val ec: ExecutionContext
 

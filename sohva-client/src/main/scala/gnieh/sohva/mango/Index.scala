@@ -29,7 +29,10 @@ import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
  *
  *  @author Lucas Satabin
  */
-class Index(db: Database) extends MangoProtocol with SprayJsonSupport {
+class Index(db: Database) {
+
+  import SprayJsonSupport._
+  import MangoProtocol._
 
   import db.couch.ec
 

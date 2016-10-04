@@ -76,7 +76,10 @@ class Database private[sohva] (
     val name: String,
     val couch: CouchDB,
     val credit: Int,
-    val strategy: Strategy) extends DocumentOps with SohvaProtocol with SprayJsonSupport {
+    val strategy: Strategy) extends DocumentOps {
+
+  import SohvaProtocol._
+  import SprayJsonSupport._
 
   implicit val ec =
     couch.ec
