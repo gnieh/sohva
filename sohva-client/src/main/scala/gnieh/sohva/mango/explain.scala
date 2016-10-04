@@ -19,6 +19,6 @@ package mango
 
 import spray.json._
 
-final case class Explanation(dbname: String, index: IndexDef, selector: Selector, opts: JsObject, limit: Int, skip: Int, fields: Vector[String], range: QueryRange)
+final case class Explanation(dbname: String, index: IndexDef, selector: Selector, opts: JsObject, limit: Int, skip: Int, fields: Either[String, Vector[String]], range: QueryRange)
 
-final case class QueryRange(start_key: Vector[JsValue], end_key: Vector[JsValue])
+final case class QueryRange(start_key: JsValue, end_key: JsValue)

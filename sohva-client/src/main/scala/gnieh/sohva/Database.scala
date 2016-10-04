@@ -211,7 +211,7 @@ class Database private[sohva] (
   def explain(query: Query): Future[Explanation] =
     for {
       entity <- Marshal(query).to[RequestEntity]
-      expl <- couch.http(HttpRequest(HttpMethods.POST, uri = uri / "_find", entity = entity)).withFailureMessage(f"Failed while querying document on database $uri")
+      expl <- couch.http(HttpRequest(HttpMethods.POST, uri = uri / "_explain", entity = entity)).withFailureMessage(f"Failed while querying document on database $uri")
     } yield expl.convertTo[Explanation]
 
   /** Exposes the interface for managing indices.
