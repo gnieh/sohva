@@ -52,12 +52,6 @@ class ChangeStream(database: Database) extends SprayJsonSupport with SohvaProtoc
   import database.couch.system
   import database.couch.ec
 
-  private def connectionFlow: Flow[HttpRequest, HttpResponse, Future[Http.OutgoingConnection]] =
-    if (database.couch.ssl)
-      Http().outgoingConnectionHttps(database.couch.host, port = database.couch.port)
-    else
-      Http().outgoingConnection(database.couch.host, port = database.couch.port)
-
   /** Returns a one-shot view of changes for this database. */
   def once(docIds: Vector[String] = Vector.empty[String],
     conflicts: Boolean = false,
@@ -144,8 +138,8 @@ class ChangeStream(database: Database) extends SprayJsonSupport with SohvaProtoc
 
     Source.fromFuture(
       for (entity <- if (docIds.isEmpty) Future.successful(HttpEntity.Empty) else Marshal(Map("doc_ids" -> docIds)).to[RequestEntity])
-        yield HttpRequest(if (docIds.isEmpty) HttpMethods.GET else HttpMethods.POST, uri = uri <<? parameters, entity = entity))
-      .via(connectionFlow)
+        yield database.couch.prepare(HttpRequest(if (docIds.isEmpty) HttpMethods.GET else HttpMethods.POST, uri = uri <<? parameters, entity = entity)))
+      .via(database.couch.connectionFlow)
       .flatMapConcat(_.entity.dataBytes)
       .via(Framing.delimiter(ByteString("\n"), Int.MaxValue))
       .mapConcat(bs => if (bs.isEmpty) collection.immutable.Seq() else collection.immutable.Seq(JsonParser(bs.utf8String).convertTo[Change]))

@@ -31,9 +31,16 @@ import akka.http.scaladsl.marshalling._
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
 import akka.http.scaladsl.unmarshalling._
 
-import akka.stream.Materializer
+import akka.stream.{
+  Materializer,
+  KillSwitches,
+  UniqueKillSwitch
+}
+import akka.stream.scaladsl._
 
 import akka.actor._
+
+import akka.util.ByteString
 
 import spray.json._
 
@@ -85,6 +92,21 @@ abstract class CouchDB extends SprayJsonSupport {
       dbs <- http(HttpRequest(uri = uri / "_all_dbs")) withFailureMessage
         f"Unable to fetch databases list from $uri"
     ) yield asStringList(dbs)
+
+  def dbUpdates(timeout: Option[Int] = None, heartbeat: Boolean = true): Source[DbUpdate, UniqueKillSwitch] = {
+
+    val parameters = List(
+      Some("feed" -> "continuous"),
+      timeout.map(t => "timeout" -> t.toString),
+      Some("heartbeat" -> heartbeat.toString)).flatten
+
+    Source.single(prepare(HttpRequest(uri = uri / "_db_updates" <<? parameters)))
+      .via(connectionFlow)
+      .flatMapConcat(_.entity.dataBytes)
+      .via(Framing.delimiter(ByteString("\n"), Int.MaxValue))
+      .mapConcat(bs => if (bs.isEmpty) collection.immutable.Seq() else collection.immutable.Seq(JsonParser(bs.utf8String).convertTo[DbUpdate]))
+      .viaMat(KillSwitches.single)(Keep.right)
+  }
 
   /** Returns the list of nodes known by this node and the clusters.
    *
@@ -179,6 +201,12 @@ abstract class CouchDB extends SprayJsonSupport {
   protected[sohva] def optHttp(req: HttpRequest): Future[Option[JsValue]] =
     rawHttp(req).flatMap(handleOptionalCouchResponse)
 
+  protected[sohva] def connectionFlow: Flow[HttpRequest, HttpResponse, Future[Http.OutgoingConnection]] =
+    if (ssl)
+      Http().outgoingConnectionHttps(host, port = port)
+    else
+      Http().outgoingConnection(host, port = port)
+
   private def handleCouchResponse(response: HttpResponse): Future[JsValue] =
     Unmarshal(response.entity.withContentType(ContentTypes.`application/json`)).to[JsValue].flatMap { json =>
       if (response.status.isSuccess) {
@@ -235,3 +263,5 @@ final case class CouchInfo(couchdb: String, version: String)
 private[sohva] final case class Uuids(uuids: List[String])
 
 final case class Membership(all_nodes: Vector[String], cluster_nodes: Vector[String])
+
+final case class DbUpdate(db_name: String, seq: JsValue, `type`: String)

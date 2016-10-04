@@ -265,6 +265,8 @@ trait SohvaProtocol extends DefaultJsonProtocol with MangoProtocol with CouchFor
 
   }
 
+  implicit val dbUpdateFormat = jsonFormat3(DbUpdate)
+
 }
 
 object SohvaProtocol extends SohvaProtocol
