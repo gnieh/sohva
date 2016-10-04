@@ -145,6 +145,8 @@ trait MangoProtocol extends DefaultJsonProtocol {
 
   implicit val explanationFormat = jsonFormat8(Explanation)
 
+  implicit def searchResultFormat[T: JsonFormat] = jsonFormat2(SearchResult[T])
+
 }
 
 object MangoProtocol extends MangoProtocol

@@ -25,7 +25,8 @@ import mango.{
   Query,
   Index,
   UseIndex,
-  Explanation
+  Explanation,
+  SearchResult
 }
 
 import java.io.{
@@ -191,18 +192,20 @@ class Database private[sohva] (
    *
    *  @group CouchDB2
    */
-  def find[T: JsonReader](selector: Selector, fields: List[String] = Nil, sort: List[Sort], limit: Option[Int] = None, skip: Option[Int] = None, use_index: Option[UseIndex] = None): Future[Vector[T]] =
+  def find[T <: AnyRef: JsonReader](selector: Selector, fields: List[String] = Nil, sort: List[Sort], limit: Option[Int] = None, skip: Option[Int] = None, use_index: Option[UseIndex] = None): Future[SearchResult[T]] =
     find[T](Query(selector, fields, sort, limit, skip, use_index))
 
   /** Finds documents using the declarative mango query syntax. See [[sohva.mango]] for details.
    *
    *  @group CouchDB2
    */
-  def find[T: JsonReader](query: Query): Future[Vector[T]] =
+  def find[T <: AnyRef: JsonReader](query: Query): Future[SearchResult[T]] = {
+    implicit val format = lift(implicitly[JsonReader[T]])
     for {
       entity <- Marshal(query).to[RequestEntity]
-      docs <- couch.http(HttpRequest(HttpMethods.POST, uri = uri / "_find", entity = entity)).withFailureMessage(f"Failed while querying document on database $uri")
-    } yield findResult[T](docs)
+      res <- couch.http(HttpRequest(HttpMethods.POST, uri = uri / "_find", entity = entity)).withFailureMessage(f"Failed while querying document on database $uri")
+    } yield res.convertTo[SearchResult[T]]
+  }
 
   /** Explains how the query is run by the CouchDB server.
    *
@@ -518,10 +521,6 @@ class Database private[sohva] (
 
   private def infoResult(json: JsValue) =
     json.convertTo[InfoResult]
-
-  private def findResult[T: JsonReader](json: JsValue) =
-    // XXX there is a format for vector but no reader,,,
-    json.asJsObject.fields("docs").convertTo[Vector[JsValue]].map(_.convertTo[T])
 
   private def docUpdateResult(json: JsValue) =
     json.convertTo[DocUpdate]
