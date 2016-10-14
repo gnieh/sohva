@@ -162,6 +162,10 @@ class SelectorBase(field: String) {
   def containsAll[T: JsonWriter](values: Vector[T]): Selector =
     All(values.map(_.toJson))
 
+  /** Creates a `$all` selector. */
+  def containsAll[T: JsonWriter](values: T*): Selector =
+    containsAll(values.toVector)
+
   /** Creates a `$elemMatch` selector. */
   def contains(sel: Selector): Selector =
     Field(field, ElemMatch(sel))

@@ -122,7 +122,21 @@ blockquote {
     }
 }
 
+table {
+    border-collapse: collapse;
+}
 
+table, tr, td, th {
+    border-width:1px;
+    border-style:solid;
+    border-color:grey;
+}
+
+th, td {
+    padding-left: 15px;
+    padding-right: 15px;
+    text-align: left;
+}
 
 /**
  * Code formatting
@@ -136,10 +150,6 @@ code {
 
 pre {
   background-color: #3f3f3f;
-}
-
-code {
-  background-color: #eef;
 }
 
 code {
