@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>Sohva - Getting Started</title>
+  <meta name="description" content="">
+
+  <link rel="stylesheet" href="/css/main.css">
+  <link rel="stylesheet" href="/css/zenburn.css">
+  <link rel="stylesheet" type="text/css" media="screen" href="/css/toc.css">
+  <link rel="canonical" href="/basic/">
+</head>
+
+
+  <body>
+
+    <header class="site-header">
+
+  <div class="wrapper">
+
+    <a class="site-title" href="/">Sohva</a>
+
+    <nav class="site-nav">
+      <a href="#" class="menu-icon">
+        <svg viewBox="0 0 18 15">
+          <path fill="#424242" d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.031C17.335,0,18,0.665,18,1.484L18,1.484z"/>
+          <path fill="#424242" d="M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0c0-0.82,0.665-1.484,1.484-1.484 h15.031C17.335,6.031,18,6.696,18,7.516L18,7.516z"/>
+          <path fill="#424242" d="M18,13.516C18,14.335,17.335,15,16.516,15H1.484C0.665,15,0,14.335,0,13.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.031C17.335,12.031,18,12.696,18,13.516L18,13.516z"/>
+        </svg>
+      </a>
+
+      <h1>Getting Started</h1>
+
+    </nav>
+
+  </div>
+
+</header>
+
+<a href="https://github.com/gnieh/sohva"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://camo.githubusercontent.com/652c5b9acfaddf3a9c326fa6bde407b87f7be0f4/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f6f72616e67655f6666373630302e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_orange_ff7600.png"></a>
+
+
+    <div class="page-content">
+      <div class="wrapper">
+        <div id="toc-container">
+  <table class="toc" id="toc">
+    <tbody>
+      <tr>
+        <td>
+          <div id="toctitle">
+            <h2>Contents</h2>
+          </div>
+          <ul>
+            <li class="toc_level-1 toc_section-1">
+              <a href="#tocAnchor-1-1"><span class="tocnumber">1</span> <span class="toctext">Instantiating a client</span></a>
+            </li>
+            <li class="toc_level-1 toc_section-2">
+              <a href="#tocAnchor-1-2"><span class="tocnumber">2</span> <span class="toctext">Access to databases</span></a>
+            </li>
+            <li class="toc_level-1 toc_section-3">
+              <a href="#tocAnchor-1-3"><span class="tocnumber">3</span> <span class="toctext">The documents</span></a>
+            </li>
+            <li class="toc_level-1 toc_section-4">
+              <a href="#tocAnchor-1-4"><span class="tocnumber">4</span> <span class="toctext">Attachments</span></a>
+            </li>
+            <li class="toc_level-1 toc_section-5">
+              <a href="#tocAnchor-1-5"><span class="tocnumber">5</span> <span class="toctext">Basic document actions</span></a>
+            </li>
+            <li class="toc_level-1 toc_section-6">
+              <a href="#tocAnchor-1-6"><span class="tocnumber">6</span> <span class="toctext">Designs and views</span></a>
+            </li>
+          </ul>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div><h2 id="tocAnchor-1-1">Instantiating a client</h2>
+
+<p>The basic class in Sohva is the <a href="/latest/api/#gnieh.sohva.CouchClient">CouchClient</a> class. It gives access to features related to the CouchDB instance.</p>
+
+<p>Because sohva is based on akka, it needs to have an actor system implicitly available in scope, along with a timeout, so that futures can be scheduled with timeout.</p>
+
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">import</span> <span class="nn">gnieh.sohva._</span>
+<span class="k">import</span> <span class="nn">akka.actor.ActorSystem</span>
+<span class="k">import</span> <span class="nn">akka.util.Timeout</span>
+<span class="k">import</span> <span class="nn">scala.concurrent.duration._</span>
+
+<span class="k">implicit</span> <span class="k">val</span> <span class="n">system</span> <span class="k">=</span> <span class="nc">ActorSystem</span><span class="o">(</span><span class="s">"sohva-system"</span><span class="o">)</span>
+<span class="k">implicit</span> <span class="k">val</span> <span class="n">timeout</span> <span class="k">=</span> <span class="nc">Timeout</span><span class="o">(</span><span class="mf">5.</span><span class="n">seconds</span><span class="o">)</span>
+
+<span class="k">val</span> <span class="n">couch</span> <span class="k">=</span> <span class="k">new</span> <span class="nc">CouchClient</span>
+</code></pre>
+</div>
+
+<p>The constructors takes several parameters with default values, for more information refer to <a href="/latest/api/#gnieh.sohva.CouchClient">the class documentation</a>.</p>
+
+<p>Once you have a client, you can start working with Sohva. You can get the database information, UUIDs, etc.</p>
+
+<h2 id="tocAnchor-1-2">Access to databases</h2>
+
+<p>If you use Sohva it is probably because you want access to databases. The CouchDB client allows you to get a database representation by using the <code class="highlighter-rouge">database</code> method which returns a <a href="/latest/api/index.html#gnieh.sohva.Database">Database</a> object.</p>
+
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">val</span> <span class="n">db</span> <span class="k">=</span> <span class="n">couch</span><span class="o">.</span><span class="n">database</span><span class="o">(</span><span class="s">"db_name"</span><span class="o">)</span>
+</code></pre>
+</div>
+
+<h2 id="tocAnchor-1-3">The documents</h2>
+
+<p>This <code class="highlighter-rouge">Database</code> object makes it possible to work with documents (I am sure you are aware that CouchDB is a document oriented database).
+As an example, let’s define the usual <code class="highlighter-rouge">Post</code> class representing a blog post, and describe the mechanics necessary to store them in CouchDB with Sohva.</p>
+
+<p>First define a basic case class representing this document.</p>
+
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">import</span> <span class="nn">java.util.Date</span>
+
+<span class="k">case</span> <span class="k">class</span> <span class="nc">Post</span><span class="o">(</span><span class="nc">_id</span><span class="k">:</span> <span class="kt">String</span><span class="o">,</span> <span class="k">var</span> <span class="n">title</span><span class="k">:</span> <span class="kt">String</span><span class="o">,</span> <span class="n">content</span><span class="k">:</span> <span class="kt">String</span><span class="o">,</span> <span class="n">author</span><span class="k">:</span> <span class="kt">String</span><span class="o">,</span> <span class="n">date</span><span class="k">:</span> <span class="kt">Date</span><span class="o">,</span> <span class="n">tags</span><span class="k">:</span> <span class="kt">Vector</span><span class="o">[</span><span class="kt">String</span><span class="o">])</span>  <span class="k">extends</span> <span class="nc">IdRev</span>
+</code></pre>
+</div>
+
+<p>The <code class="highlighter-rouge">IdRev</code> trait gives you the mechanics to automatically handle revisions. It is not required to extend this trait, you can define your own case class with your custom id and rev fields. The idea is that a document saved into and retrieved from a CouchDB database must have a typeclass of type <a href="/latest/api/index.html#gnieh.sohva.CouchFormat">CouchFormat</a>.</p>
+
+<p>This typeclass allows Sohva to serialize and deserialize documents into json and to manage the special identifier and revision fields for documents. It is based upon <code class="highlighter-rouge">JsonFormat</code> from <a href="https://github.com/spray/spray-json">spray-json</a>.</p>
+
+<p>If your document class extends the <code class="highlighter-rouge">IdRev</code> trait, you use the macro <code class="highlighter-rouge">couchFormat</code> provided by the <a href="/latest/api/index.html#gnieh.sohva.SohvaProtocol">SohvaProtocol</a>.</p>
+
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">import</span> <span class="nn">SohvaProtocol._</span>
+
+<span class="k">implicit</span> <span class="k">val</span> <span class="n">postFormat</span> <span class="k">=</span> <span class="n">couchFormat</span><span class="o">[</span><span class="kt">Post</span><span class="o">]</span>
+</code></pre>
+</div>
+
+<p>If your class do not extend the <code class="highlighter-rouge">IdRev</code> trait or you want to have custom format for it, you can use the <a href="/latest/api/index.html#gnieh.sohva.SohvaProtocol@couchFormatF[T](id:T=&gt;String,rev:T=&gt;Option[String],withRevF:(T,Option[String])=&gt;T)(implicitevidence$1:spray.json.JsonFormat[T]):gnieh.sohva.CouchFormat[T]">couchFormatF</a> method from the protocol, which requires you to provide the <code class="highlighter-rouge">JsonFormat</code> to use to (de)serialize the document and the way to access, the identifier, the revision, and to get a copy of the document with the revision changed.</p>
+
+<h2 id="tocAnchor-1-4">Attachments</h2>
+
+<p>If your document must deal with attachments, extend the <a href="/latest/api/index.html#gnieh.sohva.Attachments">Attachments</a> trait.</p>
+
+<h2 id="tocAnchor-1-5">Basic document actions</h2>
+
+<p>The database object we obtained previously exposes all the methods required to save, update, retrieve and delete objects from a CouchDB database.
+Basic examples of these operations are:</p>
+
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code>
+<span class="k">val</span> <span class="n">post1</span> <span class="k">=</span> <span class="nc">Post</span><span class="o">(</span><span class="s">"post1"</span><span class="o">,</span> <span class="s">"My First Post"</span><span class="o">,</span> <span class="s">"This is my very first post"</span><span class="o">,</span> <span class="s">"lucas"</span><span class="o">,</span> <span class="k">new</span> <span class="nc">Date</span><span class="o">,</span> <span class="nc">Vector</span><span class="o">(</span><span class="s">"test"</span><span class="o">,</span> <span class="s">"post"</span><span class="o">))</span>
+<span class="k">val</span> <span class="n">post2</span> <span class="k">=</span> <span class="nc">Post</span><span class="o">(</span><span class="s">"post2"</span><span class="o">,</span> <span class="s">"My Second Post"</span><span class="o">,</span> <span class="s">"I have nothing more to say"</span><span class="o">,</span> <span class="s">"lucas"</span><span class="o">,</span> <span class="k">new</span> <span class="nc">Date</span><span class="o">,</span> <span class="nc">Vector</span><span class="o">(</span><span class="s">"post"</span><span class="o">))</span>
+
+<span class="k">for</span> <span class="o">{</span>
+  <span class="n">savedPost1</span> <span class="k">&lt;-</span> <span class="n">db</span><span class="o">.</span><span class="n">saveDoc</span><span class="o">(</span><span class="n">post1</span><span class="o">)</span>
+  <span class="n">savedPost2</span> <span class="k">&lt;-</span> <span class="n">db</span><span class="o">.</span><span class="n">saveDoc</span><span class="o">(</span><span class="n">post2</span><span class="o">)</span>
+  <span class="n">p1</span> <span class="k">&lt;-</span> <span class="n">db</span><span class="o">.</span><span class="n">getDocById</span><span class="o">[</span><span class="kt">Post</span><span class="o">](</span><span class="s">"post1"</span><span class="o">)</span>
+  <span class="k">_</span> <span class="k">&lt;-</span> <span class="n">db</span><span class="o">.</span><span class="n">deleteDoc</span><span class="o">(</span><span class="n">savedPost2</span><span class="o">)</span>
+<span class="o">}</span> <span class="n">println</span><span class="o">(</span><span class="s">"I am done testing"</span><span class="o">)</span>
+</code></pre>
+</div>
+
+<p>Refer to the <a href="/latest/api/index.html#gnieh.sohva.Database">class documentation</a> for more details.</p>
+
+<h2 id="tocAnchor-1-6">Designs and views</h2>
+
+<p>Finally, another notable feature of CouchDB is the designs and views. From a database representation in sohva you may easily access designs through the <code class="highlighter-rouge">design</code> method.</p>
+
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">val</span> <span class="n">design</span> <span class="k">=</span> <span class="n">db</span><span class="o">.</span><span class="n">design</span><span class="o">(</span><span class="s">"my_design"</span><span class="o">)</span>
+</code></pre>
+</div>
+
+<p>The returned <a href="/latest/api/index.html#gnieh.sohva.Design">Design</a> class exposes methods to create and manages views, updates, filters, rewrites, and list.</p>
+
+<p>The views are of particular interest in Sohva, as they make it possible to query aggregated documents from the database.</p>
+
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">val</span> <span class="n">view</span> <span class="k">=</span> <span class="n">design</span><span class="o">.</span><span class="n">view</span><span class="o">(</span><span class="s">"my_view"</span><span class="o">)</span>
+
+<span class="n">view</span><span class="o">.</span><span class="n">query</span><span class="o">[</span><span class="kt">Key</span>, <span class="kt">Value</span>, <span class="kt">Post</span><span class="o">](</span><span class="n">keys</span> <span class="k">=</span> <span class="nc">List</span><span class="o">(</span><span class="s">"post1"</span><span class="o">,</span> <span class="s">"post2"</span><span class="o">))</span>
+</code></pre>
+</div>
+
+<p>The <code class="highlighter-rouge">query</code> method takes a lot of different parameters, matching the feature in CouchDB. For more details, refer to the <a href="/latest/api/index.html#gnieh.sohva.View@query[Key,Value,Doc](key:Option[Key],keys:List[Key],startkey:Option[Key],startkey_docid:Option[String],endkey:Option[Key],endkey_docid:Option[String],limit:Int,stale:Option[String],descending:Boolean,skip:Int,group:Boolean,group_level:Int,reduce:Boolean,include_docs:Boolean,inclusive_end:Boolean,update_seq:Boolean)(implicitevidence$1:spray.json.JsonFormat[Key],implicitevidence$2:spray.json.JsonReader[Value],implicitevidence$3:spray.json.JsonReader[Doc]):scala.concurrent.Future[gnieh.sohva.ViewResult[Key,Value,Doc]]">documentation</a></p>
+
+      </div>
+    </div>
+
+    <footer class="site-footer">
+
+  <div class="wrapper">
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col footer-col-1">
+        <ul>
+          <li><a class="page-link" href="latest/api/">API documentation</a></li>
+        
+          
+          <li><a class="page-link" href="/mango/">Mango Queries</a></li>
+          
+        
+          
+          <li><a class="page-link" href="/changes/">Being notified about changes</a></li>
+          
+        
+          
+          <li><a class="page-link" href="/sessions/">Sessions</a></li>
+          
+        
+          
+          <li><a class="page-link" href="/replication/">Database Replication</a></li>
+          
+        
+          
+          <li><a class="page-link" href="/conflicts/">Automatic conflict handling</a></li>
+          
+        
+          
+          <li><a class="page-link" href="/synchronous/">Using Sohva synchronously</a></li>
+          
+        
+          
+          <li><a class="page-link" href="/basic/">Getting Started</a></li>
+          
+        
+          
+          <li><a class="page-link" href="/">An asynchronous CouchDB client library for Scala</a></li>
+          
+        
+          
+        
+        </ul>
+      </div>
+
+      <div class="footer-col footer-col-2">
+      </div>
+
+      <div class="footer-col footer-col-3">
+        <ul class="social-media-list">
+          <li>
+            Developed and maintained by <a href="https://github.com/satabin"><span class="icon icon--github"><svg viewBox="0 0 16 16"><path fill="#828282" d="M7.999,0.431c-4.285,0-7.76,3.474-7.76,7.761 c0,3.428,2.223,6.337,5.307,7.363c0.388,0.071,0.53-0.168,0.53-0.374c0-0.184-0.007-0.672-0.01-1.32 c-2.159,0.469-2.614-1.04-2.614-1.04c-0.353-0.896-0.862-1.135-0.862-1.135c-0.705-0.481,0.053-0.472,0.053-0.472 c0.779,0.055,1.189,0.8,1.189,0.8c0.692,1.186,1.816,0.843,2.258,0.645c0.071-0.502,0.271-0.843,0.493-1.037 C4.86,11.425,3.049,10.76,3.049,7.786c0-0.847,0.302-1.54,0.799-2.082C3.768,5.507,3.501,4.718,3.924,3.65 c0,0,0.652-0.209,2.134,0.796C6.677,4.273,7.34,4.187,8,4.184c0.659,0.003,1.323,0.089,1.943,0.261 c1.482-1.004,2.132-0.796,2.132-0.796c0.423,1.068,0.157,1.857,0.077,2.054c0.497,0.542,0.798,1.235,0.798,2.082 c0,2.981-1.814,3.637-3.543,3.829c0.279,0.24,0.527,0.713,0.527,1.437c0,1.037-0.01,1.874-0.01,2.129 c0,0.208,0.14,0.449,0.534,0.373c3.081-1.028,5.302-3.935,5.302-7.362C15.76,3.906,12.285,0.431,7.999,0.431z"/></svg>
+</span><span class="username">satabin</span></a>
+
+          </li>
+          <li><a rel="license" href="http://creativecommons.org/licenses/by-sa/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by-sa/4.0/88x31.png" /></a><br />The content of this site is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by-sa/4.0/">Creative Commons Attribution-ShareAlike 4.0 International License</a>.</li>
+        </ul>
+      </div>
+
+    </div>
+
+  </div>
+
+</footer>
+
+
+  </body>
+
+</html>

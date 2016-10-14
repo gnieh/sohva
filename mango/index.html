@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>Sohva - Mango Queries</title>
+  <meta name="description" content="">
+
+  <link rel="stylesheet" href="/css/main.css">
+  <link rel="stylesheet" href="/css/zenburn.css">
+  <link rel="stylesheet" type="text/css" media="screen" href="/css/toc.css">
+  <link rel="canonical" href="/mango/">
+</head>
+
+
+  <body>
+
+    <header class="site-header">
+
+  <div class="wrapper">
+
+    <a class="site-title" href="/">Sohva</a>
+
+    <nav class="site-nav">
+      <a href="#" class="menu-icon">
+        <svg viewBox="0 0 18 15">
+          <path fill="#424242" d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.031C17.335,0,18,0.665,18,1.484L18,1.484z"/>
+          <path fill="#424242" d="M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0c0-0.82,0.665-1.484,1.484-1.484 h15.031C17.335,6.031,18,6.696,18,7.516L18,7.516z"/>
+          <path fill="#424242" d="M18,13.516C18,14.335,17.335,15,16.516,15H1.484C0.665,15,0,14.335,0,13.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.031C17.335,12.031,18,12.696,18,13.516L18,13.516z"/>
+        </svg>
+      </a>
+
+      <h1>Mango Queries</h1>
+
+    </nav>
+
+  </div>
+
+</header>
+
+<a href="https://github.com/gnieh/sohva"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://camo.githubusercontent.com/652c5b9acfaddf3a9c326fa6bde407b87f7be0f4/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f6f72616e67655f6666373630302e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_orange_ff7600.png"></a>
+
+
+    <div class="page-content">
+      <div class="wrapper">
+        <div id="toc-container">
+  <table class="toc" id="toc">
+    <tbody>
+      <tr>
+        <td>
+          <div id="toctitle">
+            <h2>Contents</h2>
+          </div>
+          <ul>
+            <li class="toc_level-1 toc_section-1">
+              <a href="#tocAnchor-1-1"><span class="tocnumber">1</span> <span class="toctext">Overview</span></a>
+            </li>
+            <li class="toc_level-1 toc_section-2">
+              <a href="#tocAnchor-1-2"><span class="tocnumber">2</span> <span class="toctext">Constructors</span></a>
+            </li>
+            <li class="toc_level-1 toc_section-3">
+              <a href="#tocAnchor-1-3"><span class="tocnumber">3</span> <span class="toctext">Combinators</span></a>
+              <ul>
+                <li class="toc_level-2 toc_section-4">
+                  <a href="#tocAnchor-1-3-1"><span class="tocnumber">3.1</span> <span class="toctext">$and combinator</span></a>
+                </li>
+                <li class="toc_level-2 toc_section-5">
+                  <a href="#tocAnchor-1-3-2"><span class="tocnumber">3.2</span> <span class="toctext">$or combinator</span></a>
+                </li>
+                <li class="toc_level-2 toc_section-6">
+                  <a href="#tocAnchor-1-3-3"><span class="tocnumber">3.3</span> <span class="toctext">$not combinator</span></a>
+                </li>
+                <li class="toc_level-2 toc_section-7">
+                  <a href="#tocAnchor-1-3-4"><span class="tocnumber">3.4</span> <span class="toctext">$nor combinator</span></a>
+                </li>
+              </ul>
+            </li>
+            <li class="toc_level-1 toc_section-8">
+              <a href="#tocAnchor-1-8"><span class="tocnumber">4</span> <span class="toctext">Conditions</span></a>
+              <ul>
+                <li class="toc_level-2 toc_section-9">
+                  <a href="#tocAnchor-1-8-1"><span class="tocnumber">4.1</span> <span class="toctext">$eq condition</span></a>
+                </li>
+                <li class="toc_level-2 toc_section-10">
+                  <a href="#tocAnchor-1-8-2"><span class="tocnumber">4.2</span> <span class="toctext">$ne condition</span></a>
+                </li>
+                <li class="toc_level-2 toc_section-11">
+                  <a href="#tocAnchor-1-8-3"><span class="tocnumber">4.3</span> <span class="toctext">$lt condition</span></a>
+                </li>
+                <li class="toc_level-2 toc_section-12">
+                  <a href="#tocAnchor-1-8-4"><span class="tocnumber">4.4</span> <span class="toctext">$lte condition</span></a>
+                </li>
+                <li class="toc_level-2 toc_section-13">
+                  <a href="#tocAnchor-1-8-5"><span class="tocnumber">4.5</span> <span class="toctext">$gt condition</span></a>
+                </li>
+                <li class="toc_level-2 toc_section-14">
+                  <a href="#tocAnchor-1-8-6"><span class="tocnumber">4.6</span> <span class="toctext">$gte condition</span></a>
+                </li>
+                <li class="toc_level-2 toc_section-15">
+                  <a href="#tocAnchor-1-8-7"><span class="tocnumber">4.7</span> <span class="toctext">$exists condition</span></a>
+                </li>
+                <li class="toc_level-2 toc_section-16">
+                  <a href="#tocAnchor-1-8-8"><span class="tocnumber">4.8</span> <span class="toctext">$type condition</span></a>
+                </li>
+                <li class="toc_level-2 toc_section-17">
+                  <a href="#tocAnchor-1-8-9"><span class="tocnumber">4.9</span> <span class="toctext">$in condition</span></a>
+                </li>
+                <li class="toc_level-2 toc_section-18">
+                  <a href="#tocAnchor-1-8-10"><span class="tocnumber">4.10</span> <span class="toctext">$nin condition</span></a>
+                </li>
+                <li class="toc_level-2 toc_section-19">
+                  <a href="#tocAnchor-1-8-11"><span class="tocnumber">4.11</span> <span class="toctext">$size condition</span></a>
+                </li>
+                <li class="toc_level-2 toc_section-20">
+                  <a href="#tocAnchor-1-8-12"><span class="tocnumber">4.12</span> <span class="toctext">$mod condition</span></a>
+                </li>
+                <li class="toc_level-2 toc_section-21">
+                  <a href="#tocAnchor-1-8-13"><span class="tocnumber">4.13</span> <span class="toctext">$regex condition</span></a>
+                </li>
+                <li class="toc_level-2 toc_section-22">
+                  <a href="#tocAnchor-1-8-14"><span class="tocnumber">4.14</span> <span class="toctext">$all condition</span></a>
+                </li>
+                <li class="toc_level-2 toc_section-23">
+                  <a href="#tocAnchor-1-8-15"><span class="tocnumber">4.15</span> <span class="toctext">$elemMatch condition</span></a>
+                </li>
+              </ul>
+            </li>
+            <li class="toc_level-1 toc_section-24">
+              <a href="#tocAnchor-1-24"><span class="tocnumber">5</span> <span class="toctext">Query</span></a>
+              <ul>
+                <li class="toc_level-2 toc_section-25">
+                  <a href="#tocAnchor-1-24-1"><span class="tocnumber">5.1</span> <span class="toctext">Define the selector</span></a>
+                </li>
+                <li class="toc_level-2 toc_section-26">
+                  <a href="#tocAnchor-1-24-2"><span class="tocnumber">5.2</span> <span class="toctext">Select fields</span></a>
+                </li>
+                <li class="toc_level-2 toc_section-27">
+                  <a href="#tocAnchor-1-24-3"><span class="tocnumber">5.3</span> <span class="toctext">Sort result</span></a>
+                </li>
+                <li class="toc_level-2 toc_section-28">
+                  <a href="#tocAnchor-1-24-4"><span class="tocnumber">5.4</span> <span class="toctext">Limit the result</span></a>
+                </li>
+                <li class="toc_level-2 toc_section-29">
+                  <a href="#tocAnchor-1-24-5"><span class="tocnumber">5.5</span> <span class="toctext">Skip some results</span></a>
+                </li>
+                <li class="toc_level-2 toc_section-30">
+                  <a href="#tocAnchor-1-24-6"><span class="tocnumber">5.6</span> <span class="toctext">Using a specific index</span></a>
+                </li>
+                <li class="toc_level-2 toc_section-31">
+                  <a href="#tocAnchor-1-24-7"><span class="tocnumber">5.7</span> <span class="toctext">Resetting some query elements</span></a>
+                </li>
+              </ul>
+            </li>
+          </ul>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div><p>An interesting feature of CouchDB introduced in version 2.0 is the mango query server. This feature makes it much easier to query document without having to write views and mastering the map/reduce concepts.</p>
+
+<p>Sohva supports sending such queries and also offers a DSL to make them easy to write.</p>
+
+<h2 id="tocAnchor-1-1">Overview</h2>
+
+<p>The DSL lives in the <code class="highlighter-rouge">mango</code> package, thus start by importing it.</p>
+
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">import</span> <span class="nn">gnieh.sohva.mango._</span>
+</code></pre>
+</div>
+
+<p>Then you can start using it to write your query, starting with the <code class="highlighter-rouge">find</code> word.</p>
+
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">val</span> <span class="n">query</span> <span class="k">=</span> <span class="n">find</span>
+</code></pre>
+</div>
+
+<p>You can filter the fields you are interested in using the <code class="highlighter-rouge">fields</code> clause</p>
+
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">val</span> <span class="n">query</span> <span class="k">=</span> <span class="n">find</span> <span class="n">fields</span> <span class="o">(</span><span class="s">"title"</span><span class="o">,</span> <span class="s">"author"</span><span class="o">,</span> <span class="s">"date"</span><span class="o">)</span>
+</code></pre>
+</div>
+
+<p>The selector part of the query comes after the <code class="highlighter-rouge">where</code> word where each field is represented by <code class="highlighter-rouge">field("name")</code>.</p>
+
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">val</span> <span class="n">query</span> <span class="k">=</span> <span class="n">find</span> <span class="n">fields</span> <span class="o">(</span><span class="s">"title"</span><span class="o">,</span> <span class="s">"author"</span><span class="o">,</span> <span class="s">"date"</span><span class="o">)</span> <span class="n">where</span> <span class="n">field</span><span class="o">(</span><span class="s">"tags"</span><span class="o">).</span><span class="n">containsAll</span><span class="o">(</span><span class="s">"post"</span><span class="o">)</span>
+</code></pre>
+</div>
+
+<p>Selector expressions may be combined with <code class="highlighter-rouge">&amp;&amp;</code> and <code class="highlighter-rouge">||</code>.</p>
+
+<p>Result of a query may be sorted using the <code class="highlighter-rouge">sortBy</code> word.</p>
+
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">val</span> <span class="n">query</span> <span class="k">=</span> <span class="n">find</span> <span class="n">fields</span> <span class="o">(</span><span class="s">"title"</span><span class="o">,</span> <span class="s">"author"</span><span class="o">,</span> <span class="s">"date"</span><span class="o">)</span> <span class="n">where</span> <span class="n">field</span><span class="o">(</span><span class="s">"tags"</span><span class="o">).</span><span class="n">containsAll</span><span class="o">(</span><span class="s">"post"</span><span class="o">)</span> <span class="n">sortBy</span> <span class="nc">Asc</span><span class="o">(</span><span class="s">"date"</span><span class="o">)</span>
+</code></pre>
+</div>
+
+<p>Once you have your query built to your liking, you can run it against the database</p>
+
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">val</span> <span class="n">result</span> <span class="k">=</span> <span class="n">db</span><span class="o">.</span><span class="n">find</span><span class="o">(</span><span class="n">query</span><span class="o">)</span>
+</code></pre>
+</div>
+
+<h2 id="tocAnchor-1-2">Constructors</h2>
+
+<p>To start a query using the DSL, use the <a href="/latest/api/index.html#gnieh.sohva.mango.package@find:gnieh.sohva.mango.Query">find</a> constructor which returns an empty request.</p>
+
+<p>To start selecting on a field with the DSL, use the <a href="/latest/api/index.html#gnieh.sohva.mango.package@field(fld:String):gnieh.sohva.mango.SelectorBase">field</a> constructors, which returns a <a href="/latest/api/#gnieh.sohva.mango.SelectorBase">SelectorBase</a> with operators to build a complete selector.</p>
+
+<p>To apply a selector on the subfields of a field, use the <a href="/latest/api/index.html#gnieh.sohva.mango.package@within(fld:String)(sel:gnieh.sohva.mango.Selector):gnieh.sohva.mango.Selector">within</a> constructor.</p>
+
+<h2 id="tocAnchor-1-3">Combinators</h2>
+
+<h3 id="tocAnchor-1-3-1"><code class="highlighter-rouge">$and</code> combinator</h3>
+
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="n">sel1</span> <span class="o">&amp;&amp;</span> <span class="n">sel2</span>
+</code></pre>
+</div>
+
+<p>is the json selector</p>
+
+<div class="language-json highlighter-rouge"><pre class="highlight"><code><span class="p">{</span><span class="w">
+  </span><span class="nt">"$and"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w"> </span><span class="err">sel</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="err">sel</span><span class="mi">2</span><span class="w"> </span><span class="p">]</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre>
+</div>
+
+<h3 id="tocAnchor-1-3-2"><code class="highlighter-rouge">$or</code> combinator</h3>
+
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="n">sel1</span> <span class="o">||</span> <span class="n">sel2</span>
+</code></pre>
+</div>
+
+<p>is the json selector</p>
+
+<div class="language-json highlighter-rouge"><pre class="highlight"><code><span class="p">{</span><span class="w">
+  </span><span class="nt">"$or"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w"> </span><span class="err">sel</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="err">sel</span><span class="mi">2</span><span class="w"> </span><span class="p">]</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre>
+</div>
+
+<h3 id="tocAnchor-1-3-3"><code class="highlighter-rouge">$not</code> combinator</h3>
+
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="o">!</span><span class="n">sel</span>
+</code></pre>
+</div>
+
+<p>is the json selector</p>
+
+<div class="language-json highlighter-rouge"><pre class="highlight"><code><span class="p">{</span><span class="w">
+  </span><span class="nt">"$not"</span><span class="p">:</span><span class="w"> </span><span class="err">sel</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre>
+</div>
+
+<h3 id="tocAnchor-1-3-4"><code class="highlighter-rouge">$nor</code> combinator</h3>
+
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="o">!(</span><span class="n">sel1</span> <span class="o">||</span> <span class="n">sel2</span><span class="o">)</span>
+</code></pre>
+</div>
+
+<p>is the json selector</p>
+
+<div class="language-json highlighter-rouge"><pre class="highlight"><code><span class="p">{</span><span class="w">
+  </span><span class="nt">"$nor"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w"> </span><span class="err">sel</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="err">sel</span><span class="mi">2</span><span class="w"> </span><span class="p">]</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre>
+</div>
+
+<h2 id="tocAnchor-1-8">Conditions</h2>
+
+<h3 id="tocAnchor-1-8-1"><code class="highlighter-rouge">$eq</code> condition</h3>
+
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="n">field</span><span class="o">(</span><span class="s">"a"</span><span class="o">)</span> <span class="o">===</span> <span class="mi">43</span>
+</code></pre>
+</div>
+
+<p>is the json selector</p>
+
+<div class="language-json highlighter-rouge"><pre class="highlight"><code><span class="p">{</span><span class="w">
+  </span><span class="nt">"a"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nt">"$eq"</span><span class="p">:</span><span class="w"> </span><span class="mi">43</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre>
+</div>
+
+<h3 id="tocAnchor-1-8-2"><code class="highlighter-rouge">$ne</code> condition</h3>
+
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="n">field</span><span class="o">(</span><span class="s">"a"</span><span class="o">)</span> <span class="o">!==</span> <span class="mf">4.3</span>
+</code></pre>
+</div>
+
+<p>is the json selector</p>
+
+<div class="language-json highlighter-rouge"><pre class="highlight"><code><span class="p">{</span><span class="w">
+  </span><span class="nt">"a"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nt">"$ne"</span><span class="p">:</span><span class="w"> </span><span class="mf">4.3</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre>
+</div>
+
+<h3 id="tocAnchor-1-8-3"><code class="highlighter-rouge">$lt</code> condition</h3>
+
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="n">field</span><span class="o">(</span><span class="s">"a"</span><span class="o">)</span> <span class="o">&lt;</span> <span class="mi">122</span>
+</code></pre>
+</div>
+
+<p>is the json selector</p>
+
+<div class="language-json highlighter-rouge"><pre class="highlight"><code><span class="p">{</span><span class="w">
+  </span><span class="nt">"a"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nt">"$lt"</span><span class="p">:</span><span class="w"> </span><span class="mi">122</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre>
+</div>
+
+<h3 id="tocAnchor-1-8-4"><code class="highlighter-rouge">$lte</code> condition</h3>
+
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="n">field</span><span class="o">(</span><span class="s">"a"</span><span class="o">)</span> <span class="o">&lt;=</span> <span class="mi">122</span>
+</code></pre>
+</div>
+
+<p>is the json selector</p>
+
+<div class="language-json highlighter-rouge"><pre class="highlight"><code><span class="p">{</span><span class="w">
+  </span><span class="nt">"a"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nt">"$lte"</span><span class="p">:</span><span class="w"> </span><span class="mi">122</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre>
+</div>
+
+<h3 id="tocAnchor-1-8-5"><code class="highlighter-rouge">$gt</code> condition</h3>
+
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="n">field</span><span class="o">(</span><span class="s">"a"</span><span class="o">)</span> <span class="o">&gt;</span> <span class="mi">233</span>
+</code></pre>
+</div>
+
+<p>is the json selector</p>
+
+<div class="language-json highlighter-rouge"><pre class="highlight"><code><span class="p">{</span><span class="w">
+  </span><span class="nt">"a"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nt">"$gt"</span><span class="p">:</span><span class="w"> </span><span class="mi">233</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre>
+</div>
+
+<h3 id="tocAnchor-1-8-6"><code class="highlighter-rouge">$gte</code> condition</h3>
+
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="n">field</span><span class="o">(</span><span class="s">"a"</span><span class="o">)</span> <span class="o">&gt;=</span> <span class="mi">233</span>
+</code></pre>
+</div>
+
+<p>is the json selector</p>
+
+<div class="language-json highlighter-rouge"><pre class="highlight"><code><span class="p">{</span><span class="w">
+  </span><span class="nt">"a"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nt">"$gte"</span><span class="p">:</span><span class="w"> </span><span class="mi">233</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre>
+</div>
+
+<h3 id="tocAnchor-1-8-7"><code class="highlighter-rouge">$exists</code> condition</h3>
+
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="n">field</span><span class="o">(</span><span class="s">"a"</span><span class="o">).</span><span class="n">exists</span>
+</code></pre>
+</div>
+
+<p>is the json selector</p>
+
+<div class="language-json highlighter-rouge"><pre class="highlight"><code><span class="p">{</span><span class="w">
+  </span><span class="nt">"a"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nt">"$exists"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+
+</span></code></pre>
+</div>
+
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="n">field</span><span class="o">(</span><span class="s">"a"</span><span class="o">).</span><span class="n">doesNotExist</span>
+</code></pre>
+</div>
+
+<p>is the json selector</p>
+
+<div class="language-json highlighter-rouge"><pre class="highlight"><code><span class="p">{</span><span class="w">
+  </span><span class="nt">"a"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nt">"$exists"</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre>
+</div>
+
+<h3 id="tocAnchor-1-8-8"><code class="highlighter-rouge">$type</code> condition</h3>
+
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="n">field</span><span class="o">(</span><span class="s">"a"</span><span class="o">).</span><span class="n">hasType</span><span class="o">(</span><span class="s">"string"</span><span class="o">)</span>
+</code></pre>
+</div>
+
+<p>is the json selector</p>
+
+<div class="language-json highlighter-rouge"><pre class="highlight"><code><span class="p">{</span><span class="w">
+  </span><span class="nt">"a"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nt">"$type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"string"</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre>
+</div>
+
+<h3 id="tocAnchor-1-8-9"><code class="highlighter-rouge">$in</code> condition</h3>
+
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="n">field</span><span class="o">(</span><span class="s">"a"</span><span class="o">)</span> <span class="n">in</span> <span class="nc">Vector</span><span class="o">(</span><span class="s">"a"</span><span class="o">,</span> <span class="s">"b"</span><span class="o">,</span> <span class="s">"c"</span><span class="o">)</span>
+</code></pre>
+</div>
+
+<p>is the json selector</p>
+
+<div class="language-json highlighter-rouge"><pre class="highlight"><code><span class="p">{</span><span class="w">
+  </span><span class="nt">"a"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nt">"$in"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w"> </span><span class="s2">"a"</span><span class="p">,</span><span class="w"> </span><span class="s2">"b"</span><span class="p">,</span><span class="w"> </span><span class="s2">"c"</span><span class="w"> </span><span class="p">]</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre>
+</div>
+
+<h3 id="tocAnchor-1-8-10"><code class="highlighter-rouge">$nin</code> condition</h3>
+
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="n">field</span><span class="o">(</span><span class="s">"a"</span><span class="o">)</span> <span class="n">notIn</span> <span class="nc">Vector</span><span class="o">(</span><span class="s">"a"</span><span class="o">,</span> <span class="s">"b"</span><span class="o">,</span> <span class="s">"c"</span><span class="o">)</span>
+</code></pre>
+</div>
+
+<p>is the json selector</p>
+
+<div class="language-json highlighter-rouge"><pre class="highlight"><code><span class="p">{</span><span class="w">
+  </span><span class="nt">"a"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nt">"$nin"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w"> </span><span class="s2">"a"</span><span class="p">,</span><span class="w"> </span><span class="s2">"b"</span><span class="p">,</span><span class="w"> </span><span class="s2">"c"</span><span class="w"> </span><span class="p">]</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre>
+</div>
+
+<h3 id="tocAnchor-1-8-11"><code class="highlighter-rouge">$size</code> condition</h3>
+
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="n">field</span><span class="o">(</span><span class="s">"a"</span><span class="o">).</span><span class="n">hasSize</span><span class="o">(</span><span class="mi">34</span><span class="o">)</span>
+</code></pre>
+</div>
+
+<p>is the json selector</p>
+
+<div class="language-json highlighter-rouge"><pre class="highlight"><code><span class="p">{</span><span class="w">
+  </span><span class="nt">"a"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nt">"$size"</span><span class="p">:</span><span class="w"> </span><span class="mi">34</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre>
+</div>
+
+<h3 id="tocAnchor-1-8-12"><code class="highlighter-rouge">$mod</code> condition</h3>
+
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="n">field</span><span class="o">(</span><span class="s">"a"</span><span class="o">)</span> <span class="o">%</span> <span class="mi">4</span> <span class="o">===</span> <span class="mi">3</span>
+</code></pre>
+</div>
+
+<p>is the json selector</p>
+
+<div class="language-json highlighter-rouge"><pre class="highlight"><code><span class="p">{</span><span class="w">
+  </span><span class="nt">"a"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nt">"$mod"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w"> </span><span class="mi">4</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="w"> </span><span class="p">]</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre>
+</div>
+
+<h3 id="tocAnchor-1-8-13"><code class="highlighter-rouge">$regex</code> condition</h3>
+
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="n">field</span><span class="o">(</span><span class="s">"a"</span><span class="o">).</span><span class="n">matches</span><span class="o">(</span><span class="s">"[a-zA-Z_][a-zA-Z0-9_]*"</span><span class="o">)</span>
+</code></pre>
+</div>
+
+<p>is the json selector</p>
+
+<div class="language-json highlighter-rouge"><pre class="highlight"><code><span class="p">{</span><span class="w">
+  </span><span class="nt">"a"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nt">"$regex"</span><span class="p">:</span><span class="w"> </span><span class="s2">"[a-zA-Z_][a-zA-Z0-9_]*"</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre>
+</div>
+
+<h3 id="tocAnchor-1-8-14"><code class="highlighter-rouge">$all</code> condition</h3>
+
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="n">field</span><span class="o">(</span><span class="s">"a"</span><span class="o">).</span><span class="n">containsAll</span><span class="o">(</span><span class="s">"a"</span><span class="o">,</span> <span class="s">"b"</span><span class="o">,</span> <span class="s">"c"</span><span class="o">)</span>
+</code></pre>
+</div>
+
+<p>is the json selector</p>
+
+<div class="language-json highlighter-rouge"><pre class="highlight"><code><span class="p">{</span><span class="w">
+  </span><span class="nt">"a"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nt">"$all"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w"> </span><span class="s2">"a"</span><span class="p">,</span><span class="w"> </span><span class="s2">"b"</span><span class="p">,</span><span class="w"> </span><span class="s2">"c"</span><span class="w"> </span><span class="p">]</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre>
+</div>
+
+<h3 id="tocAnchor-1-8-15"><code class="highlighter-rouge">$elemMatch</code> condition</h3>
+
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="n">field</span><span class="o">(</span><span class="s">"a"</span><span class="o">).</span><span class="n">contains</span><span class="o">(</span><span class="n">sel</span><span class="o">)</span>
+</code></pre>
+</div>
+
+<p>is the json selector</p>
+
+<div class="language-json highlighter-rouge"><pre class="highlight"><code><span class="p">{</span><span class="w">
+  </span><span class="nt">"a"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nt">"$elemMatch"</span><span class="p">:</span><span class="w"> </span><span class="err">sel</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+</span></code></pre>
+</div>
+
+<h2 id="tocAnchor-1-24">Query</h2>
+
+<h3 id="tocAnchor-1-24-1">Define the selector</h3>
+
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">val</span> <span class="n">query</span> <span class="k">=</span> <span class="n">find</span> <span class="n">where</span> <span class="n">sel</span>
+</code></pre>
+</div>
+
+<p>defines a query with the given selector.</p>
+
+<h3 id="tocAnchor-1-24-2">Select fields</h3>
+
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">val</span> <span class="n">query</span> <span class="k">=</span> <span class="n">find</span> <span class="n">fields</span> <span class="o">(</span><span class="s">"a"</span><span class="o">,</span> <span class="s">"b"</span><span class="o">,</span> <span class="s">"c"</span><span class="o">)</span>
+</code></pre>
+</div>
+
+<p>returns only the given fields.</p>
+
+<h3 id="tocAnchor-1-24-3">Sort result</h3>
+
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">val</span> <span class="n">query</span> <span class="k">=</span> <span class="n">q</span> <span class="n">sortBy</span> <span class="o">(</span><span class="nc">Asc</span><span class="o">(</span><span class="s">"a"</span><span class="o">),</span> <span class="nc">Desc</span><span class="o">(</span><span class="s">"b"</span><span class="o">))</span>
+</code></pre>
+</div>
+
+<p>sorts the result of query <code class="highlighter-rouge">q</code> ascending by field <code class="highlighter-rouge">a</code> and then descending by field <code class="highlighter-rouge">b</code>.</p>
+
+<h3 id="tocAnchor-1-24-4">Limit the result</h3>
+
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">val</span> <span class="n">query</span> <span class="k">=</span> <span class="n">q</span> <span class="n">limit</span> <span class="mi">54</span>
+</code></pre>
+</div>
+
+<p>returns only the 54 first result of query <code class="highlighter-rouge">q</code>.</p>
+
+<h3 id="tocAnchor-1-24-5">Skip some results</h3>
+
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">val</span> <span class="n">query</span> <span class="k">=</span> <span class="n">q</span> <span class="n">skip</span> <span class="mi">43</span>
+</code></pre>
+</div>
+
+<p>skips the 43 first results of query <code class="highlighter-rouge">q</code>.</p>
+
+<h3 id="tocAnchor-1-24-6">Using a specific index</h3>
+
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">val</span> <span class="n">query</span> <span class="k">=</span> <span class="n">q</span> <span class="n">use</span> <span class="o">(</span><span class="s">"design"</span><span class="o">,</span> <span class="s">"idx"</span><span class="o">)</span>
+<span class="c1">// or
+</span><span class="k">val</span> <span class="n">query</span> <span class="k">=</span> <span class="n">q</span> <span class="n">use</span> <span class="s">"design"</span>
+</code></pre>
+</div>
+
+<p>transforms query <code class="highlighter-rouge">q</code> to use the specified index</p>
+
+<h3 id="tocAnchor-1-24-7">Resetting some query elements</h3>
+
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">val</span> <span class="n">query</span> <span class="k">=</span> <span class="n">q</span> <span class="n">without</span> <span class="n">sort</span>
+</code></pre>
+</div>
+
+<p>is the query <code class="highlighter-rouge">q</code> without its <code class="highlighter-rouge">sort</code> elements.</p>
+
+      </div>
+    </div>
+
+    <footer class="site-footer">
+
+  <div class="wrapper">
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col footer-col-1">
+        <ul>
+          <li><a class="page-link" href="latest/api/">API documentation</a></li>
+        
+          
+          <li><a class="page-link" href="/mango/">Mango Queries</a></li>
+          
+        
+          
+          <li><a class="page-link" href="/changes/">Being notified about changes</a></li>
+          
+        
+          
+          <li><a class="page-link" href="/sessions/">Sessions</a></li>
+          
+        
+          
+          <li><a class="page-link" href="/replication/">Database Replication</a></li>
+          
+        
+          
+          <li><a class="page-link" href="/conflicts/">Automatic conflict handling</a></li>
+          
+        
+          
+          <li><a class="page-link" href="/synchronous/">Using Sohva synchronously</a></li>
+          
+        
+          
+          <li><a class="page-link" href="/basic/">Getting Started</a></li>
+          
+        
+          
+          <li><a class="page-link" href="/">An asynchronous CouchDB client library for Scala</a></li>
+          
+        
+          
+        
+        </ul>
+      </div>
+
+      <div class="footer-col footer-col-2">
+      </div>
+
+      <div class="footer-col footer-col-3">
+        <ul class="social-media-list">
+          <li>
+            Developed and maintained by <a href="https://github.com/satabin"><span class="icon icon--github"><svg viewBox="0 0 16 16"><path fill="#828282" d="M7.999,0.431c-4.285,0-7.76,3.474-7.76,7.761 c0,3.428,2.223,6.337,5.307,7.363c0.388,0.071,0.53-0.168,0.53-0.374c0-0.184-0.007-0.672-0.01-1.32 c-2.159,0.469-2.614-1.04-2.614-1.04c-0.353-0.896-0.862-1.135-0.862-1.135c-0.705-0.481,0.053-0.472,0.053-0.472 c0.779,0.055,1.189,0.8,1.189,0.8c0.692,1.186,1.816,0.843,2.258,0.645c0.071-0.502,0.271-0.843,0.493-1.037 C4.86,11.425,3.049,10.76,3.049,7.786c0-0.847,0.302-1.54,0.799-2.082C3.768,5.507,3.501,4.718,3.924,3.65 c0,0,0.652-0.209,2.134,0.796C6.677,4.273,7.34,4.187,8,4.184c0.659,0.003,1.323,0.089,1.943,0.261 c1.482-1.004,2.132-0.796,2.132-0.796c0.423,1.068,0.157,1.857,0.077,2.054c0.497,0.542,0.798,1.235,0.798,2.082 c0,2.981-1.814,3.637-3.543,3.829c0.279,0.24,0.527,0.713,0.527,1.437c0,1.037-0.01,1.874-0.01,2.129 c0,0.208,0.14,0.449,0.534,0.373c3.081-1.028,5.302-3.935,5.302-7.362C15.76,3.906,12.285,0.431,7.999,0.431z"/></svg>
+</span><span class="username">satabin</span></a>
+
+          </li>
+          <li><a rel="license" href="http://creativecommons.org/licenses/by-sa/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by-sa/4.0/88x31.png" /></a><br />The content of this site is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by-sa/4.0/">Creative Commons Attribution-ShareAlike 4.0 International License</a>.</li>
+        </ul>
+      </div>
+
+    </div>
+
+  </div>
+
+</footer>
+
+
+  </body>
+
+</html>

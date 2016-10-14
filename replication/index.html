@@ -6,13 +6,13 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
-  <title>Sohva - An asynchronous CouchDB client library for Scala</title>
+  <title>Sohva - Database Replication</title>
   <meta name="description" content="">
 
   <link rel="stylesheet" href="/css/main.css">
   <link rel="stylesheet" href="/css/zenburn.css">
   <link rel="stylesheet" type="text/css" media="screen" href="/css/toc.css">
-  <link rel="canonical" href="/">
+  <link rel="canonical" href="/replication/">
 </head>
 
 
@@ -33,7 +33,7 @@
         </svg>
       </a>
 
-      <h1>An asynchronous CouchDB client library for Scala</h1>
+      <h1>Database Replication</h1>
 
     </nav>
 
@@ -46,43 +46,23 @@
 
     <div class="page-content">
       <div class="wrapper">
-        <p>Sohva is an asynchronous <a href="http://couchdb.apache.org">CouchDB</a> client library for Scala. It is based on <a href="http://akka.io/">akka</a> and its <a href="http://doc.akka.io/docs/akka/2.4/scala/http/index.html">http module</a>.
-Sohva can be used to access data in CouchDB databases from version 1.4 onward. Some features are only available in CouhDB 2.0 (such as <a href="mango/">mango queries</a>) and will result in runtime errors if you use them with an earlier version of CouhDB.</p>
+        <p>CouchDB provides a simple to use and efficient master-to-master replication protocol.</p>
 
-<h1 id="installation">Installation</h1>
+<p>In Sohva you can use this feature using the <code class="highlighter-rouge">replicator</code>.</p>
 
-<p>To use Sohva in your code, add it to your dependencies in your build.</p>
-
-<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="c1">// sbt
-</span><span class="n">libraryDependencies</span> <span class="o">+=</span> <span class="s">"org.gnieh"</span> <span class="o">%%</span> <span class="s">"sohva"</span> <span class="o">%</span> <span class="s">"2.0.0"</span>
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">val</span> <span class="n">replicator</span> <span class="k">=</span> <span class="n">couch</span><span class="o">.</span><span class="n">replicator</span>
 </code></pre>
 </div>
 
-<div class="language-xml highlighter-rouge"><pre class="highlight"><code><span class="c">&lt;!-- maven --&gt;</span>
-<span class="nt">&lt;dependency&gt;</span>
-  <span class="nt">&lt;groupId&gt;</span>org.gnieh<span class="nt">&lt;/groupId&gt;</span>
-  <span class="nt">&lt;artifactId&gt;</span>sohva_${scala.version}<span class="nt">&lt;/artifactId&gt;</span>
-  <span class="nt">&lt;version&gt;</span>2.0.0<span class="nt">&lt;/version&gt;</span>
-<span class="nt">&lt;/dependency&gt;</span>
+<p>The <a href="/latest/api/index.html#gnieh.sohva.Replicator">Replicator</a> class provides methods to start and stop replication.</p>
+
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">val</span> <span class="n">replication</span> <span class="k">=</span> <span class="nc">Replication</span><span class="o">(</span><span class="s">"replication1"</span><span class="o">,</span> <span class="nc">LocalDb</span><span class="o">(</span><span class="s">"source_db"</span><span class="o">),</span> <span class="nc">RemoteDb</span><span class="o">(</span><span class="k">new</span> <span class="nc">URL</span><span class="o">(</span><span class="s">"http://host/5984/target_db"</span><span class="o">),</span> <span class="n">continuous</span> <span class="k">=</span> <span class="nc">Some</span><span class="o">(</span><span class="kc">true</span><span class="o">))</span>
+
+<span class="n">replicator</span><span class="o">.</span><span class="n">start</span><span class="o">(</span><span class="n">replication</span><span class="o">)</span>
+<span class="c1">// after a while
+</span><span class="n">replicator</span><span class="o">.</span><span class="n">stop</span><span class="o">(</span><span class="s">"replication1"</span><span class="o">)</span>
 </code></pre>
 </div>
-
-<p>Sohva is built for scala 2.11.</p>
-
-<h1 id="next-steps">Next steps</h1>
-
-<p>Once your project is linked to Sohva, you can start using it. Please have a look at the links below for documentation.</p>
-
-<ul>
-  <li><a href="basic/">Basic usage</a></li>
-  <li><a href="sessions/">Authentication in CouchDB</a></li>
-  <li><a href="conflicts/">Automatic conflict handling</a></li>
-  <li><a href="mango/">Mango queries</a></li>
-  <li><a href="changes/">Being notified of changes in database</a></li>
-  <li><a href="replication/">Database replication</a></li>
-  <li><a href="synchronous/">Using Sohva synchronously</a></li>
-  <li><a href="latest/api/">API documentation</a></li>
-</ul>
 
       </div>
     </div>

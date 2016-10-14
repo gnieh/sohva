@@ -6,13 +6,13 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
-  <title>Sohva - An asynchronous CouchDB client library for Scala</title>
+  <title>Sohva - Using Sohva synchronously</title>
   <meta name="description" content="">
 
   <link rel="stylesheet" href="/css/main.css">
   <link rel="stylesheet" href="/css/zenburn.css">
   <link rel="stylesheet" type="text/css" media="screen" href="/css/toc.css">
-  <link rel="canonical" href="/">
+  <link rel="canonical" href="/synchronous/">
 </head>
 
 
@@ -33,7 +33,7 @@
         </svg>
       </a>
 
-      <h1>An asynchronous CouchDB client library for Scala</h1>
+      <h1>Using Sohva synchronously</h1>
 
     </nav>
 
@@ -46,43 +46,20 @@
 
     <div class="page-content">
       <div class="wrapper">
-        <p>Sohva is an asynchronous <a href="http://couchdb.apache.org">CouchDB</a> client library for Scala. It is based on <a href="http://akka.io/">akka</a> and its <a href="http://doc.akka.io/docs/akka/2.4/scala/http/index.html">http module</a>.
-Sohva can be used to access data in CouchDB databases from version 1.4 onward. Some features are only available in CouhDB 2.0 (such as <a href="mango/">mango queries</a>) and will result in runtime errors if you use them with an earlier version of CouhDB.</p>
+        <p>Sohva is an asynchronous library but you may want to use it in a synchronous context. You can easily define your own wrapper to make all call to sohva synchronous</p>
 
-<h1 id="installation">Installation</h1>
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">import</span> <span class="nn">scala.language.implicitConversions</span>
 
-<p>To use Sohva in your code, add it to your dependencies in your build.</p>
+<span class="k">implicit</span> <span class="k">def</span> <span class="n">synced</span><span class="o">[</span><span class="kt">T</span><span class="o">](</span><span class="n">result</span><span class="k">:</span> <span class="kt">Future</span><span class="o">[</span><span class="kt">T</span><span class="o">])</span><span class="k">:</span> <span class="kt">T</span> <span class="o">=</span>
+  <span class="k">try</span> <span class="o">{</span>
+    <span class="nc">Await</span><span class="o">.</span><span class="n">result</span><span class="o">(</span><span class="n">result</span><span class="o">,</span> <span class="nc">Duration</span><span class="o">.</span><span class="nc">Inf</span><span class="o">)</span>
+  <span class="o">}</span> <span class="k">catch</span> <span class="o">{</span>
+    <span class="k">case</span> <span class="n">t</span><span class="k">:</span> <span class="kt">SohvaException</span> <span class="o">=&gt;</span> <span class="k">throw</span> <span class="n">t</span>
+  <span class="o">}</span>
 
-<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="c1">// sbt
-</span><span class="n">libraryDependencies</span> <span class="o">+=</span> <span class="s">"org.gnieh"</span> <span class="o">%%</span> <span class="s">"sohva"</span> <span class="o">%</span> <span class="s">"2.0.0"</span>
+<span class="k">val</span> <span class="n">post</span><span class="k">:</span> <span class="kt">Option</span><span class="o">[</span><span class="kt">Post</span><span class="o">]</span> <span class="k">=</span> <span class="n">db</span><span class="o">.</span><span class="n">getDocById</span><span class="o">(</span><span class="s">"post1"</span><span class="o">)</span>
 </code></pre>
 </div>
-
-<div class="language-xml highlighter-rouge"><pre class="highlight"><code><span class="c">&lt;!-- maven --&gt;</span>
-<span class="nt">&lt;dependency&gt;</span>
-  <span class="nt">&lt;groupId&gt;</span>org.gnieh<span class="nt">&lt;/groupId&gt;</span>
-  <span class="nt">&lt;artifactId&gt;</span>sohva_${scala.version}<span class="nt">&lt;/artifactId&gt;</span>
-  <span class="nt">&lt;version&gt;</span>2.0.0<span class="nt">&lt;/version&gt;</span>
-<span class="nt">&lt;/dependency&gt;</span>
-</code></pre>
-</div>
-
-<p>Sohva is built for scala 2.11.</p>
-
-<h1 id="next-steps">Next steps</h1>
-
-<p>Once your project is linked to Sohva, you can start using it. Please have a look at the links below for documentation.</p>
-
-<ul>
-  <li><a href="basic/">Basic usage</a></li>
-  <li><a href="sessions/">Authentication in CouchDB</a></li>
-  <li><a href="conflicts/">Automatic conflict handling</a></li>
-  <li><a href="mango/">Mango queries</a></li>
-  <li><a href="changes/">Being notified of changes in database</a></li>
-  <li><a href="replication/">Database replication</a></li>
-  <li><a href="synchronous/">Using Sohva synchronously</a></li>
-  <li><a href="latest/api/">API documentation</a></li>
-</ul>
 
       </div>
     </div>

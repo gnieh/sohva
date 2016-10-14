@@ -6,13 +6,13 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
-  <title>Sohva - An asynchronous CouchDB client library for Scala</title>
+  <title>Sohva - Sessions</title>
   <meta name="description" content="">
 
   <link rel="stylesheet" href="/css/main.css">
   <link rel="stylesheet" href="/css/zenburn.css">
   <link rel="stylesheet" type="text/css" media="screen" href="/css/toc.css">
-  <link rel="canonical" href="/">
+  <link rel="canonical" href="/sessions/">
 </head>
 
 
@@ -33,7 +33,7 @@
         </svg>
       </a>
 
-      <h1>An asynchronous CouchDB client library for Scala</h1>
+      <h1>Sessions</h1>
 
     </nav>
 
@@ -46,43 +46,56 @@
 
     <div class="page-content">
       <div class="wrapper">
-        <p>Sohva is an asynchronous <a href="http://couchdb.apache.org">CouchDB</a> client library for Scala. It is based on <a href="http://akka.io/">akka</a> and its <a href="http://doc.akka.io/docs/akka/2.4/scala/http/index.html">http module</a>.
-Sohva can be used to access data in CouchDB databases from version 1.4 onward. Some features are only available in CouhDB 2.0 (such as <a href="mango/">mango queries</a>) and will result in runtime errors if you use them with an earlier version of CouhDB.</p>
+        <div id="toc-container">
+  <table class="toc" id="toc">
+    <tbody>
+      <tr>
+        <td>
+          <div id="toctitle">
+            <h2>Contents</h2>
+          </div>
+          <ul>
+            <li class="toc_level-1 toc_section-1">
+              <a href="#tocAnchor-1-1"><span class="tocnumber">1</span> <span class="toctext">Basic authentication</span></a>
+            </li>
+            <li class="toc_level-1 toc_section-2">
+              <a href="#tocAnchor-1-2"><span class="tocnumber">2</span> <span class="toctext">OAuth authentication</span></a>
+            </li>
+          </ul>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div><p>You may want to authenticate with the CouchDB server, if it requires it. Sohva supports two authentication methods from CouchDB:</p>
 
-<h1 id="installation">Installation</h1>
+<ol>
+  <li>basic authentication</li>
+  <li>OAuth 1</li>
+</ol>
 
-<p>To use Sohva in your code, add it to your dependencies in your build.</p>
+<p>The <code class="highlighter-rouge">CouchClient</code> class has methods to start sessions with either of these methods. A <a href="/latest/api/index.html#gnieh.sohva.Session">Session</a> is basically the same as <code class="highlighter-rouge">CouchClient</code> except that all issued requests will include proper credentials so that the server can authenticate your requests.</p>
 
-<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="c1">// sbt
-</span><span class="n">libraryDependencies</span> <span class="o">+=</span> <span class="s">"org.gnieh"</span> <span class="o">%%</span> <span class="s">"sohva"</span> <span class="o">%</span> <span class="s">"2.0.0"</span>
+<p>Once you get a session object, instead of using the basic <code class="highlighter-rouge">couch</code> object from <a href="/basic/">Basic usage</a>, use the session to access the databases.</p>
+
+<h2 id="tocAnchor-1-1">Basic authentication</h2>
+
+<p>To start a basic authentication session, use the <code class="highlighter-rouge">startBasicSession</code> method.</p>
+
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">val</span> <span class="n">session</span> <span class="k">=</span> <span class="n">couch</span><span class="o">.</span><span class="n">startBasicSession</span><span class="o">(</span><span class="s">"username"</span><span class="o">,</span> <span class="s">"password"</span><span class="o">)</span>
+
+<span class="k">val</span> <span class="n">db</span> <span class="k">=</span> <span class="n">session</span><span class="o">.</span><span class="n">database</span><span class="o">(</span><span class="s">"test"</span><span class="o">)</span>
 </code></pre>
 </div>
 
-<div class="language-xml highlighter-rouge"><pre class="highlight"><code><span class="c">&lt;!-- maven --&gt;</span>
-<span class="nt">&lt;dependency&gt;</span>
-  <span class="nt">&lt;groupId&gt;</span>org.gnieh<span class="nt">&lt;/groupId&gt;</span>
-  <span class="nt">&lt;artifactId&gt;</span>sohva_${scala.version}<span class="nt">&lt;/artifactId&gt;</span>
-  <span class="nt">&lt;version&gt;</span>2.0.0<span class="nt">&lt;/version&gt;</span>
-<span class="nt">&lt;/dependency&gt;</span>
+<h2 id="tocAnchor-1-2">OAuth authentication</h2>
+
+<p>To start an OAuth session, use the <code class="highlighter-rouge">startOAuthSession</code> method.</p>
+
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">val</span> <span class="n">session</span> <span class="k">=</span> <span class="n">couch</span><span class="o">.</span><span class="n">startOAuthSession</span><span class="o">(</span><span class="s">"consumer_key"</span><span class="o">,</span> <span class="s">"consumer_secret"</span><span class="o">,</span> <span class="s">"token"</span><span class="o">,</span> <span class="s">"secret"</span><span class="o">)</span>
+
+<span class="k">val</span> <span class="n">db</span> <span class="k">=</span> <span class="n">session</span><span class="o">.</span><span class="n">database</span><span class="o">(</span><span class="s">"test"</span><span class="o">)</span>
 </code></pre>
 </div>
-
-<p>Sohva is built for scala 2.11.</p>
-
-<h1 id="next-steps">Next steps</h1>
-
-<p>Once your project is linked to Sohva, you can start using it. Please have a look at the links below for documentation.</p>
-
-<ul>
-  <li><a href="basic/">Basic usage</a></li>
-  <li><a href="sessions/">Authentication in CouchDB</a></li>
-  <li><a href="conflicts/">Automatic conflict handling</a></li>
-  <li><a href="mango/">Mango queries</a></li>
-  <li><a href="changes/">Being notified of changes in database</a></li>
-  <li><a href="replication/">Database replication</a></li>
-  <li><a href="synchronous/">Using Sohva synchronously</a></li>
-  <li><a href="latest/api/">API documentation</a></li>
-</ul>
 
       </div>
     </div>
