@@ -1,6 +1,6 @@
 ---
 layout: default
-title: Sohva - An asynchronous CouchDB client library for Scala
+title: An asynchronous CouchDB client library for Scala
 noToc: true
 ---
 

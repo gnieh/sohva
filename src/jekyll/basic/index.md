@@ -1,6 +1,6 @@
 ---
 layout: default
-title: Sohva - Getting Started
+title: Getting Started
 ---
 
 Instantiating a client
