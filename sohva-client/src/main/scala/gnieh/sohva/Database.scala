@@ -162,7 +162,7 @@ class Database private[sohva] (
     } yield for (Row(Some(id), _, _, _) <- res.rows) yield id
 
   /** Returns the raw repsentation of the document identified by the given id if it exists. */
-  @deprecated("2.0.0", "Use `getDocById` with return type `JsValue` instead")
+  @deprecated("Use `getDocById` with return type `JsValue` instead", "2.0.0")
   def getRawDocById(id: String, revision: Option[String] = None): Future[Option[JsValue]] =
     getDocById[JsValue](id, revision)
 
@@ -438,7 +438,7 @@ class Database private[sohva] (
    *
    *  @group CouchDB1
    */
-  @deprecated("2.0.0", "Temporary view were removed in CouchDB 2.0 and should not be used")
+  @deprecated("Temporary view were removed in CouchDB 2.0 and should not be used", "2.0.0")
   def temporaryView(viewDoc: ViewDoc): View =
     new TemporaryView(this, viewDoc)
 
@@ -448,7 +448,7 @@ class Database private[sohva] (
       yield resp.asJsObject.fields("ok").convertTo[Boolean]
 
   /** Ensures that all changes are written to disk. */
-  @deprecated("2.0.0", "You shouldn't need to call this if you have the recommended setting `delayed_commits=false`")
+  @deprecated("You shouldn't need to call this if you have the recommended setting `delayed_commits=false`", "2.0.0")
   def ensureFullCommit: Future[Boolean] =
     for (resp <- couch.http(HttpRequest(HttpMethods.POST, uri = uri / "_ensure_full_commit" / name)).withFailureMessage(f"Unable to ensure full commit at $uri"))
       yield resp.asJsObject.fields("ok").convertTo[Boolean]
