@@ -88,8 +88,12 @@ abstract class CouchDB {
   def replicator(name: String = "_replicator", credit: Int = 0, strategy: Strategy = BarneyStinsonStrategy): Replicator =
     new Replicator(name, this, credit, strategy)
 
-  /** Returns the names of all databases in this couch instance. */
+  @deprecated("Use `allDbs` instead", "2.0.0")
   def _all_dbs: Future[List[String]] =
+    allDbs
+
+  /** Returns the names of all databases in this couch instance. */
+  def allDbs: Future[List[String]] =
     for (
       dbs <- http(HttpRequest(uri = uri / "_all_dbs")) withFailureMessage
         f"Unable to fetch databases list from $uri"
@@ -125,42 +129,62 @@ abstract class CouchDB {
     for (resp <- http(HttpRequest(HttpMethods.POST, uri = uri / "_restart")).withFailureMessage(f"Unable to restart instance at $uri"))
       yield resp.asJsObject("ok").convertTo[Boolean]
 
-  /** Returns one UUID */
+  @deprecated("Use `uuid` instead", "2.0.0")
   def _uuid: Future[String] =
-    for (uuid <- _uuids(1))
+    uuid
+
+  /** Returns one UUID */
+  def uuid: Future[String] =
+    for (uuid <- uuids(1))
       yield uuid.head
 
-  /** Returns the requested number of UUIDS (by default 1). */
+  @deprecated("Use `uuids` instead", "2.0.0")
   def _uuids(count: Int = 1): Future[List[String]] =
+    uuids(count)
+
+  /** Returns the requested number of UUIDS (by default 1). */
+  def uuids(count: Int = 1): Future[List[String]] =
     for (
       uuids <- http(HttpRequest(uri = uri / "_uuids" <<? Map("count" -> count.toString))) withFailureMessage
         f"Failed to fetch $count uuids from $uri"
     ) yield asUuidsList(uuids)
 
-  /** Returns the configuration object for this CouchDB instance */
+  @deprecated("Use `config` instead", "2.0.0")
   def _config: Future[Configuration] =
+    config
+
+  /** Returns the configuration object for this CouchDB instance */
+  def config: Future[Configuration] =
     for (
       config <- http(HttpRequest(uri = uri / "_config")) withFailureMessage
         f"Failed to fetch config from $uri"
     ) yield config.convertTo[Configuration]
 
+  @deprecated("Use `config` instead", "2.0.0")
+  def _config(section: String): Future[Map[String, String]] =
+    config(section)
+
   /**
    * Returns the configuration section identified by its name
    *  (an empty map is returned if the section does not exist)
    */
-  def _config(section: String): Future[Map[String, String]] =
+  def config(section: String): Future[Map[String, String]] =
     for (
       section <- http(HttpRequest(uri = uri / "_config" / section)) withFailureMessage
         f"Failed to fetch config for $section from $uri"
     ) yield section.convertTo[Map[String, String]]
 
+  @deprecated("Use `config` instead", "2.0.0")
+  def _config(section: String, key: String): Future[Option[String]] =
+    config(section, key)
+
   /**
    * Returns the configuration value
    *  Returns `None` if the value does not exist
    */
-  def _config(section: String, key: String): Future[Option[String]] =
+  def config(section: String, key: String): Future[Option[String]] =
     for (
-      section <- _config(section) withFailureMessage
+      section <- config(section) withFailureMessage
         f"Failed to fetch config for $section with key `$key' from $uri"
     ) yield section.get(key)
 
@@ -184,7 +208,7 @@ abstract class CouchDB {
 
   /** Indicates whether this couchdb instance contains the given database */
   def contains(dbName: String): Future[Boolean] =
-    for (dbs <- _all_dbs)
+    for (dbs <- allDbs)
       yield dbs.contains(dbName)
 
   /** Exposes the interface for managing couchdb users. */

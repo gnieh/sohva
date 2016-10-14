@@ -26,7 +26,11 @@ import java.util.Date
  */
 case class Configuration(sections: Map[String, Map[String, String]]) {
 
+  @deprecated("Use `queryServerConfig` instead", "2.0.0")
   def query_server_config: Map[String, String] =
+    queryServerConfig
+
+  def queryServerConfig: Map[String, String] =
     sections("query_server_config")
 
   def couchdb: Map[String, String] =
@@ -47,13 +51,25 @@ case class Configuration(sections: Map[String, Map[String, String]]) {
   def httpd: Map[String, String] =
     sections("httpd")
 
+  @deprecated("Use `queryServers` instead", "2.0.0")
   def query_servers: Map[String, String] =
+    queryServers
+
+  def queryServers: Map[String, String] =
     sections("query_servers")
 
+  @deprecated("Use `couchHttpdAuth` instead", "2.0.0")
   def couch_httpd_auth: Map[String, String] =
+    couchHttpdAuth
+
+  def couchHttpdAuth: Map[String, String] =
     sections("couch_httpd_auth")
 
+  @deprecated("Use `httpdDbHandlers` instead", "2.0.0")
   def httpd_db_handlers: Map[String, String] =
+    httpdDbHandlers
+
+  def httpdDbHandlers: Map[String, String] =
     sections("httpd_db_handlers")
 
   def replicator: Map[String, String] =
@@ -62,10 +78,18 @@ case class Configuration(sections: Map[String, Map[String, String]]) {
   def log: Map[String, String] =
     sections("log")
 
+  @deprecated("Use `httpdDesignHandlers` instead", "2.0.0")
   def httpd_design_handlers: Map[String, String] =
+    httpdDesignHandlers
+
+  def httpdDesignHandlers: Map[String, String] =
     sections("httpd_design_handlers")
 
+  @deprecated("Use `httpdGlobalHandlers` instead", "2.0.0")
   def httpd_global_handlers: Map[String, String] =
+    httpdGlobalHandlers
+
+  def httpdGlobalHandlers: Map[String, String] =
     sections("httpd_global_handlers")
 
   def section(name: String): Map[String, String] =

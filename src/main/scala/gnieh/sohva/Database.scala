@@ -134,8 +134,22 @@ class Database private[sohva] (
       Future.successful(false)
     }
 
-  /** Returns the list of identifiers of the documents in this database */
+  @deprecated("Use `allDocs` instead", "2.0.0")
   def _all_docs(key: Option[String] = None,
+    keys: List[String] = Nil,
+    startkey: Option[String] = None,
+    startkey_docid: Option[String] = None,
+    endkey: Option[String] = None,
+    endkey_docid: Option[String] = None,
+    limit: Int = -1,
+    stale: Option[String] = None,
+    descending: Boolean = false,
+    skip: Int = 0,
+    inclusive_end: Boolean = true): Future[List[String]] =
+    allDocs(key, keys, startkey, startkey_docid, endkey, endkey_docid, limit, stale, descending, skip, inclusive_end)
+
+  /** Returns the list of identifiers of the documents in this database */
+  def allDocs(key: Option[String] = None,
     keys: List[String] = Nil,
     startkey: Option[String] = None,
     startkey_docid: Option[String] = None,
@@ -162,7 +176,7 @@ class Database private[sohva] (
       ) withFailureMessage f"Failed to access _all_docs view for $uri"
     } yield for (Row(Some(id), _, _, _) <- res.rows) yield id
 
-  /** Returns the raw repsentation of the document identified by the given id if it exists. */
+  /** Returns the raw representation of the document identified by the given id if it exists. */
   @deprecated("Use `getDocById` with return type `JsValue` instead", "2.0.0")
   def getRawDocById(id: String, revision: Option[String] = None): Future[Option[JsValue]] =
     getDocById[JsValue](id, revision)
