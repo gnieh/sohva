@@ -38,4 +38,3 @@ final case class Attachment(content_type: String,
   stub: Boolean,
   encoded_length: Option[Int] = None,
   encoding: Option[String] = None)
-

@@ -29,6 +29,15 @@ case class SohvaJsonException(msg: String, inner: Exception) extends Exception(m
 
 trait SohvaProtocol extends DefaultJsonProtocol with MangoProtocol with CouchFormatImpl {
 
+  def couchFormatF[T: JsonFormat](id: T => String, rev: T => Option[String], withRevF: (T, Option[String]) => T): CouchFormat[T] =
+    new CouchFormat[T] {
+      def _id(t: T) = id(t)
+      def _rev(t: T) = rev(t)
+      def withRev(t: T, r: Option[String]) = withRevF(t, r)
+      def read(json: JsValue) = implicitly[JsonFormat[T]].read(json)
+      def write(t: T) = implicitly[JsonFormat[T]].write(t)
+    }
+
   implicit val docUpdateFormat = jsonFormat3(DocUpdate)
 
   implicit val sizesFormat = jsonFormat3(Sizes)

@@ -80,6 +80,9 @@ lazy val sohva = project.in(file("."))
     fork in test := true,
     mappings in (Compile, packageBin) ++= mappings.in(json, Compile, packageBin).value,
     mappings in (Compile, packageSrc) ++= mappings.in(json, Compile, packageSrc).value,
+    sources in (Compile, doc) ++= sources.in(json, Compile, doc).value,
+    com.typesafe.sbt.site.jekyll.JekyllPlugin.autoImport.requiredGems := Map(
+        "jekyll" -> "3.3.0"),
     resourceDirectories in Compile := List(),
     OsgiKeys.exportPackage := Seq(
       "gnieh.sohva",

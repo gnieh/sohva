@@ -13,3 +13,5 @@ github_username: gnieh
 
 # Build settings
 markdown: kramdown
+
+tocTopTag: h2
