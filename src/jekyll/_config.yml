@@ -9,6 +9,8 @@
 title: Sohva
 baseurl: "" # the subpath of your site, e.g. /blog
 
+api_url: latest/api/
+
 github_username: satabin
 
 # Build settings

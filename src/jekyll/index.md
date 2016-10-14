@@ -27,6 +27,8 @@ libraryDependencies += "org.gnieh" %% "sohva" % "2.0.0"
 
 Sohva is built for scala 2.11.
 
+# Next steps
+
 Once your project is linked to Sohva, you can start using it. Please have a look at the links below for documentation.
 
  - [Basic usage](basic/)
