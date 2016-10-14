@@ -21,8 +21,6 @@ import org.scalatest.OptionValues._
 
 import java.io.{ ByteArrayInputStream, File, FileWriter }
 
-import resource._
-
 case class TestDocAtt(_id: String, value: Int) extends IdRev with Attachments
 
 class TestAttachments extends SohvaTestSpec with Matchers {
@@ -44,7 +42,7 @@ class TestAttachments extends SohvaTestSpec with Matchers {
 
     val f = File.createTempFile("sohva", "test")
     val content = "this is the content"
-    for (fw <- managed(new FileWriter(f)))
+    for (fw <- new FileWriter(f).autoClose)
       fw.write(content)
 
     val ok = synced(db.attachTo("doc-with-attachments", f, "text/plain; charset=UTF-8"))

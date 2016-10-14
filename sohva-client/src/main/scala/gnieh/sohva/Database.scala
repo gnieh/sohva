@@ -37,7 +37,7 @@ import java.io.{
 
 import spray.json._
 
-import gnieh.diffson.JsonPatch
+import gnieh.diffson.sprayJson.JsonPatch
 
 import scala.concurrent.Future
 

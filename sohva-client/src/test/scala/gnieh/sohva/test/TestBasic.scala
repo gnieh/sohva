@@ -19,7 +19,7 @@ package test
 import org.scalatest._
 import org.scalatest.OptionValues._
 
-import gnieh.diffson._
+import gnieh.diffson.sprayJson._
 
 import spray.json._
 

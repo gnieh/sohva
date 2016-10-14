@@ -19,6 +19,7 @@ package strategy
 import scala.annotation.tailrec
 
 import gnieh.diffson._
+import sprayJson._
 
 import spray.json._
 
@@ -117,25 +118,25 @@ object StructuralMergeStrategy extends Strategy {
       val baseJson = baseDoc.getOrElse(JsObject())
 
       // compute base2db
-      val base2db = JsonDiff.diff(baseJson, dbJson)
+      val base2db = JsonDiff.diff(baseJson, dbJson, false)
 
       // println("BD: " + base2db)
 
       // compute base2current
-      val base2current = JsonDiff.diff(baseJson, currentJson)
+      val base2current = JsonDiff.diff(baseJson, currentJson, false)
 
       // println("BC: " + base2current)
 
       @tailrec
       def loop(ops1: List[Operation], ops2: List[Operation], acc: List[Operation]): List[Operation] = ops1 match {
-        case (op @ Replace(path, _)) :: tail1 =>
+        case (op @ Replace(path, _, _)) :: tail1 =>
           if (modifiesParent(ops2, path)) {
             // the path or one of its parent is modified or deleted in the second patch
             loop(tail1, ops2, acc)
           } else {
             loop(tail1, ops2, op :: acc)
           }
-        case (op @ Remove(path)) :: tail1 =>
+        case (op @ Remove(path, _)) :: tail1 =>
           // drop all modifications that applies to `path` or one of its children from the second patch
           // if the path is an array pointer, also shifts subsequent elements in the array by -1
           loop(tail1,
@@ -176,12 +177,12 @@ object StructuralMergeStrategy extends Strategy {
   def shift(ops: List[Operation], p: Pointer, value: Int): List[Operation] = p match {
     case ArrayIdx(parent, idx) =>
       ops map {
-        case Replace(ArrayIdx(parent2, idx2), v) if parent2 == parent && idx2 > idx =>
-          Replace(parent2 ::: (idx2 + value), v)
-        case Remove(ArrayIdx(parent2, idx2)) if parent2 == parent && idx2 > idx =>
-          Remove(parent2 ::: (idx2 + value))
+        case Replace(ArrayIdx(parent2, idx2), v, old) if parent2 == parent && idx2 > idx =>
+          Replace(parent2 / (idx2 + value), v, old)
+        case Remove(ArrayIdx(parent2, idx2), old) if parent2 == parent && idx2 > idx =>
+          Remove(parent2 / (idx2 + value), old)
         case Add(ArrayIdx(parent2, idx2), v) if parent2 == parent && idx2 > idx =>
-          Add(parent2 ::: (idx2 + value), v)
+          Add(parent2 / (idx2 + value), v)
         case op => op
       }
     case _ =>
@@ -190,18 +191,18 @@ object StructuralMergeStrategy extends Strategy {
   }
 
   object ArrayIdx {
+    private[this] val int = "(0|[1-9][0-9]*)".r
     def unapply(p: Pointer): Option[(Pointer, Int)] =
-      if (p.isEmpty) {
-        // empty pointer is not an index
-        None
-      } else {
-        // all but last
-        val parent = p.dropRight(1)
-        val last = p.last
-        last match {
-          case IntIndex(idx) => Some((parent, idx))
-          case _             => None
-        }
+      p match {
+        case Pointer(elems @ _*) if elems.size > 0 =>
+          // all but last
+          val parent = elems.dropRight(1)
+          elems.last match {
+            case int(idx) => Some(Pointer(parent: _*) -> idx.toInt)
+            case _        => None
+          }
+        case _ =>
+          None
       }
   }
 
@@ -214,11 +215,11 @@ object StructuralMergeStrategy extends Strategy {
 
   /** Indicates whether an operation exists in the list that modifies the pointer or one of its parents */
   def modifiesParent(ops: List[Operation], p: Pointer): Boolean =
-    ops.exists(op => pointerString(p).startsWith(pointerString(op.path)))
+    ops.exists(op => p.toString.startsWith(op.path.toString))
 
   /** Indicates whether the operation modifies the pointer or one of its children */
   def modifiesChild(op: Operation, p: Pointer): Boolean =
-    pointerString(op.path).startsWith(pointerString(p))
+    op.path.toString.startsWith(p.toString)
 
 }
 

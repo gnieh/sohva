@@ -112,7 +112,7 @@ object SohvaBuild extends Build {
 
   lazy val clientDependencies = globalDependencies ++ Seq(
     "com.typesafe.akka" %% "akka-http-spray-json-experimental" % "2.4.10",
-    "org.gnieh" %% "diffson" % "1.1.0",
+    "org.gnieh" %% "diffson" % "2.0.2",
     "io.spray" %% "spray-json" % "1.3.2",
     "org.slf4j" % "slf4j-api" % "1.7.21"
   )
