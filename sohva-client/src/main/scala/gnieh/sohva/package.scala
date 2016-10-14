@@ -21,13 +21,11 @@ import java.security.MessageDigest
 
 import scala.util.Random
 
-import rx.lang.scala._
-
 import spray.json._
 
 import akka.http.scaladsl.model._
 
-import java.io.File
+import java.io.Closeable
 import scala.concurrent.{ ExecutionContext, Future }
 
 /** Contains all the classes needed to interact with a couchdb server.
@@ -48,6 +46,13 @@ package object sohva {
   val COPY = HttpMethod.custom("COPY")
 
   val now = Some(Left("now"))
+
+  private[sohva] implicit class EnhencedCloseable[T <: Closeable](val closeable: T) extends AnyVal {
+
+    def autoClose: AutoCloseabled[T] =
+      new AutoCloseabled(closeable)
+
+  }
 
   private[sohva] implicit class EnhancedUri(val uri: Uri) extends AnyVal {
 

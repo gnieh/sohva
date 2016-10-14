@@ -15,8 +15,6 @@
 */
 package gnieh.sohva
 
-import resource._
-
 import strategy.Strategy
 
 import mango.{
@@ -368,12 +366,13 @@ class Database private[sohva] (
     contentType: String): Future[Boolean] = {
     // create a temporary file with the content of the input stream
     val file = new File(System.getProperty("java.io.tmpdir"), attachment)
-    for (fos <- managed(new FileOutputStream(file))) {
-      for (bis <- managed(new BufferedInputStream(stream))) {
-        val array = new Array[Byte](bis.available)
-        bis.read(array)
-        fos.write(array)
-      }
+    for {
+      fos <- new FileOutputStream(file).autoClose
+      bis <- new BufferedInputStream(stream).autoClose
+    } {
+      val array = new Array[Byte](bis.available)
+      bis.read(array)
+      fos.write(array)
     }
     attachTo(docId, file, contentType)
   }

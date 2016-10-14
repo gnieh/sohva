@@ -1,12 +1,14 @@
 Gnieh Sohva [![Build Status](https://travis-ci.org/gnieh/sohva.png?branch=master)](https://travis-ci.org/gnieh/sohva)
 ===========
 
-Gnieh Sohva is a scala library allowing users to easily work with [couchdb](http://couchdb.apache.org/) databases.
+Sohva is a set of scala tools for [CouchDB](http://couchdb.apache.org/) databases.
+The main tool is a client library, making it possible to store and retrieve documents in CouchDB.
 
-It consists in several tools:
- - `sohva-client` is a client allowing user to query a CouchDB server.
- - `sohva-entities` is a layer built upon sohva client that allows people to store entities and components into a CouchDB database.
- - `sohva-dm` allows you to manage your design documents locally and synchronize your local versions with the design documents in the database.
- - `sohva-testing` is a module that allows to test applications that use CouchDB.
+Using Sohva
+-----------
+
+Sohva is built against scala 2.11
+
+
 
 Have a look at the [wiki pages](https://github.com/gnieh/sohva/wiki) for more documentation

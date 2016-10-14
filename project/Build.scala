@@ -20,6 +20,7 @@ object SohvaBuild extends Build {
     homepage := Some(url("https://github.com/gnieh/sohva")),
     version := "2.0.0-SNAPSHOT",
     scalaVersion := "2.11.8",
+    crossScalaVersions := Seq("2.11.8", "2.12.0-RC1"),
     libraryDependencies ++= globalDependencies,
     parallelExecution := false,
     fork in Test := true,
@@ -112,9 +113,7 @@ object SohvaBuild extends Build {
   lazy val clientDependencies = globalDependencies ++ Seq(
     "com.typesafe.akka" %% "akka-http-spray-json-experimental" % "2.4.10",
     "org.gnieh" %% "diffson" % "1.1.0",
-    "com.jsuereth" %% "scala-arm" % "1.4",
     "io.spray" %% "spray-json" % "1.3.2",
-    "org.slf4j" % "slf4j-api" % "1.7.21",
-    "com.netflix.rxjava" % "rxjava-scala" % "0.20.7"
+    "org.slf4j" % "slf4j-api" % "1.7.21"
   )
 }
