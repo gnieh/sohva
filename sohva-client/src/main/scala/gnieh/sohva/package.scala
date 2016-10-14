@@ -15,18 +15,15 @@
 */
 package gnieh
 
-import scala.concurrent.Future
-
-import java.security.MessageDigest
-
-import scala.util.Random
-
 import spray.json._
 
 import akka.http.scaladsl.model._
 
 import java.io.Closeable
-import scala.concurrent.{ ExecutionContext, Future }
+import scala.concurrent.{
+  ExecutionContext,
+  Future
+}
 
 /** Contains all the classes needed to interact with a couchdb server.
  *  Classes in this package allows the user to:
@@ -99,29 +96,6 @@ package object sohva {
       case e: Exception =>
         throw new SohvaException(msg, e)
     }
-  }
-
-  protected[sohva] def bytes2string(bytes: Array[Byte]) =
-    bytes.foldLeft(new StringBuilder) {
-      (res, byte) =>
-        res.append(Integer.toHexString(byte & 0xff))
-    }.toString
-
-  protected[sohva] def hash(s: String) = {
-    val md = MessageDigest.getInstance("SHA-1")
-    bytes2string(md.digest(s.getBytes("UTF-8")))
-  }
-
-  protected[sohva] def passwordSha(password: String) = {
-
-    // compute the password hash
-    // the password string is concatenated with the generated salt
-    // and the result is hashed using SHA-1
-    val saltArray = new Array[Byte](16)
-    Random.nextBytes(saltArray)
-    val salt = bytes2string(saltArray)
-
-    (salt, hash(password + salt))
   }
 
   implicit class CouchJson[T <: IdRev](val value: T) extends AnyVal {
