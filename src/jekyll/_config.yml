@@ -9,7 +9,7 @@
 title: Sohva
 baseurl: "" # the subpath of your site, e.g. /blog
 
-github_username: gnieh
+github_username: satabin
 
 # Build settings
 markdown: kramdown
