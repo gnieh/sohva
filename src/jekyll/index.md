@@ -36,5 +36,6 @@ Once your project is linked to Sohva, you can start using it. Please have a look
  - [Automatic conflict handling](conflicts/)
  - [Mango queries](mango/)
  - [Being notified of changes in database](changes/)
+ - [Database replication](replication/)
  - [Using sohva synchronously](synchronous/)
  - [API documentation](latest/api/)
