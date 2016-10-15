@@ -1,0 +1,1491 @@
+<!DOCTYPE html >
+<html>
+        <head>
+          <title>Replicator - gnieh.sohva.Replicator</title>
+          <meta name="description" content="Replicator - gnieh.sohva.Replicator" />
+          <meta name="keywords" content="Replicator gnieh.sohva.Replicator" />
+          <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+          
+      <link href="../../lib/template.css" media="screen" type="text/css" rel="stylesheet" />
+      <link href="../../lib/diagrams.css" media="screen" type="text/css" rel="stylesheet" id="diagrams-css" />
+      <script type="text/javascript" src="../../lib/jquery.js" id="jquery-js"></script>
+      <script type="text/javascript" src="../../lib/jquery-ui.js"></script>
+      <script type="text/javascript" src="../../lib/template.js"></script>
+      <script type="text/javascript" src="../../lib/tools.tooltip.js"></script>
+      
+      <script type="text/javascript">
+         if(top === self) {
+            var url = '../../index.html';
+            var hash = 'gnieh.sohva.Replicator';
+            var anchor = window.location.hash;
+            var anchor_opt = '';
+            if (anchor.length >= 1)
+              anchor_opt = '@' + anchor.substring(1);
+            window.location.href = url + '#' + hash + anchor_opt;
+         }
+   	  </script>
+    
+        </head>
+        <body class="type">
+      <div id="definition">
+        <img alt="Class" src="../../lib/class_big.png" />
+        <p id="owner"><a href="../package.html" class="extype" name="gnieh">gnieh</a>.<a href="package.html" class="extype" name="gnieh.sohva">sohva</a></p>
+        <h1>Replicator</h1><h3><span class="morelinks"><div>Related Doc:
+            <a href="package.html" class="extype" name="gnieh.sohva">package sohva</a>
+          </div></span></h3><span class="permalink">
+      <a href="../../index.html#gnieh.sohva.Replicator" title="Permalink" target="_top">
+        <img src="../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      </div>
+
+      <h4 id="signature" class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">class</span>
+      </span>
+      <span class="symbol">
+        <span class="name">Replicator</span><span class="result"> extends <a href="Database.html" class="extype" name="gnieh.sohva.Database">Database</a></span>
+      </span>
+      </h4>
+      
+          <div id="comment" class="fullcommenttop"><div class="comment cmt"><p>A replicator database that allows people to manage replications:</p><ul><li>start replication</li><li>cancel or stop replications</li><li>list current replications
+</li></ul></div><div class="toggleContainer block">
+          <span class="toggle">Linear Supertypes</span>
+          <div class="superTypes hiddenContent"><a href="Database.html" class="extype" name="gnieh.sohva.Database">Database</a>, <a href="DocumentOps.html" class="extype" name="gnieh.sohva.DocumentOps">DocumentOps</a>, <span class="extype" name="scala.AnyRef">AnyRef</span>, <span class="extype" name="scala.Any">Any</span></div>
+        </div></div>
+        
+
+      <div id="mbrsel">
+        <div id="textfilter"><span class="pre"></span><span class="input"><input id="mbrsel-input" type="text" accesskey="/" /></span><span class="post"></span></div>
+        <div id="order">
+              <span class="filtertype">Ordering</span>
+              <ol>
+                
+                <li class="alpha in"><span>Alphabetic</span></li>
+                <li class="inherit out"><span>By Inheritance</span></li>
+              </ol>
+            </div>
+        <div id="ancestors">
+                <span class="filtertype">Inherited<br />
+                </span>
+                <ol id="linearization">
+                  <li class="in" name="gnieh.sohva.Replicator"><span>Replicator</span></li><li class="in" name="gnieh.sohva.Database"><span>Database</span></li><li class="in" name="gnieh.sohva.DocumentOps"><span>DocumentOps</span></li><li class="in" name="scala.AnyRef"><span>AnyRef</span></li><li class="in" name="scala.Any"><span>Any</span></li>
+                </ol>
+              </div><div id="ancestors">
+            <span class="filtertype"></span>
+            <ol>
+              <li class="hideall out"><span>Hide All</span></li>
+              <li class="showall in"><span>Show All</span></li>
+            </ol>
+          </div>
+        <div id="visbl">
+            <span class="filtertype">Visibility</span>
+            <ol><li class="public in"><span>Public</span></li><li class="all out"><span>All</span></li></ol>
+          </div>
+      </div>
+
+      <div id="template">
+        <div id="allMembers">
+        <div id="constructors" class="members">
+              <h3>Instance Constructors</h3>
+              <ol><li name="gnieh.sohva.Replicator#&lt;init&gt;" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="&lt;init&gt;(name:String,couch:gnieh.sohva.CouchDB,credit:Int,strategy:gnieh.sohva.strategy.Strategy):gnieh.sohva.Replicator"></a>
+      <a id="&lt;init&gt;:Replicator"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">new</span>
+      </span>
+      <span class="symbol">
+        <span class="name">Replicator</span><span class="params">(<span name="name">name: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="couch">couch: <a href="CouchDB.html" class="extype" name="gnieh.sohva.CouchDB">CouchDB</a></span>, <span name="credit">credit: <span class="extype" name="scala.Int">Int</span></span>, <span name="strategy">strategy: <a href="strategy/Strategy.html" class="extype" name="gnieh.sohva.strategy.Strategy">Strategy</a></span>)</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../index.html#gnieh.sohva.Replicator@&lt;init&gt;(name:String,couch:gnieh.sohva.CouchDB,credit:Int,strategy:gnieh.sohva.strategy.Strategy):gnieh.sohva.Replicator" title="Permalink" target="_top">
+        <img src="../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      
+    </li></ol>
+            </div>
+
+        
+
+        
+
+        <div id="values" class="values members">
+              <h3>Value Members</h3>
+              <ol><li name="scala.AnyRef#!=" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="!=(x$1:Any):Boolean"></a>
+      <a id="!=(Any):Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span title="gt4s: $bang$eq" class="name">!=</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Any">Any</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../index.html#gnieh.sohva.Replicator@!=(x$1:Any):Boolean" title="Permalink" target="_top">
+        <img src="../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+    </li><li name="scala.AnyRef###" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="##():Int"></a>
+      <a id="##():Int"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span title="gt4s: $hash$hash" class="name">##</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Int">Int</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../index.html#gnieh.sohva.Replicator@##():Int" title="Permalink" target="_top">
+        <img src="../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+    </li><li name="scala.AnyRef#==" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="==(x$1:Any):Boolean"></a>
+      <a id="==(Any):Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span title="gt4s: $eq$eq" class="name">==</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Any">Any</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../index.html#gnieh.sohva.Replicator@==(x$1:Any):Boolean" title="Permalink" target="_top">
+        <img src="../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+    </li><li name="gnieh.sohva.Database#allDocs" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="allDocs(key:Option[String],keys:List[String],startkey:Option[String],startkey_docid:Option[String],endkey:Option[String],endkey_docid:Option[String],limit:Int,stale:Option[String],descending:Boolean,skip:Int,inclusive_end:Boolean):scala.concurrent.Future[List[String]]"></a>
+      <a id="allDocs(Option[String],List[String],Option[String],Option[String],Option[String],Option[String],Int,Option[String],Boolean,Int,Boolean):Future[List[String]]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">allDocs</span><span class="params">(<span name="key">key: <span class="extype" name="scala.Option">Option</span>[<span class="extype" name="scala.Predef.String">String</span>] = <span class="symbol">None</span></span>, <span name="keys">keys: <span class="extype" name="scala.List">List</span>[<span class="extype" name="scala.Predef.String">String</span>] = <span class="symbol">Nil</span></span>, <span name="startkey">startkey: <span class="extype" name="scala.Option">Option</span>[<span class="extype" name="scala.Predef.String">String</span>] = <span class="symbol">None</span></span>, <span name="startkey_docid">startkey_docid: <span class="extype" name="scala.Option">Option</span>[<span class="extype" name="scala.Predef.String">String</span>] = <span class="symbol">None</span></span>, <span name="endkey">endkey: <span class="extype" name="scala.Option">Option</span>[<span class="extype" name="scala.Predef.String">String</span>] = <span class="symbol">None</span></span>, <span name="endkey_docid">endkey_docid: <span class="extype" name="scala.Option">Option</span>[<span class="extype" name="scala.Predef.String">String</span>] = <span class="symbol">None</span></span>, <span name="limit">limit: <span class="extype" name="scala.Int">Int</span> = <span class="symbol">1</span></span>, <span name="stale">stale: <span class="extype" name="scala.Option">Option</span>[<span class="extype" name="scala.Predef.String">String</span>] = <span class="symbol">None</span></span>, <span name="descending">descending: <span class="extype" name="scala.Boolean">Boolean</span> = <span class="symbol">false</span></span>, <span name="skip">skip: <span class="extype" name="scala.Int">Int</span> = <span class="symbol">0</span></span>, <span name="inclusive_end">inclusive_end: <span class="extype" name="scala.Boolean">Boolean</span> = <span class="symbol">true</span></span>)</span><span class="result">: <span class="extype" name="scala.concurrent.Future">Future</span>[<span class="extype" name="scala.List">List</span>[<span class="extype" name="scala.Predef.String">String</span>]]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../index.html#gnieh.sohva.Replicator@allDocs(key:Option[String],keys:List[String],startkey:Option[String],startkey_docid:Option[String],endkey:Option[String],endkey_docid:Option[String],limit:Int,stale:Option[String],descending:Boolean,skip:Int,inclusive_end:Boolean):scala.concurrent.Future[List[String]]" title="Permalink" target="_top">
+        <img src="../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Returns the list of identifiers of the documents in this database</p><div class="fullcomment"><div class="comment cmt"><p>Returns the list of identifiers of the documents in this database</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="Database.html" class="extype" name="gnieh.sohva.Database">Database</a></dd></dl></div>
+    </li><li name="scala.Any#asInstanceOf" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="asInstanceOf[T0]:T0"></a>
+      <a id="asInstanceOf[T0]:T0"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">asInstanceOf</span><span class="tparams">[<span name="T0">T0</span>]</span><span class="result">: <span class="extype" name="scala.Any.asInstanceOf.T0">T0</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../index.html#gnieh.sohva.Replicator@asInstanceOf[T0]:T0" title="Permalink" target="_top">
+        <img src="../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
+    </li><li name="gnieh.sohva.Database#attachTo" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="attachTo(docId:String,attachment:String,stream:java.io.InputStream,contentType:String):scala.concurrent.Future[Boolean]"></a>
+      <a id="attachTo(String,String,InputStream,String):Future[Boolean]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">attachTo</span><span class="params">(<span name="docId">docId: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="attachment">attachment: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="stream">stream: <span class="extype" name="java.io.InputStream">InputStream</span></span>, <span name="contentType">contentType: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result">: <span class="extype" name="scala.concurrent.Future">Future</span>[<span class="extype" name="scala.Boolean">Boolean</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../index.html#gnieh.sohva.Replicator@attachTo(docId:String,attachment:String,stream:java.io.InputStream,contentType:String):scala.concurrent.Future[Boolean]" title="Permalink" target="_top">
+        <img src="../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Attaches the given file (given as an input stream) to the given document id.</p><div class="fullcomment"><div class="comment cmt"><p>Attaches the given file (given as an input stream) to the given document id.
+ If no mime type is given, sohva tries to guess the mime type of the file
+ itself. It it does not manage to identify the mime type, the file won't be
+ attached...
+ This method returns <code>true</code> iff the file was attached to the document.
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="Database.html" class="extype" name="gnieh.sohva.Database">Database</a></dd></dl></div>
+    </li><li name="gnieh.sohva.Database#attachTo" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="attachTo(docId:String,file:java.io.File,contentType:String):scala.concurrent.Future[Boolean]"></a>
+      <a id="attachTo(String,File,String):Future[Boolean]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">attachTo</span><span class="params">(<span name="docId">docId: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="file">file: <span class="extype" name="java.io.File">File</span></span>, <span name="contentType">contentType: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result">: <span class="extype" name="scala.concurrent.Future">Future</span>[<span class="extype" name="scala.Boolean">Boolean</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../index.html#gnieh.sohva.Replicator@attachTo(docId:String,file:java.io.File,contentType:String):scala.concurrent.Future[Boolean]" title="Permalink" target="_top">
+        <img src="../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Attaches the given file to the given document id.</p><div class="fullcomment"><div class="comment cmt"><p>Attaches the given file to the given document id.
+ This method returns <code>true</code> iff the file was attached to the document.
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="Database.html" class="extype" name="gnieh.sohva.Database">Database</a></dd></dl></div>
+    </li><li name="gnieh.sohva.Database#builtInView" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="builtInView(view:String):gnieh.sohva.View"></a>
+      <a id="builtInView(String):View"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">builtInView</span><span class="params">(<span name="view">view: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result">: <a href="View.html" class="extype" name="gnieh.sohva.View">View</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../index.html#gnieh.sohva.Replicator@builtInView(view:String):gnieh.sohva.View" title="Permalink" target="_top">
+        <img src="../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Returns a built-in view of this database, identified by its name.</p><div class="fullcomment"><div class="comment cmt"><p>Returns a built-in view of this database, identified by its name.
+ E.g. <code>_all_docs</code>.
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="Database.html" class="extype" name="gnieh.sohva.Database">Database</a></dd></dl></div>
+    </li><li name="gnieh.sohva.Database.changes" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="changes"></a>
+      <a id="changes:changes"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="Database$changes$.html"><span class="name">changes</span></a><span class="result"> extends <a href="ChangeStream.html" class="extype" name="gnieh.sohva.ChangeStream">ChangeStream</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../index.html#gnieh.sohva.Database@changes" title="Permalink" target="_top">
+        <img src="../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Exposes the interface to change stream for this database.</p><div class="fullcomment"><div class="comment cmt"><p>Exposes the interface to change stream for this database.</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="Database.html" class="extype" name="gnieh.sohva.Database">Database</a></dd></dl></div>
+    </li><li name="scala.AnyRef#clone" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="clone():Object"></a>
+      <a id="clone():AnyRef"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">clone</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.AnyRef">AnyRef</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../index.html#gnieh.sohva.Replicator@clone():Object" title="Permalink" target="_top">
+        <img src="../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a href="../../java$lang.html" class="extype" name="java.lang">java.lang</a>] </dd><dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
+                <span class="name">@throws</span><span class="args">(<span>
+      
+      <span class="defval" name="classOf[java.lang.CloneNotSupportedException]">...</span>
+    </span>)</span>
+              
+        </dd></dl></div>
+    </li><li name="gnieh.sohva.Database#compact" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="compact:scala.concurrent.Future[Boolean]"></a>
+      <a id="compact:Future[Boolean]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">compact</span><span class="result">: <span class="extype" name="scala.concurrent.Future">Future</span>[<span class="extype" name="scala.Boolean">Boolean</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../index.html#gnieh.sohva.Replicator@compact:scala.concurrent.Future[Boolean]" title="Permalink" target="_top">
+        <img src="../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Requests a database compaction.</p><div class="fullcomment"><div class="comment cmt"><p>Requests a database compaction.</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="Database.html" class="extype" name="gnieh.sohva.Database">Database</a></dd></dl></div>
+    </li><li name="gnieh.sohva.Database#copy" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="copy(origin:String,target:String,originRev:Option[String],targetRev:Option[String]):scala.concurrent.Future[Boolean]"></a>
+      <a id="copy(String,String,Option[String],Option[String]):Future[Boolean]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">copy</span><span class="params">(<span name="origin">origin: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="target">target: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="originRev">originRev: <span class="extype" name="scala.Option">Option</span>[<span class="extype" name="scala.Predef.String">String</span>] = <span class="symbol">None</span></span>, <span name="targetRev">targetRev: <span class="extype" name="scala.Option">Option</span>[<span class="extype" name="scala.Predef.String">String</span>] = <span class="symbol">None</span></span>)</span><span class="result">: <span class="extype" name="scala.concurrent.Future">Future</span>[<span class="extype" name="scala.Boolean">Boolean</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../index.html#gnieh.sohva.Replicator@copy(origin:String,target:String,originRev:Option[String],targetRev:Option[String]):scala.concurrent.Future[Boolean]" title="Permalink" target="_top">
+        <img src="../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Copies the origin document to the target document.</p><div class="fullcomment"><div class="comment cmt"><p>Copies the origin document to the target document.
+ If the target does not exist, it is created, otherwise it is updated and the target
+ revision must be provided
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="Database.html" class="extype" name="gnieh.sohva.Database">Database</a></dd></dl></div>
+    </li><li name="gnieh.sohva.Database#couch" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="couch:gnieh.sohva.CouchDB"></a>
+      <a id="couch:CouchDB"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">val</span>
+      </span>
+      <span class="symbol">
+        <span class="name">couch</span><span class="result">: <a href="CouchDB.html" class="extype" name="gnieh.sohva.CouchDB">CouchDB</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../index.html#gnieh.sohva.Replicator@couch:gnieh.sohva.CouchDB" title="Permalink" target="_top">
+        <img src="../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="Database.html" class="extype" name="gnieh.sohva.Database">Database</a></dd></dl></div>
+    </li><li name="gnieh.sohva.Database#create" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="create:scala.concurrent.Future[Boolean]"></a>
+      <a id="create:Future[Boolean]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">create</span><span class="result">: <span class="extype" name="scala.concurrent.Future">Future</span>[<span class="extype" name="scala.Boolean">Boolean</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../index.html#gnieh.sohva.Replicator@create:scala.concurrent.Future[Boolean]" title="Permalink" target="_top">
+        <img src="../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Creates this database in the couchdb instance if it does not already exist.</p><div class="fullcomment"><div class="comment cmt"><p>Creates this database in the couchdb instance if it does not already exist.
+ Returns <code>true</code> iff the database was actually created.
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="Database.html" class="extype" name="gnieh.sohva.Database">Database</a></dd></dl></div>
+    </li><li name="gnieh.sohva.Database#createDoc" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="createDoc[T](doc:T)(implicitevidence$5:spray.json.JsonWriter[T]):scala.concurrent.Future[gnieh.sohva.DbResult]"></a>
+      <a id="createDoc[T](T)(JsonWriter[T]):Future[DbResult]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">createDoc</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="doc">doc: <span class="extype" name="gnieh.sohva.Database.createDoc.T">T</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="arg0">arg0: <span class="extype" name="spray.json.JsonWriter">JsonWriter</span>[<span class="extype" name="gnieh.sohva.Database.createDoc.T">T</span>]</span>)</span><span class="result">: <span class="extype" name="scala.concurrent.Future">Future</span>[<a href="DbResult.html" class="extype" name="gnieh.sohva.DbResult">DbResult</a>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../index.html#gnieh.sohva.Replicator@createDoc[T](doc:T)(implicitevidence$5:spray.json.JsonWriter[T]):scala.concurrent.Future[gnieh.sohva.DbResult]" title="Permalink" target="_top">
+        <img src="../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Creates a document in the database and returns its identifier and revision.</p><div class="fullcomment"><div class="comment cmt"><p>Creates a document in the database and returns its identifier and revision.
+ If the json version of the object has a <code>_id</code> field, this identifier is used for the document,
+ otherwise a new one is generated.
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="Database.html" class="extype" name="gnieh.sohva.Database">Database</a></dd></dl></div>
+    </li><li name="gnieh.sohva.Database#createDocs" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="createDocs[T](docs:List[T])(implicitevidence$6:spray.json.JsonWriter[T]):scala.concurrent.Future[List[gnieh.sohva.DbResult]]"></a>
+      <a id="createDocs[T](List[T])(JsonWriter[T]):Future[List[DbResult]]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">createDocs</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="docs">docs: <span class="extype" name="scala.List">List</span>[<span class="extype" name="gnieh.sohva.Database.createDocs.T">T</span>]</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="arg0">arg0: <span class="extype" name="spray.json.JsonWriter">JsonWriter</span>[<span class="extype" name="gnieh.sohva.Database.createDocs.T">T</span>]</span>)</span><span class="result">: <span class="extype" name="scala.concurrent.Future">Future</span>[<span class="extype" name="scala.List">List</span>[<a href="DbResult.html" class="extype" name="gnieh.sohva.DbResult">DbResult</a>]]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../index.html#gnieh.sohva.Replicator@createDocs[T](docs:List[T])(implicitevidence$6:spray.json.JsonWriter[T]):scala.concurrent.Future[List[gnieh.sohva.DbResult]]" title="Permalink" target="_top">
+        <img src="../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Creates a set of documents in the database and returns theirs identifiers and revision.</p><div class="fullcomment"><div class="comment cmt"><p>Creates a set of documents in the database and returns theirs identifiers and revision.
+ If the json version of an object has a <code>_id</code> field, this identifier is used for the document,
+ otherwise a new one is generated.
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="Database.html" class="extype" name="gnieh.sohva.Database">Database</a></dd></dl></div>
+    </li><li name="gnieh.sohva.Database#credit" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="credit:Int"></a>
+      <a id="credit:Int"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">val</span>
+      </span>
+      <span class="symbol">
+        <span class="name">credit</span><span class="result">: <span class="extype" name="scala.Int">Int</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../index.html#gnieh.sohva.Replicator@credit:Int" title="Permalink" target="_top">
+        <img src="../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">The credit assigned to the conflict resolver.</p><div class="fullcomment"><div class="comment cmt"><p>The credit assigned to the conflict resolver. It represents the number of times the client tries to save the document before giving up.</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="Database.html" class="extype" name="gnieh.sohva.Database">Database</a> → <a href="DocumentOps.html" class="extype" name="gnieh.sohva.DocumentOps">DocumentOps</a></dd></dl></div>
+    </li><li name="gnieh.sohva.Database#delete" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="delete:scala.concurrent.Future[Boolean]"></a>
+      <a id="delete:Future[Boolean]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">delete</span><span class="result">: <span class="extype" name="scala.concurrent.Future">Future</span>[<span class="extype" name="scala.Boolean">Boolean</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../index.html#gnieh.sohva.Replicator@delete:scala.concurrent.Future[Boolean]" title="Permalink" target="_top">
+        <img src="../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Deletes this database in the couchdb instance if it exists.</p><div class="fullcomment"><div class="comment cmt"><p>Deletes this database in the couchdb instance if it exists.
+ Returns <code>true</code> iff the database was actually deleted.
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="Database.html" class="extype" name="gnieh.sohva.Database">Database</a></dd></dl></div>
+    </li><li name="gnieh.sohva.Database#deleteAttachment" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="deleteAttachment(docId:String,attachment:String):scala.concurrent.Future[Boolean]"></a>
+      <a id="deleteAttachment(String,String):Future[Boolean]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">deleteAttachment</span><span class="params">(<span name="docId">docId: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="attachment">attachment: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result">: <span class="extype" name="scala.concurrent.Future">Future</span>[<span class="extype" name="scala.Boolean">Boolean</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../index.html#gnieh.sohva.Replicator@deleteAttachment(docId:String,attachment:String):scala.concurrent.Future[Boolean]" title="Permalink" target="_top">
+        <img src="../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Deletes the given attachment for the given docId</p><div class="fullcomment"><div class="comment cmt"><p>Deletes the given attachment for the given docId</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="Database.html" class="extype" name="gnieh.sohva.Database">Database</a></dd></dl></div>
+    </li><li name="gnieh.sohva.Database#deleteDoc" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="deleteDoc(id:String):scala.concurrent.Future[Boolean]"></a>
+      <a id="deleteDoc(String):Future[Boolean]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">deleteDoc</span><span class="params">(<span name="id">id: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result">: <span class="extype" name="scala.concurrent.Future">Future</span>[<span class="extype" name="scala.Boolean">Boolean</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../index.html#gnieh.sohva.Replicator@deleteDoc(id:String):scala.concurrent.Future[Boolean]" title="Permalink" target="_top">
+        <img src="../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Deletes the document identified by the given id from the database.</p><div class="fullcomment"><div class="comment cmt"><p>Deletes the document identified by the given id from the database.
+ If the document exists it is deleted and the method returns <code>true</code>,
+ otherwise returns <code>false</code>.
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="Database.html" class="extype" name="gnieh.sohva.Database">Database</a></dd></dl></div>
+    </li><li name="gnieh.sohva.DocumentOps#deleteDoc" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="deleteDoc[T](doc:T)(implicitevidence$4:gnieh.sohva.CouchFormat[T]):scala.concurrent.Future[Boolean]"></a>
+      <a id="deleteDoc[T](T)(CouchFormat[T]):Future[Boolean]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">deleteDoc</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="doc">doc: <span class="extype" name="gnieh.sohva.DocumentOps.deleteDoc.T">T</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="arg0">arg0: <a href="CouchFormat.html" class="extype" name="gnieh.sohva.CouchFormat">CouchFormat</a>[<span class="extype" name="gnieh.sohva.DocumentOps.deleteDoc.T">T</span>]</span>)</span><span class="result">: <span class="extype" name="scala.concurrent.Future">Future</span>[<span class="extype" name="scala.Boolean">Boolean</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../index.html#gnieh.sohva.Replicator@deleteDoc[T](doc:T)(implicitevidence$4:gnieh.sohva.CouchFormat[T]):scala.concurrent.Future[Boolean]" title="Permalink" target="_top">
+        <img src="../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Deletes the document from the database.</p><div class="fullcomment"><div class="comment cmt"><p>Deletes the document from the database.
+ The document will only be deleted if the caller provided the last revision
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="DocumentOps.html" class="extype" name="gnieh.sohva.DocumentOps">DocumentOps</a></dd></dl></div>
+    </li><li name="gnieh.sohva.Database#deleteDocs" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="deleteDocs(ids:List[String],all_or_nothing:Boolean):scala.concurrent.Future[List[gnieh.sohva.DbResult]]"></a>
+      <a id="deleteDocs(List[String],Boolean):Future[List[DbResult]]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">deleteDocs</span><span class="params">(<span name="ids">ids: <span class="extype" name="scala.List">List</span>[<span class="extype" name="scala.Predef.String">String</span>]</span>, <span name="all_or_nothing">all_or_nothing: <span class="extype" name="scala.Boolean">Boolean</span> = <span class="symbol">false</span></span>)</span><span class="result">: <span class="extype" name="scala.concurrent.Future">Future</span>[<span class="extype" name="scala.List">List</span>[<a href="DbResult.html" class="extype" name="gnieh.sohva.DbResult">DbResult</a>]]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../index.html#gnieh.sohva.Replicator@deleteDocs(ids:List[String],all_or_nothing:Boolean):scala.concurrent.Future[List[gnieh.sohva.DbResult]]" title="Permalink" target="_top">
+        <img src="../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Deletes a bunch of documents at once returning the results
+ for each identifier in the document list.</p><div class="fullcomment"><div class="comment cmt"><p>Deletes a bunch of documents at once returning the results
+ for each identifier in the document list. One can choose the update strategy
+ by setting the parameter <code>all_or_nothing</code> to <code>true</code> or <code>false</code>.
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="Database.html" class="extype" name="gnieh.sohva.Database">Database</a></dd></dl></div>
+    </li><li name="gnieh.sohva.Database#design" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="design(designName:String,language:String):gnieh.sohva.Design"></a>
+      <a id="design(String,String):Design"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">design</span><span class="params">(<span name="designName">designName: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="language">language: <span class="extype" name="scala.Predef.String">String</span> = <span class="symbol">&quot;javascript&quot;</span></span>)</span><span class="result">: <a href="Design.html" class="extype" name="gnieh.sohva.Design">Design</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../index.html#gnieh.sohva.Replicator@design(designName:String,language:String):gnieh.sohva.Design" title="Permalink" target="_top">
+        <img src="../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Returns a design object that allows user to work with views</p><div class="fullcomment"><div class="comment cmt"><p>Returns a design object that allows user to work with views</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="Database.html" class="extype" name="gnieh.sohva.Database">Database</a></dd></dl></div>
+    </li><li name="gnieh.sohva.Database#ec" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="ec:scala.concurrent.ExecutionContext"></a>
+      <a id="ec:ExecutionContext"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">implicit </span>
+        <span class="kind">val</span>
+      </span>
+      <span class="symbol">
+        <span class="name">ec</span><span class="result">: <span class="extype" name="scala.concurrent.ExecutionContext">ExecutionContext</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../index.html#gnieh.sohva.Replicator@ec:scala.concurrent.ExecutionContext" title="Permalink" target="_top">
+        <img src="../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="Database.html" class="extype" name="gnieh.sohva.Database">Database</a> → <a href="DocumentOps.html" class="extype" name="gnieh.sohva.DocumentOps">DocumentOps</a></dd></dl></div>
+    </li><li name="scala.AnyRef#eq" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="eq(x$1:AnyRef):Boolean"></a>
+      <a id="eq(AnyRef):Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">eq</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.AnyRef">AnyRef</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../index.html#gnieh.sohva.Replicator@eq(x$1:AnyRef):Boolean" title="Permalink" target="_top">
+        <img src="../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+    </li><li name="scala.AnyRef#equals" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="equals(x$1:Any):Boolean"></a>
+      <a id="equals(Any):Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">equals</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Any">Any</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../index.html#gnieh.sohva.Replicator@equals(x$1:Any):Boolean" title="Permalink" target="_top">
+        <img src="../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+    </li><li name="gnieh.sohva.Database#exists" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="exists:scala.concurrent.Future[Boolean]"></a>
+      <a id="exists:Future[Boolean]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">exists</span><span class="result">: <span class="extype" name="scala.concurrent.Future">Future</span>[<span class="extype" name="scala.Boolean">Boolean</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../index.html#gnieh.sohva.Replicator@exists:scala.concurrent.Future[Boolean]" title="Permalink" target="_top">
+        <img src="../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Indicates whether this database exists</p><div class="fullcomment"><div class="comment cmt"><p>Indicates whether this database exists</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="Database.html" class="extype" name="gnieh.sohva.Database">Database</a></dd></dl></div>
+    </li><li name="gnieh.sohva.Database#explain" visbl="pub" data-isabs="false" fullComment="yes" group="CouchDB2">
+      <a id="explain(query:gnieh.sohva.mango.Query):scala.concurrent.Future[gnieh.sohva.mango.Explanation]"></a>
+      <a id="explain(Query):Future[Explanation]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">explain</span><span class="params">(<span name="query">query: <a href="mango/Query.html" class="extype" name="gnieh.sohva.mango.Query">Query</a></span>)</span><span class="result">: <span class="extype" name="scala.concurrent.Future">Future</span>[<a href="mango/Explanation.html" class="extype" name="gnieh.sohva.mango.Explanation">Explanation</a>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../index.html#gnieh.sohva.Replicator@explain(query:gnieh.sohva.mango.Query):scala.concurrent.Future[gnieh.sohva.mango.Explanation]" title="Permalink" target="_top">
+        <img src="../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Explains how the query is run by the CouchDB server.</p><div class="fullcomment"><div class="comment cmt"><p>Explains how the query is run by the CouchDB server.
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="Database.html" class="extype" name="gnieh.sohva.Database">Database</a></dd></dl></div>
+    </li><li name="scala.AnyRef#finalize" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="finalize():Unit"></a>
+      <a id="finalize():Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">finalize</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../index.html#gnieh.sohva.Replicator@finalize():Unit" title="Permalink" target="_top">
+        <img src="../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a href="../../java$lang.html" class="extype" name="java.lang">java.lang</a>] </dd><dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
+                <span class="name">@throws</span><span class="args">(<span>
+      
+      <span class="symbol">classOf[java.lang.Throwable]</span>
+    </span>)</span>
+              
+        </dd></dl></div>
+    </li><li name="gnieh.sohva.Database#find" visbl="pub" data-isabs="false" fullComment="yes" group="CouchDB2">
+      <a id="find[T&lt;:AnyRef](query:gnieh.sohva.mango.Query)(implicitevidence$3:spray.json.JsonReader[T]):scala.concurrent.Future[gnieh.sohva.mango.SearchResult[T]]"></a>
+      <a id="find[T&lt;:AnyRef](Query)(JsonReader[T]):Future[SearchResult[T]]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">find</span><span class="tparams">[<span name="T">T &lt;: <span class="extype" name="scala.AnyRef">AnyRef</span></span>]</span><span class="params">(<span name="query">query: <a href="mango/Query.html" class="extype" name="gnieh.sohva.mango.Query">Query</a></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="arg0">arg0: <span class="extype" name="spray.json.JsonReader">JsonReader</span>[<span class="extype" name="gnieh.sohva.Database.find.T">T</span>]</span>)</span><span class="result">: <span class="extype" name="scala.concurrent.Future">Future</span>[<a href="mango/SearchResult.html" class="extype" name="gnieh.sohva.mango.SearchResult">SearchResult</a>[<span class="extype" name="gnieh.sohva.Database.find.T">T</span>]]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../index.html#gnieh.sohva.Replicator@find[T&lt;:AnyRef](query:gnieh.sohva.mango.Query)(implicitevidence$3:spray.json.JsonReader[T]):scala.concurrent.Future[gnieh.sohva.mango.SearchResult[T]]" title="Permalink" target="_top">
+        <img src="../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Finds documents using the declarative mango query syntax.</p><div class="fullcomment"><div class="comment cmt"><p>Finds documents using the declarative mango query syntax. See <a href="mango/package.html" class="extype" name="gnieh.sohva.mango">sohva.mango</a> for details.
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="Database.html" class="extype" name="gnieh.sohva.Database">Database</a></dd></dl></div>
+    </li><li name="gnieh.sohva.Database#find" visbl="pub" data-isabs="false" fullComment="yes" group="CouchDB2">
+      <a id="find[T&lt;:AnyRef](selector:gnieh.sohva.mango.Selector,fields:List[String],sort:List[gnieh.sohva.mango.Sort],limit:Option[Int],skip:Option[Int],use_index:Option[gnieh.sohva.mango.UseIndex])(implicitevidence$2:spray.json.JsonReader[T]):scala.concurrent.Future[gnieh.sohva.mango.SearchResult[T]]"></a>
+      <a id="find[T&lt;:AnyRef](Selector,List[String],List[Sort],Option[Int],Option[Int],Option[UseIndex])(JsonReader[T]):Future[SearchResult[T]]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">find</span><span class="tparams">[<span name="T">T &lt;: <span class="extype" name="scala.AnyRef">AnyRef</span></span>]</span><span class="params">(<span name="selector">selector: <a href="mango/Selector.html" class="extype" name="gnieh.sohva.mango.Selector">Selector</a></span>, <span name="fields">fields: <span class="extype" name="scala.List">List</span>[<span class="extype" name="scala.Predef.String">String</span>] = <span class="symbol">Nil</span></span>, <span name="sort">sort: <span class="extype" name="scala.List">List</span>[<a href="mango/Sort.html" class="extype" name="gnieh.sohva.mango.Sort">Sort</a>]</span>, <span name="limit">limit: <span class="extype" name="scala.Option">Option</span>[<span class="extype" name="scala.Int">Int</span>] = <span class="symbol">None</span></span>, <span name="skip">skip: <span class="extype" name="scala.Option">Option</span>[<span class="extype" name="scala.Int">Int</span>] = <span class="symbol">None</span></span>, <span name="use_index">use_index: <span class="extype" name="scala.Option">Option</span>[<a href="mango/package.html#UseIndex=Either[String,(String,String)]" class="extmbr" name="gnieh.sohva.mango.UseIndex">UseIndex</a>] = <span class="symbol">None</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="arg0">arg0: <span class="extype" name="spray.json.JsonReader">JsonReader</span>[<span class="extype" name="gnieh.sohva.Database.find.T">T</span>]</span>)</span><span class="result">: <span class="extype" name="scala.concurrent.Future">Future</span>[<a href="mango/SearchResult.html" class="extype" name="gnieh.sohva.mango.SearchResult">SearchResult</a>[<span class="extype" name="gnieh.sohva.Database.find.T">T</span>]]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../index.html#gnieh.sohva.Replicator@find[T&lt;:AnyRef](selector:gnieh.sohva.mango.Selector,fields:List[String],sort:List[gnieh.sohva.mango.Sort],limit:Option[Int],skip:Option[Int],use_index:Option[gnieh.sohva.mango.UseIndex])(implicitevidence$2:spray.json.JsonReader[T]):scala.concurrent.Future[gnieh.sohva.mango.SearchResult[T]]" title="Permalink" target="_top">
+        <img src="../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Finds documents using the declarative mango query syntax.</p><div class="fullcomment"><div class="comment cmt"><p>Finds documents using the declarative mango query syntax. See <a href="mango/package.html" class="extype" name="gnieh.sohva.mango">sohva.mango</a> for details.
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="Database.html" class="extype" name="gnieh.sohva.Database">Database</a></dd></dl></div>
+    </li><li name="gnieh.sohva.Database#getAttachment" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="getAttachment(docId:String,attachment:String):scala.concurrent.Future[Option[(String,akka.util.ByteString)]]"></a>
+      <a id="getAttachment(String,String):Future[Option[(String,ByteString)]]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">getAttachment</span><span class="params">(<span name="docId">docId: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="attachment">attachment: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result">: <span class="extype" name="scala.concurrent.Future">Future</span>[<span class="extype" name="scala.Option">Option</span>[(<span class="extype" name="scala.Predef.String">String</span>, <span class="extype" name="akka.util.ByteString">ByteString</span>)]]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../index.html#gnieh.sohva.Replicator@getAttachment(docId:String,attachment:String):scala.concurrent.Future[Option[(String,akka.util.ByteString)]]" title="Permalink" target="_top">
+        <img src="../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Returns the given attachment for the given docId.</p><div class="fullcomment"><div class="comment cmt"><p>Returns the given attachment for the given docId.
+ It returns the mime type if any given in the response and the input stream
+ to read the response from the server.
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="Database.html" class="extype" name="gnieh.sohva.Database">Database</a></dd></dl></div>
+    </li><li name="scala.AnyRef#getClass" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="getClass():Class[_]"></a>
+      <a id="getClass():Class[_]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">getClass</span><span class="params">()</span><span class="result">: <span class="extype" name="java.lang.Class">Class</span>[_]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../index.html#gnieh.sohva.Replicator@getClass():Class[_]" title="Permalink" target="_top">
+        <img src="../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+    </li><li name="gnieh.sohva.DocumentOps#getDocById" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="getDocById[T](id:String,revision:Option[String])(implicitevidence$1:spray.json.JsonReader[T]):scala.concurrent.Future[Option[T]]"></a>
+      <a id="getDocById[T](String,Option[String])(JsonReader[T]):Future[Option[T]]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">getDocById</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="id">id: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="revision">revision: <span class="extype" name="scala.Option">Option</span>[<span class="extype" name="scala.Predef.String">String</span>] = <span class="symbol">None</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="arg0">arg0: <span class="extype" name="spray.json.JsonReader">JsonReader</span>[<span class="extype" name="gnieh.sohva.DocumentOps.getDocById.T">T</span>]</span>)</span><span class="result">: <span class="extype" name="scala.concurrent.Future">Future</span>[<span class="extype" name="scala.Option">Option</span>[<span class="extype" name="gnieh.sohva.DocumentOps.getDocById.T">T</span>]]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../index.html#gnieh.sohva.Replicator@getDocById[T](id:String,revision:Option[String])(implicitevidence$1:spray.json.JsonReader[T]):scala.concurrent.Future[Option[T]]" title="Permalink" target="_top">
+        <img src="../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Returns the document identified by the given id if it exists</p><div class="fullcomment"><div class="comment cmt"><p>Returns the document identified by the given id if it exists</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="DocumentOps.html" class="extype" name="gnieh.sohva.DocumentOps">DocumentOps</a></dd></dl></div>
+    </li><li name="gnieh.sohva.Database#getDocRevision" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="getDocRevision(id:String):scala.concurrent.Future[Option[String]]"></a>
+      <a id="getDocRevision(String):Future[Option[String]]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">getDocRevision</span><span class="params">(<span name="id">id: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result">: <span class="extype" name="scala.concurrent.Future">Future</span>[<span class="extype" name="scala.Option">Option</span>[<span class="extype" name="scala.Predef.String">String</span>]]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../index.html#gnieh.sohva.Replicator@getDocRevision(id:String):scala.concurrent.Future[Option[String]]" title="Permalink" target="_top">
+        <img src="../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Returns the current revision of the document if it exists</p><div class="fullcomment"><div class="comment cmt"><p>Returns the current revision of the document if it exists</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="Database.html" class="extype" name="gnieh.sohva.Database">Database</a></dd></dl></div>
+    </li><li name="gnieh.sohva.Database#getDocRevisions" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="getDocRevisions(ids:List[String]):scala.concurrent.Future[List[(String,String)]]"></a>
+      <a id="getDocRevisions(List[String]):Future[List[(String,String)]]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">getDocRevisions</span><span class="params">(<span name="ids">ids: <span class="extype" name="scala.List">List</span>[<span class="extype" name="scala.Predef.String">String</span>]</span>)</span><span class="result">: <span class="extype" name="scala.concurrent.Future">Future</span>[<span class="extype" name="scala.List">List</span>[(<span class="extype" name="scala.Predef.String">String</span>, <span class="extype" name="scala.Predef.String">String</span>)]]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../index.html#gnieh.sohva.Replicator@getDocRevisions(ids:List[String]):scala.concurrent.Future[List[(String,String)]]" title="Permalink" target="_top">
+        <img src="../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Returns the current revision of the documents</p><div class="fullcomment"><div class="comment cmt"><p>Returns the current revision of the documents</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="Database.html" class="extype" name="gnieh.sohva.Database">Database</a></dd></dl></div>
+    </li><li name="gnieh.sohva.Database#getDocsById" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="getDocsById[T](ids:List[String])(implicitevidence$1:spray.json.JsonReader[T]):scala.concurrent.Future[List[T]]"></a>
+      <a id="getDocsById[T](List[String])(JsonReader[T]):Future[List[T]]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">getDocsById</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="ids">ids: <span class="extype" name="scala.List">List</span>[<span class="extype" name="scala.Predef.String">String</span>]</span>)</span><span class="params">(<span class="implicit">implicit </span><span name="arg0">arg0: <span class="extype" name="spray.json.JsonReader">JsonReader</span>[<span class="extype" name="gnieh.sohva.Database.getDocsById.T">T</span>]</span>)</span><span class="result">: <span class="extype" name="scala.concurrent.Future">Future</span>[<span class="extype" name="scala.List">List</span>[<span class="extype" name="gnieh.sohva.Database.getDocsById.T">T</span>]]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../index.html#gnieh.sohva.Replicator@getDocsById[T](ids:List[String])(implicitevidence$1:spray.json.JsonReader[T]):scala.concurrent.Future[List[T]]" title="Permalink" target="_top">
+        <img src="../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Returns all the documents with given identifiers and of the given type.</p><div class="fullcomment"><div class="comment cmt"><p>Returns all the documents with given identifiers and of the given type.
+ If the document with an identifier exists in the database but has not the
+ required type, it is not added to the result
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="Database.html" class="extype" name="gnieh.sohva.Database">Database</a></dd></dl></div>
+    </li><li name="gnieh.sohva.Database#getRevsLimit" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="getRevsLimit:scala.concurrent.Future[Int]"></a>
+      <a id="getRevsLimit:Future[Int]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">getRevsLimit</span><span class="result">: <span class="extype" name="scala.concurrent.Future">Future</span>[<span class="extype" name="scala.Int">Int</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../index.html#gnieh.sohva.Replicator@getRevsLimit:scala.concurrent.Future[Int]" title="Permalink" target="_top">
+        <img src="../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Gets the current database revision limit.</p><div class="fullcomment"><div class="comment cmt"><p>Gets the current database revision limit.</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="Database.html" class="extype" name="gnieh.sohva.Database">Database</a></dd></dl></div>
+    </li><li name="scala.AnyRef#hashCode" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="hashCode():Int"></a>
+      <a id="hashCode():Int"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">hashCode</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Int">Int</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../index.html#gnieh.sohva.Replicator@hashCode():Int" title="Permalink" target="_top">
+        <img src="../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+    </li><li name="gnieh.sohva.Database#http" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="http(req:akka.http.scaladsl.model.HttpRequest):scala.concurrent.Future[spray.json.JsValue]"></a>
+      <a id="http(HttpRequest):Future[JsValue]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">http</span><span class="params">(<span name="req">req: <span class="extype" name="akka.http.scaladsl.model.HttpRequest">HttpRequest</span></span>)</span><span class="result">: <span class="extype" name="scala.concurrent.Future">Future</span>[<span class="extype" name="spray.json.JsValue">JsValue</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../index.html#gnieh.sohva.Replicator@http(req:akka.http.scaladsl.model.HttpRequest):scala.concurrent.Future[spray.json.JsValue]" title="Permalink" target="_top">
+        <img src="../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a href="package.html" class="extype" name="gnieh.sohva">gnieh.sohva</a>] </dd><dt>Definition Classes</dt><dd><a href="Database.html" class="extype" name="gnieh.sohva.Database">Database</a> → <a href="DocumentOps.html" class="extype" name="gnieh.sohva.DocumentOps">DocumentOps</a></dd></dl></div>
+    </li><li name="gnieh.sohva.Database.index" visbl="pub" data-isabs="false" fullComment="yes" group="CouchDB2">
+      <a id="index"></a>
+      <a id="index:index"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="Database$index$.html"><span class="name">index</span></a><span class="result"> extends <a href="mango/Index.html" class="extype" name="gnieh.sohva.mango.Index">Index</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../index.html#gnieh.sohva.Database@index" title="Permalink" target="_top">
+        <img src="../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Exposes the interface for managing indices.</p><div class="fullcomment"><div class="comment cmt"><p>Exposes the interface for managing indices.
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="Database.html" class="extype" name="gnieh.sohva.Database">Database</a></dd></dl></div>
+    </li><li name="gnieh.sohva.Database#info" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="info:scala.concurrent.Future[Option[gnieh.sohva.InfoResult]]"></a>
+      <a id="info:Future[Option[InfoResult]]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">info</span><span class="result">: <span class="extype" name="scala.concurrent.Future">Future</span>[<span class="extype" name="scala.Option">Option</span>[<a href="InfoResult.html" class="extype" name="gnieh.sohva.InfoResult">InfoResult</a>]]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../index.html#gnieh.sohva.Replicator@info:scala.concurrent.Future[Option[gnieh.sohva.InfoResult]]" title="Permalink" target="_top">
+        <img src="../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Returns the information about this database</p><div class="fullcomment"><div class="comment cmt"><p>Returns the information about this database</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="Database.html" class="extype" name="gnieh.sohva.Database">Database</a></dd></dl></div>
+    </li><li name="scala.Any#isInstanceOf" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="isInstanceOf[T0]:Boolean"></a>
+      <a id="isInstanceOf[T0]:Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">isInstanceOf</span><span class="tparams">[<span name="T0">T0</span>]</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../index.html#gnieh.sohva.Replicator@isInstanceOf[T0]:Boolean" title="Permalink" target="_top">
+        <img src="../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
+    </li><li name="gnieh.sohva.Database.local" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="local"></a>
+      <a id="local:local"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="Database$local$.html"><span class="name">local</span></a><span class="result"> extends <a href="Local.html" class="extype" name="gnieh.sohva.Local">Local</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../index.html#gnieh.sohva.Database@local" title="Permalink" target="_top">
+        <img src="../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Exposes the interface for managing local (non-replicating) documents.</p><div class="fullcomment"><div class="comment cmt"><p>Exposes the interface for managing local (non-replicating) documents.</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="Database.html" class="extype" name="gnieh.sohva.Database">Database</a></dd></dl></div>
+    </li><li name="gnieh.sohva.Database#missingRevs" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="missingRevs(revs:Map[String,Vector[String]]):scala.concurrent.Future[Map[String,Vector[String]]]"></a>
+      <a id="missingRevs(Map[String,Vector[String]]):Future[Map[String,Vector[String]]]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">missingRevs</span><span class="params">(<span name="revs">revs: <span class="extype" name="scala.Predef.Map">Map</span>[<span class="extype" name="scala.Predef.String">String</span>, <span class="extype" name="scala.Vector">Vector</span>[<span class="extype" name="scala.Predef.String">String</span>]]</span>)</span><span class="result">: <span class="extype" name="scala.concurrent.Future">Future</span>[<span class="extype" name="scala.Predef.Map">Map</span>[<span class="extype" name="scala.Predef.String">String</span>, <span class="extype" name="scala.Vector">Vector</span>[<span class="extype" name="scala.Predef.String">String</span>]]]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../index.html#gnieh.sohva.Replicator@missingRevs(revs:Map[String,Vector[String]]):scala.concurrent.Future[Map[String,Vector[String]]]" title="Permalink" target="_top">
+        <img src="../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Returns the revision for each document in the map that are not present in this node.</p><div class="fullcomment"><div class="comment cmt"><p>Returns the revision for each document in the map that are not present in this node.</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="Database.html" class="extype" name="gnieh.sohva.Database">Database</a></dd></dl></div>
+    </li><li name="gnieh.sohva.Database#name" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="name:String"></a>
+      <a id="name:String"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">val</span>
+      </span>
+      <span class="symbol">
+        <span class="name">name</span><span class="result">: <span class="extype" name="scala.Predef.String">String</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../index.html#gnieh.sohva.Replicator@name:String" title="Permalink" target="_top">
+        <img src="../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="Database.html" class="extype" name="gnieh.sohva.Database">Database</a></dd></dl></div>
+    </li><li name="scala.AnyRef#ne" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="ne(x$1:AnyRef):Boolean"></a>
+      <a id="ne(AnyRef):Boolean"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">ne</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.AnyRef">AnyRef</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../index.html#gnieh.sohva.Replicator@ne(x$1:AnyRef):Boolean" title="Permalink" target="_top">
+        <img src="../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+    </li><li name="scala.AnyRef#notify" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="notify():Unit"></a>
+      <a id="notify():Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">notify</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../index.html#gnieh.sohva.Replicator@notify():Unit" title="Permalink" target="_top">
+        <img src="../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+    </li><li name="scala.AnyRef#notifyAll" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="notifyAll():Unit"></a>
+      <a id="notifyAll():Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">notifyAll</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../index.html#gnieh.sohva.Replicator@notifyAll():Unit" title="Permalink" target="_top">
+        <img src="../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+    </li><li name="gnieh.sohva.Database#optHttp" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="optHttp(req:akka.http.scaladsl.model.HttpRequest):scala.concurrent.Future[Option[spray.json.JsValue]]"></a>
+      <a id="optHttp(HttpRequest):Future[Option[JsValue]]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">optHttp</span><span class="params">(<span name="req">req: <span class="extype" name="akka.http.scaladsl.model.HttpRequest">HttpRequest</span></span>)</span><span class="result">: <span class="extype" name="scala.concurrent.Future">Future</span>[<span class="extype" name="scala.Option">Option</span>[<span class="extype" name="spray.json.JsValue">JsValue</span>]]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../index.html#gnieh.sohva.Replicator@optHttp(req:akka.http.scaladsl.model.HttpRequest):scala.concurrent.Future[Option[spray.json.JsValue]]" title="Permalink" target="_top">
+        <img src="../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a href="package.html" class="extype" name="gnieh.sohva">gnieh.sohva</a>] </dd><dt>Definition Classes</dt><dd><a href="Database.html" class="extype" name="gnieh.sohva.Database">Database</a> → <a href="DocumentOps.html" class="extype" name="gnieh.sohva.DocumentOps">DocumentOps</a></dd></dl></div>
+    </li><li name="gnieh.sohva.Database#patchDoc" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="patchDoc[T](id:String,rev:String,patch:gnieh.diffson.sprayJson.JsonPatch)(implicitevidence$7:gnieh.sohva.CouchFormat[T]):scala.concurrent.Future[T]"></a>
+      <a id="patchDoc[T](String,String,diffson.sprayJson.JsonPatch)(CouchFormat[T]):Future[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">patchDoc</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="id">id: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="rev">rev: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="patch">patch: <a href="../diffson/sprayJson/package.html#JsonPatchextendsProductwithSerializable" class="extmbr" name="gnieh.diffson.sprayJson.JsonPatch">diffson.sprayJson.JsonPatch</a></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="arg0">arg0: <a href="CouchFormat.html" class="extype" name="gnieh.sohva.CouchFormat">CouchFormat</a>[<span class="extype" name="gnieh.sohva.Database.patchDoc.T">T</span>]</span>)</span><span class="result">: <span class="extype" name="scala.concurrent.Future">Future</span>[<span class="extype" name="gnieh.sohva.Database.patchDoc.T">T</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../index.html#gnieh.sohva.Replicator@patchDoc[T](id:String,rev:String,patch:gnieh.diffson.sprayJson.JsonPatch)(implicitevidence$7:gnieh.sohva.CouchFormat[T]):scala.concurrent.Future[T]" title="Permalink" target="_top">
+        <img src="../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Patches the document identified by the given identifier in the given revision.</p><div class="fullcomment"><div class="comment cmt"><p>Patches the document identified by the given identifier in the given revision.
+ This will work if the revision is the last one, or if it is not but the automatic
+ conflict manager manages to solve the potential conflicts.
+ The patched revision is returned. If something went wrong, an exception is raised
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="Database.html" class="extype" name="gnieh.sohva.Database">Database</a></dd></dl></div>
+    </li><li name="gnieh.sohva.Database#revsDiff" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="revsDiff(revs:Map[String,Vector[String]]):scala.concurrent.Future[Map[String,gnieh.sohva.RevDiff]]"></a>
+      <a id="revsDiff(Map[String,Vector[String]]):Future[Map[String,RevDiff]]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">revsDiff</span><span class="params">(<span name="revs">revs: <span class="extype" name="scala.Predef.Map">Map</span>[<span class="extype" name="scala.Predef.String">String</span>, <span class="extype" name="scala.Vector">Vector</span>[<span class="extype" name="scala.Predef.String">String</span>]]</span>)</span><span class="result">: <span class="extype" name="scala.concurrent.Future">Future</span>[<span class="extype" name="scala.Predef.Map">Map</span>[<span class="extype" name="scala.Predef.String">String</span>, <a href="RevDiff.html" class="extype" name="gnieh.sohva.RevDiff">RevDiff</a>]]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../index.html#gnieh.sohva.Replicator@revsDiff(revs:Map[String,Vector[String]]):scala.concurrent.Future[Map[String,gnieh.sohva.RevDiff]]" title="Permalink" target="_top">
+        <img src="../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Given a list of documents and revisions, returns the revision that are missing in this node.</p><div class="fullcomment"><div class="comment cmt"><p>Given a list of documents and revisions, returns the revision that are missing in this node.</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="Database.html" class="extype" name="gnieh.sohva.Database">Database</a></dd></dl></div>
+    </li><li name="gnieh.sohva.DocumentOps#saveDoc" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="saveDoc[T](doc:T)(implicitevidence$2:gnieh.sohva.CouchFormat[T]):scala.concurrent.Future[T]"></a>
+      <a id="saveDoc[T](T)(CouchFormat[T]):Future[T]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">saveDoc</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="doc">doc: <span class="extype" name="gnieh.sohva.DocumentOps.saveDoc.T">T</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="arg0">arg0: <a href="CouchFormat.html" class="extype" name="gnieh.sohva.CouchFormat">CouchFormat</a>[<span class="extype" name="gnieh.sohva.DocumentOps.saveDoc.T">T</span>]</span>)</span><span class="result">: <span class="extype" name="scala.concurrent.Future">Future</span>[<span class="extype" name="gnieh.sohva.DocumentOps.saveDoc.T">T</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../index.html#gnieh.sohva.Replicator@saveDoc[T](doc:T)(implicitevidence$2:gnieh.sohva.CouchFormat[T]):scala.concurrent.Future[T]" title="Permalink" target="_top">
+        <img src="../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Creates or updates the given object as a document into this database
+ The given object must have an <code>_id</code> and an optional <code>_rev</code> fields
+ to conform to the couchdb document structure.</p><div class="fullcomment"><div class="comment cmt"><p>Creates or updates the given object as a document into this database
+ The given object must have an <code>_id</code> and an optional <code>_rev</code> fields
+ to conform to the couchdb document structure.
+ The saved revision is returned. If something went wrong, an exception is raised
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="DocumentOps.html" class="extype" name="gnieh.sohva.DocumentOps">DocumentOps</a></dd></dl></div>
+    </li><li name="gnieh.sohva.Database#saveDocs" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="saveDocs[T](docs:List[T],all_or_nothing:Boolean)(implicitevidence$4:gnieh.sohva.CouchFormat[T]):scala.concurrent.Future[List[gnieh.sohva.DbResult]]"></a>
+      <a id="saveDocs[T](List[T],Boolean)(CouchFormat[T]):Future[List[DbResult]]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">saveDocs</span><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="docs">docs: <span class="extype" name="scala.List">List</span>[<span class="extype" name="gnieh.sohva.Database.saveDocs.T">T</span>]</span>, <span name="all_or_nothing">all_or_nothing: <span class="extype" name="scala.Boolean">Boolean</span> = <span class="symbol">false</span></span>)</span><span class="params">(<span class="implicit">implicit </span><span name="arg0">arg0: <a href="CouchFormat.html" class="extype" name="gnieh.sohva.CouchFormat">CouchFormat</a>[<span class="extype" name="gnieh.sohva.Database.saveDocs.T">T</span>]</span>)</span><span class="result">: <span class="extype" name="scala.concurrent.Future">Future</span>[<span class="extype" name="scala.List">List</span>[<a href="DbResult.html" class="extype" name="gnieh.sohva.DbResult">DbResult</a>]]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../index.html#gnieh.sohva.Replicator@saveDocs[T](docs:List[T],all_or_nothing:Boolean)(implicitevidence$4:gnieh.sohva.CouchFormat[T]):scala.concurrent.Future[List[gnieh.sohva.DbResult]]" title="Permalink" target="_top">
+        <img src="../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Creates or updates a bunch of documents into the database.</p><div class="fullcomment"><div class="comment cmt"><p>Creates or updates a bunch of documents into the database.</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="Database.html" class="extype" name="gnieh.sohva.Database">Database</a></dd></dl></div>
+    </li><li name="gnieh.sohva.DocumentOps#saveRawDoc" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="saveRawDoc(doc:spray.json.JsValue):scala.concurrent.Future[spray.json.JsValue]"></a>
+      <a id="saveRawDoc(JsValue):Future[JsValue]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">saveRawDoc</span><span class="params">(<span name="doc">doc: <span class="extype" name="spray.json.JsValue">JsValue</span></span>)</span><span class="result">: <span class="extype" name="scala.concurrent.Future">Future</span>[<span class="extype" name="spray.json.JsValue">JsValue</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../index.html#gnieh.sohva.Replicator@saveRawDoc(doc:spray.json.JsValue):scala.concurrent.Future[spray.json.JsValue]" title="Permalink" target="_top">
+        <img src="../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[this] </dd><dt>Definition Classes</dt><dd><a href="DocumentOps.html" class="extype" name="gnieh.sohva.DocumentOps">DocumentOps</a></dd></dl></div>
+    </li><li name="gnieh.sohva.Database#saveSecurityDoc" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="saveSecurityDoc(doc:gnieh.sohva.SecurityDoc):scala.concurrent.Future[Boolean]"></a>
+      <a id="saveSecurityDoc(SecurityDoc):Future[Boolean]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">saveSecurityDoc</span><span class="params">(<span name="doc">doc: <a href="SecurityDoc.html" class="extype" name="gnieh.sohva.SecurityDoc">SecurityDoc</a></span>)</span><span class="result">: <span class="extype" name="scala.concurrent.Future">Future</span>[<span class="extype" name="scala.Boolean">Boolean</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../index.html#gnieh.sohva.Replicator@saveSecurityDoc(doc:gnieh.sohva.SecurityDoc):scala.concurrent.Future[Boolean]" title="Permalink" target="_top">
+        <img src="../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Creates or updates the security document.</p><div class="fullcomment"><div class="comment cmt"><p>Creates or updates the security document.
+ Security documents are special documents with no <code>_id</code> nor <code>_rev</code> fields.
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="Database.html" class="extype" name="gnieh.sohva.Database">Database</a></dd></dl></div>
+    </li><li name="gnieh.sohva.Database#securityDoc" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="securityDoc:scala.concurrent.Future[gnieh.sohva.SecurityDoc]"></a>
+      <a id="securityDoc:Future[SecurityDoc]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">securityDoc</span><span class="result">: <span class="extype" name="scala.concurrent.Future">Future</span>[<a href="SecurityDoc.html" class="extype" name="gnieh.sohva.SecurityDoc">SecurityDoc</a>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../index.html#gnieh.sohva.Replicator@securityDoc:scala.concurrent.Future[gnieh.sohva.SecurityDoc]" title="Permalink" target="_top">
+        <img src="../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Returns the security document of this database if any defined</p><div class="fullcomment"><div class="comment cmt"><p>Returns the security document of this database if any defined</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="Database.html" class="extype" name="gnieh.sohva.Database">Database</a></dd></dl></div>
+    </li><li name="gnieh.sohva.Database#setRevsLimit" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="setRevsLimit(l:Int):scala.concurrent.Future[Boolean]"></a>
+      <a id="setRevsLimit(Int):Future[Boolean]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">setRevsLimit</span><span class="params">(<span name="l">l: <span class="extype" name="scala.Int">Int</span></span>)</span><span class="result">: <span class="extype" name="scala.concurrent.Future">Future</span>[<span class="extype" name="scala.Boolean">Boolean</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../index.html#gnieh.sohva.Replicator@setRevsLimit(l:Int):scala.concurrent.Future[Boolean]" title="Permalink" target="_top">
+        <img src="../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Sets the current database revision limit.</p><div class="fullcomment"><div class="comment cmt"><p>Sets the current database revision limit.</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="Database.html" class="extype" name="gnieh.sohva.Database">Database</a></dd></dl></div>
+    </li><li name="gnieh.sohva.Replicator#start" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="start(replication:gnieh.sohva.Replication):scala.concurrent.Future[gnieh.sohva.Replication]"></a>
+      <a id="start(Replication):Future[Replication]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">start</span><span class="params">(<span name="replication">replication: <a href="Replication.html" class="extype" name="gnieh.sohva.Replication">Replication</a></span>)</span><span class="result">: <span class="extype" name="scala.concurrent.Future">Future</span>[<a href="Replication.html" class="extype" name="gnieh.sohva.Replication">Replication</a>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../index.html#gnieh.sohva.Replicator@start(replication:gnieh.sohva.Replication):scala.concurrent.Future[gnieh.sohva.Replication]" title="Permalink" target="_top">
+        <img src="../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Starts a new replication from <code>source</code> to <code>target</code>.</p><div class="fullcomment"><div class="comment cmt"><p>Starts a new replication from <code>source</code> to <code>target</code>. if a replication
+ task already exists for the same source and target, the document is added
+ but the replication is not started again. The result only contains the identifier
+ of the actual replication task, not its state.
+</p></div></div>
+    </li><li name="gnieh.sohva.Replicator#stop" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="stop(id:String):scala.concurrent.Future[Boolean]"></a>
+      <a id="stop(String):Future[Boolean]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">stop</span><span class="params">(<span name="id">id: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result">: <span class="extype" name="scala.concurrent.Future">Future</span>[<span class="extype" name="scala.Boolean">Boolean</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../index.html#gnieh.sohva.Replicator@stop(id:String):scala.concurrent.Future[Boolean]" title="Permalink" target="_top">
+        <img src="../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Stops the replication identified by the given replication document id.</p><div class="fullcomment"><div class="comment cmt"><p>Stops the replication identified by the given replication document id.
+ if the identifier does not describe the document that started the replication,
+ it is deleted from the replicator database, but the replication task is not stopped.
+ It returns <code>true</code> only if the replication was actually stopped, <code>false</code> otherwise.
+</p></div></div>
+    </li><li name="gnieh.sohva.Database#strategy" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="strategy:gnieh.sohva.strategy.Strategy"></a>
+      <a id="strategy:Strategy"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">val</span>
+      </span>
+      <span class="symbol">
+        <span class="name">strategy</span><span class="result">: <a href="strategy/Strategy.html" class="extype" name="gnieh.sohva.strategy.Strategy">Strategy</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../index.html#gnieh.sohva.Replicator@strategy:gnieh.sohva.strategy.Strategy" title="Permalink" target="_top">
+        <img src="../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">The strategy being used to resolve conflicts</p><div class="fullcomment"><div class="comment cmt"><p>The strategy being used to resolve conflicts</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="Database.html" class="extype" name="gnieh.sohva.Database">Database</a> → <a href="DocumentOps.html" class="extype" name="gnieh.sohva.DocumentOps">DocumentOps</a></dd></dl></div>
+    </li><li name="scala.AnyRef#synchronized" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="synchronized[T0](x$1:=&gt;T0):T0"></a>
+      <a id="synchronized[T0](⇒T0):T0"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">synchronized</span><span class="tparams">[<span name="T0">T0</span>]</span><span class="params">(<span name="arg0">arg0: ⇒ <span class="extype" name="java.lang.AnyRef.synchronized.T0">T0</span></span>)</span><span class="result">: <span class="extype" name="java.lang.AnyRef.synchronized.T0">T0</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../index.html#gnieh.sohva.Replicator@synchronized[T0](x$1:=&gt;T0):T0" title="Permalink" target="_top">
+        <img src="../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+    </li><li name="gnieh.sohva.Database#toString" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="toString():String"></a>
+      <a id="toString():String"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">toString</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Predef.String">String</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../index.html#gnieh.sohva.Replicator@toString():String" title="Permalink" target="_top">
+        <img src="../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="Database.html" class="extype" name="gnieh.sohva.Database">Database</a> → AnyRef → Any</dd></dl></div>
+    </li><li name="gnieh.sohva.Database#uri" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="uri:akka.http.scaladsl.model.Uri"></a>
+      <a id="uri:Uri"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">val</span>
+      </span>
+      <span class="symbol">
+        <span class="name">uri</span><span class="result">: <span class="extype" name="akka.http.scaladsl.model.Uri">Uri</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../index.html#gnieh.sohva.Replicator@uri:akka.http.scaladsl.model.Uri" title="Permalink" target="_top">
+        <img src="../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a href="package.html" class="extype" name="gnieh.sohva">gnieh.sohva</a>] </dd><dt>Definition Classes</dt><dd><a href="Database.html" class="extype" name="gnieh.sohva.Database">Database</a> → <a href="DocumentOps.html" class="extype" name="gnieh.sohva.DocumentOps">DocumentOps</a></dd></dl></div>
+    </li><li name="gnieh.sohva.Database#viewCleanup" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="viewCleanup:scala.concurrent.Future[Boolean]"></a>
+      <a id="viewCleanup:Future[Boolean]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">viewCleanup</span><span class="result">: <span class="extype" name="scala.concurrent.Future">Future</span>[<span class="extype" name="scala.Boolean">Boolean</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../index.html#gnieh.sohva.Replicator@viewCleanup:scala.concurrent.Future[Boolean]" title="Permalink" target="_top">
+        <img src="../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Cleanups old views.</p><div class="fullcomment"><div class="comment cmt"><p>Cleanups old views.</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="Database.html" class="extype" name="gnieh.sohva.Database">Database</a></dd></dl></div>
+    </li><li name="scala.AnyRef#wait" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="wait():Unit"></a>
+      <a id="wait():Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">wait</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../index.html#gnieh.sohva.Replicator@wait():Unit" title="Permalink" target="_top">
+        <img src="../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
+                <span class="name">@throws</span><span class="args">(<span>
+      
+      <span class="defval" name="classOf[java.lang.InterruptedException]">...</span>
+    </span>)</span>
+              
+        </dd></dl></div>
+    </li><li name="scala.AnyRef#wait" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="wait(x$1:Long,x$2:Int):Unit"></a>
+      <a id="wait(Long,Int):Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">wait</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Long">Long</span></span>, <span name="arg1">arg1: <span class="extype" name="scala.Int">Int</span></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../index.html#gnieh.sohva.Replicator@wait(x$1:Long,x$2:Int):Unit" title="Permalink" target="_top">
+        <img src="../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
+                <span class="name">@throws</span><span class="args">(<span>
+      
+      <span class="defval" name="classOf[java.lang.InterruptedException]">...</span>
+    </span>)</span>
+              
+        </dd></dl></div>
+    </li><li name="scala.AnyRef#wait" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="wait(x$1:Long):Unit"></a>
+      <a id="wait(Long):Unit"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">wait</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Long">Long</span></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../index.html#gnieh.sohva.Replicator@wait(x$1:Long):Unit" title="Permalink" target="_top">
+        <img src="../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
+                <span class="name">@throws</span><span class="args">(<span>
+      
+      <span class="defval" name="classOf[java.lang.InterruptedException]">...</span>
+    </span>)</span>
+              
+        </dd></dl></div>
+    </li></ol>
+            </div>
+
+        
+
+        <div id="values" class="values members">
+              <h3>Deprecated Value Members</h3>
+              <ol><li name="gnieh.sohva.Database#_all_docs" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="_all_docs(key:Option[String],keys:List[String],startkey:Option[String],startkey_docid:Option[String],endkey:Option[String],endkey_docid:Option[String],limit:Int,stale:Option[String],descending:Boolean,skip:Int,inclusive_end:Boolean):scala.concurrent.Future[List[String]]"></a>
+      <a id="_all_docs(Option[String],List[String],Option[String],Option[String],Option[String],Option[String],Int,Option[String],Boolean,Int,Boolean):Future[List[String]]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name deprecated" title="Deprecated: (Since version 2.0.0) Use allDocs instead">_all_docs</span><span class="params">(<span name="key">key: <span class="extype" name="scala.Option">Option</span>[<span class="extype" name="scala.Predef.String">String</span>] = <span class="symbol">None</span></span>, <span name="keys">keys: <span class="extype" name="scala.List">List</span>[<span class="extype" name="scala.Predef.String">String</span>] = <span class="symbol">Nil</span></span>, <span name="startkey">startkey: <span class="extype" name="scala.Option">Option</span>[<span class="extype" name="scala.Predef.String">String</span>] = <span class="symbol">None</span></span>, <span name="startkey_docid">startkey_docid: <span class="extype" name="scala.Option">Option</span>[<span class="extype" name="scala.Predef.String">String</span>] = <span class="symbol">None</span></span>, <span name="endkey">endkey: <span class="extype" name="scala.Option">Option</span>[<span class="extype" name="scala.Predef.String">String</span>] = <span class="symbol">None</span></span>, <span name="endkey_docid">endkey_docid: <span class="extype" name="scala.Option">Option</span>[<span class="extype" name="scala.Predef.String">String</span>] = <span class="symbol">None</span></span>, <span name="limit">limit: <span class="extype" name="scala.Int">Int</span> = <span class="symbol">1</span></span>, <span name="stale">stale: <span class="extype" name="scala.Option">Option</span>[<span class="extype" name="scala.Predef.String">String</span>] = <span class="symbol">None</span></span>, <span name="descending">descending: <span class="extype" name="scala.Boolean">Boolean</span> = <span class="symbol">false</span></span>, <span name="skip">skip: <span class="extype" name="scala.Int">Int</span> = <span class="symbol">0</span></span>, <span name="inclusive_end">inclusive_end: <span class="extype" name="scala.Boolean">Boolean</span> = <span class="symbol">true</span></span>)</span><span class="result">: <span class="extype" name="scala.concurrent.Future">Future</span>[<span class="extype" name="scala.List">List</span>[<span class="extype" name="scala.Predef.String">String</span>]]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../index.html#gnieh.sohva.Replicator@_all_docs(key:Option[String],keys:List[String],startkey:Option[String],startkey_docid:Option[String],endkey:Option[String],endkey_docid:Option[String],limit:Int,stale:Option[String],descending:Boolean,skip:Int,inclusive_end:Boolean):scala.concurrent.Future[List[String]]" title="Permalink" target="_top">
+        <img src="../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="Database.html" class="extype" name="gnieh.sohva.Database">Database</a></dd><dt>Annotations</dt><dd>
+                <span class="name">@deprecated</span>
+              
+        </dd><dt>Deprecated</dt><dd class="cmt"><p><i>(Since version 2.0.0)</i> Use <code>allDocs</code> instead</p></dd></dl></div>
+    </li><li name="gnieh.sohva.Database#ensureFullCommit" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="ensureFullCommit:scala.concurrent.Future[Boolean]"></a>
+      <a id="ensureFullCommit:Future[Boolean]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name deprecated" title="Deprecated: (Since version 2.0.0) You shouldn't need to call this if you have the recommended setting delayed_commits=false">ensureFullCommit</span><span class="result">: <span class="extype" name="scala.concurrent.Future">Future</span>[<span class="extype" name="scala.Boolean">Boolean</span>]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../index.html#gnieh.sohva.Replicator@ensureFullCommit:scala.concurrent.Future[Boolean]" title="Permalink" target="_top">
+        <img src="../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Ensures that all changes are written to disk.</p><div class="fullcomment"><div class="comment cmt"><p>Ensures that all changes are written to disk.</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="Database.html" class="extype" name="gnieh.sohva.Database">Database</a></dd><dt>Annotations</dt><dd>
+                <span class="name">@deprecated</span>
+              
+        </dd><dt>Deprecated</dt><dd class="cmt"><p><i>(Since version 2.0.0)</i> You shouldn't need to call this if you have the recommended setting <code>delayed_commits=false</code></p></dd></dl></div>
+    </li><li name="gnieh.sohva.Database#getRawDocById" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="getRawDocById(id:String,revision:Option[String]):scala.concurrent.Future[Option[spray.json.JsValue]]"></a>
+      <a id="getRawDocById(String,Option[String]):Future[Option[JsValue]]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name deprecated" title="Deprecated: (Since version 2.0.0) Use getDocById with return type JsValue instead">getRawDocById</span><span class="params">(<span name="id">id: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="revision">revision: <span class="extype" name="scala.Option">Option</span>[<span class="extype" name="scala.Predef.String">String</span>] = <span class="symbol">None</span></span>)</span><span class="result">: <span class="extype" name="scala.concurrent.Future">Future</span>[<span class="extype" name="scala.Option">Option</span>[<span class="extype" name="spray.json.JsValue">JsValue</span>]]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../index.html#gnieh.sohva.Replicator@getRawDocById(id:String,revision:Option[String]):scala.concurrent.Future[Option[spray.json.JsValue]]" title="Permalink" target="_top">
+        <img src="../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Returns the raw representation of the document identified by the given id if it exists.</p><div class="fullcomment"><div class="comment cmt"><p>Returns the raw representation of the document identified by the given id if it exists.</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="Database.html" class="extype" name="gnieh.sohva.Database">Database</a></dd><dt>Annotations</dt><dd>
+                <span class="name">@deprecated</span>
+              
+        </dd><dt>Deprecated</dt><dd class="cmt"><p><i>(Since version 2.0.0)</i> Use <code>getDocById</code> with return type <code>JsValue</code> instead</p></dd></dl></div>
+    </li><li name="gnieh.sohva.Database#temporaryView" visbl="pub" data-isabs="false" fullComment="yes" group="CouchDB1">
+      <a id="temporaryView(viewDoc:gnieh.sohva.ViewDoc):gnieh.sohva.View"></a>
+      <a id="temporaryView(ViewDoc):View"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name deprecated" title="Deprecated: (Since version 2.0.0) Temporary view were removed in CouchDB 2.0 and should not be used">temporaryView</span><span class="params">(<span name="viewDoc">viewDoc: <a href="ViewDoc.html" class="extype" name="gnieh.sohva.ViewDoc">ViewDoc</a></span>)</span><span class="result">: <a href="View.html" class="extype" name="gnieh.sohva.View">View</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../index.html#gnieh.sohva.Replicator@temporaryView(viewDoc:gnieh.sohva.ViewDoc):gnieh.sohva.View" title="Permalink" target="_top">
+        <img src="../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Returns a temporary view of this database, specified by the <code>ViewDoc</code>.</p><div class="fullcomment"><div class="comment cmt"><p>Returns a temporary view of this database, specified by the <code>ViewDoc</code>.
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="Database.html" class="extype" name="gnieh.sohva.Database">Database</a></dd><dt>Annotations</dt><dd>
+                <span class="name">@deprecated</span>
+              
+        </dd><dt>Deprecated</dt><dd class="cmt"><p><i>(Since version 2.0.0)</i> Temporary view were removed in CouchDB 2.0 and should not be used</p></dd></dl></div>
+    </li></ol>
+            </div>
+        </div>
+
+        <div id="inheritedMembers">
+        <div class="parent" name="gnieh.sohva.Database">
+              <h3>Inherited from <a href="Database.html" class="extype" name="gnieh.sohva.Database">Database</a></h3>
+            </div><div class="parent" name="gnieh.sohva.DocumentOps">
+              <h3>Inherited from <a href="DocumentOps.html" class="extype" name="gnieh.sohva.DocumentOps">DocumentOps</a></h3>
+            </div><div class="parent" name="scala.AnyRef">
+              <h3>Inherited from <span class="extype" name="scala.AnyRef">AnyRef</span></h3>
+            </div><div class="parent" name="scala.Any">
+              <h3>Inherited from <span class="extype" name="scala.Any">Any</span></h3>
+            </div>
+        
+        </div>
+
+        <div id="groupedMembers">
+        <div class="group" name="CouchDB1">
+              <h3>CouchDB1</h3>
+              
+            </div><div class="group" name="CouchDB2">
+              <h3>CouchDB2</h3>
+              
+            </div><div class="group" name="Ungrouped">
+              <h3>Ungrouped</h3>
+              
+            </div>
+        </div>
+
+      </div>
+
+      <div id="tooltip"></div>
+
+      <div id="footer">  </div>
+
+
+    </body>
+      </html>

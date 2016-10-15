@@ -1,0 +1,260 @@
+<!DOCTYPE html >
+<html>
+        <head>
+          <title>strategy - gnieh.sohva.strategy</title>
+          <meta name="description" content="strategy - gnieh.sohva.strategy" />
+          <meta name="keywords" content="strategy gnieh.sohva.strategy" />
+          <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+          
+      <link href="../../../lib/template.css" media="screen" type="text/css" rel="stylesheet" />
+      <link href="../../../lib/diagrams.css" media="screen" type="text/css" rel="stylesheet" id="diagrams-css" />
+      <script type="text/javascript" src="../../../lib/jquery.js" id="jquery-js"></script>
+      <script type="text/javascript" src="../../../lib/jquery-ui.js"></script>
+      <script type="text/javascript" src="../../../lib/template.js"></script>
+      <script type="text/javascript" src="../../../lib/tools.tooltip.js"></script>
+      
+      <script type="text/javascript">
+         if(top === self) {
+            var url = '../../../index.html';
+            var hash = 'gnieh.sohva.strategy.package';
+            var anchor = window.location.hash;
+            var anchor_opt = '';
+            if (anchor.length >= 1)
+              anchor_opt = '@' + anchor.substring(1);
+            window.location.href = url + '#' + hash + anchor_opt;
+         }
+   	  </script>
+    
+        </head>
+        <body class="value">
+      <div id="definition">
+        <img alt="Package" src="../../../lib/package_big.png" />
+        <p id="owner"><a href="../../package.html" class="extype" name="gnieh">gnieh</a>.<a href="../package.html" class="extype" name="gnieh.sohva">sohva</a></p>
+        <h1>strategy</h1><span class="permalink">
+      <a href="../../../index.html#gnieh.sohva.strategy.package" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      </div>
+
+      <h4 id="signature" class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">package</span>
+      </span>
+      <span class="symbol">
+        <span class="name">strategy</span>
+      </span>
+      </h4>
+      
+          <div id="comment" class="fullcommenttop"></div>
+        
+
+      <div id="mbrsel">
+        <div id="textfilter"><span class="pre"></span><span class="input"><input id="mbrsel-input" type="text" accesskey="/" /></span><span class="post"></span></div>
+        
+        
+        <div id="visbl">
+            <span class="filtertype">Visibility</span>
+            <ol><li class="public in"><span>Public</span></li><li class="all out"><span>All</span></li></ol>
+          </div>
+      </div>
+
+      <div id="template">
+        <div id="allMembers">
+        
+
+        <div id="types" class="types members">
+              <h3>Type Members</h3>
+              <ol><li name="gnieh.sohva.strategy.Strategy" visbl="pub" data-isabs="true" fullComment="yes" group="Ungrouped">
+      <a id="StrategyextendsAnyRef"></a>
+      <a id="Strategy:Strategy"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a href="Strategy.html"><span class="name">Strategy</span></a><span class="result"> extends <span class="extype" name="scala.AnyRef">AnyRef</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#gnieh.sohva.strategy.package@StrategyextendsAnyRef" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">A strategy indicates how update conflict are resolved.</p><div class="fullcomment"><div class="comment cmt"><p>A strategy indicates how update conflict are resolved.
+ It is used by the conflict resolver at each try and may be called
+ several times with the same document if the document changed while the
+ strategy was applied.
+</p></div></div>
+    </li></ol>
+            </div>
+
+        
+
+        <div id="values" class="values members">
+              <h3>Value Members</h3>
+              <ol><li name="gnieh.sohva.strategy.BarneyStinsonStrategy" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="BarneyStinsonStrategy"></a>
+      <a id="BarneyStinsonStrategy:BarneyStinsonStrategy"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="BarneyStinsonStrategy$.html"><span class="name">BarneyStinsonStrategy</span></a><span class="result"> extends <a href="Strategy.html" class="extype" name="gnieh.sohva.strategy.Strategy">Strategy</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#gnieh.sohva.strategy.package@BarneyStinsonStrategy" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">This strategy applies a simple rule: <i>New is always better</i>
+ Whenever a conflict occurs when trying to save a document in the database,
+ the newest document (the one the client wants to store) is taken and overrides
+ the previous revision.</p>
+    </li><li name="gnieh.sohva.strategy.StructuralMergeStrategy" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="StructuralMergeStrategy"></a>
+      <a id="StructuralMergeStrategy:StructuralMergeStrategy"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="StructuralMergeStrategy$.html"><span class="name">StructuralMergeStrategy</span></a><span class="result"> extends <a href="Strategy.html" class="extype" name="gnieh.sohva.strategy.Strategy">Strategy</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#gnieh.sohva.strategy.package@StructuralMergeStrategy" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">This strategy applies a simple structural merge algorithm between variation from
+ a base document to the last one in the database and from the base to the current
+ revision of the document to merge</p><div class="fullcomment"><div class="comment cmt"><p>This strategy applies a simple structural merge algorithm between variation from
+ a base document to the last one in the database and from the base to the current
+ revision of the document to merge</p><p> In our case, the base document is taken as common ancestor and we create patches
+ that models these changes:</p><ul><li>let's name document <code>base</code>, <code>db</code> and <code>current</code> respectively the base document,
+    the last document from the database and the document one wants to save</li><li>let <code>BD</code> be the name of the patch from <code>base</code> to <code>db</code> and <code>BC</code> be the patch from
+    <code>base</code> to <code>current</code>.</li><li>compute <code>DC</code> the patch that makes the same modifications as <code>BC</code> but in the context of
+    document <code>db</code></li><li>apply this patch to <code>db</code></li></ul><p> The rules to apply when merging paths are the following:
+ <table style="border-collapse: collapse; border: 1px solid black">
+ <tr>
+   <th style="border-width: 1px; padding: 3px; border: 1px solid black; text-align: center">`BD`</th>
+   <th style="border-width: 1px; padding: 3px; border: 1px solid black; text-align: center">`BC`</th>
+   <th style="border-width: 1px; padding: 3px; border: 1px solid black; text-align: center">`DC`</th>
+ </tr>
+ <tr>
+   <td style="border-width: 1px; padding: 3px; border: 1px solid black; text-align: right">Not Changed</td>
+   <td style="border-width: 1px; padding: 3px; border: 1px solid black; text-align: right">Not Changed</td>
+   <td style="border-width: 1px; padding: 3px; border: 1px solid black; text-align: right">Not Changed</td>
+ </tr>
+ <tr>
+   <td style="border-width: 1px; padding: 3px; border: 1px solid black; text-align: right">Not Changed</td>
+   <td style="border-width: 1px; padding: 3px; border: 1px solid black; text-align: right">Changed</td>
+   <td style="border-width: 1px; padding: 3px; border: 1px solid black; text-align: right">Changed</td>
+ </tr>
+ <tr>
+   <td style="border-width: 1px; padding: 3px; border: 1px solid black; text-align: right">Not Changed</td>
+   <td style="border-width: 1px; padding: 3px; border: 1px solid black; text-align: right">Deleted</td>
+   <td style="border-width: 1px; padding: 3px; border: 1px solid black; text-align: right">Deleted</td>
+ </tr>
+ <tr>
+   <td style="border-width: 1px; padding: 3px; border: 1px solid black; text-align: right">Changed</td>
+   <td style="border-width: 1px; padding: 3px; border: 1px solid black; text-align: right">Not Changed</td>
+   <td style="border-width: 1px; padding: 3px; border: 1px solid black; text-align: right">Changed</td>
+ </tr>
+ <tr>
+   <td style="border-width: 1px; padding: 3px; border: 1px solid black; text-align: right">Changed</td>
+   <td style="border-width: 1px; padding: 3px; border: 1px solid black; text-align: right">Changed</td>
+   <td style="border-width: 1px; padding: 3px; border: 1px solid black; text-align: right">Changed (`BC`)</td>
+ </tr>
+ <tr>
+   <td style="border-width: 1px; padding: 3px; border: 1px solid black; text-align: right">Changed</td>
+   <td style="border-width: 1px; padding: 3px; border: 1px solid black; text-align: right">Deleted</td>
+   <td style="border-width: 1px; padding: 3px; border: 1px solid black; text-align: right">Deleted</td>
+ </tr>
+ <tr>
+   <td style="border-width: 1px; padding: 3px; border: 1px solid black; text-align: right">Deleted</td>
+   <td style="border-width: 1px; padding: 3px; border: 1px solid black; text-align: right">Not Changed</td>
+   <td style="border-width: 1px; padding: 3px; border: 1px solid black; text-align: right">Deleted</td>
+ </tr>
+ <tr>
+   <td style="border-width: 1px; padding: 3px; border: 1px solid black; text-align: right">Deleted</td>
+   <td style="border-width: 1px; padding: 3px; border: 1px solid black; text-align: right">Changed</td>
+   <td style="border-width: 1px; padding: 3px; border: 1px solid black; text-align: right">Deleted</td>
+ </tr>
+ <tr>
+   <td style="border-width: 1px; padding: 3px; border: 1px solid black; text-align: right">Deleted</td>
+   <td style="border-width: 1px; padding: 3px; border: 1px solid black; text-align: right">Deleted</td>
+   <td style="border-width: 1px; padding: 3px; border: 1px solid black; text-align: right">Deleted</td>
+ </tr>
+ <tr>
+   <td style="border-width: 1px; padding: 3px; border: 1px solid black; text-align: right">Added</td>
+   <td style="border-width: 1px; padding: 3px; border: 1px solid black; text-align: right">Not Changed</td>
+   <td style="border-width: 1px; padding: 3px; border: 1px solid black; text-align: right">Added</td>
+ </tr>
+ <tr>
+   <td style="border-width: 1px; padding: 3px; border: 1px solid black; text-align: right">Added</td>
+   <td style="border-width: 1px; padding: 3px; border: 1px solid black; text-align: right">Added</td>
+   <td style="border-width: 1px; padding: 3px; border: 1px solid black; text-align: right">Added (`BC`)</td>
+ </tr>
+ <tr>
+   <td style="border-width: 1px; padding: 3px; border: 1px solid black; text-align: right">Not Changed</td>
+   <td style="border-width: 1px; padding: 3px; border: 1px solid black; text-align: right">Added</td>
+   <td style="border-width: 1px; padding: 3px; border: 1px solid black; text-align: right">Added</td>
+ </tr>
+ </table></p><p> As a special case, if the document was deleted inbetween, the current document is saved &quot;as is&quot; in the database (without revision)
+</p></div></div>
+    </li><li name="gnieh.sohva.strategy.TedMosbyStrategy" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="TedMosbyStrategy"></a>
+      <a id="TedMosbyStrategy:TedMosbyStrategy"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a href="TedMosbyStrategy$.html"><span class="name">TedMosbyStrategy</span></a><span class="result"> extends <a href="Strategy.html" class="extype" name="gnieh.sohva.strategy.Strategy">Strategy</a></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../index.html#gnieh.sohva.strategy.package@TedMosbyStrategy" title="Permalink" target="_top">
+        <img src="../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">This strategy is the anti-<a href="BarneyStinsonStrategy$.html" class="extype" name="gnieh.sohva.strategy.BarneyStinsonStrategy">BarneyStinsonStrategy</a> by definition as it applies
+ a simple rule: <i>Old is always better</i>.</p><div class="fullcomment"><div class="comment cmt"><p>This strategy is the anti-<a href="BarneyStinsonStrategy$.html" class="extype" name="gnieh.sohva.strategy.BarneyStinsonStrategy">BarneyStinsonStrategy</a> by definition as it applies
+ a simple rule: <i>Old is always better</i>.
+ Whenever a conflict occurs when trying to save a document in the database,
+ the oldest document (the one from the database) is kept.
+</p></div></div>
+    </li></ol>
+            </div>
+
+        
+
+        
+        </div>
+
+        <div id="inheritedMembers">
+        
+        
+        </div>
+
+        <div id="groupedMembers">
+        <div class="group" name="Ungrouped">
+              <h3>Ungrouped</h3>
+              
+            </div>
+        </div>
+
+      </div>
+
+      <div id="tooltip"></div>
+
+      <div id="footer">  </div>
+
+
+    </body>
+      </html>
