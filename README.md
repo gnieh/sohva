@@ -9,4 +9,4 @@ Using Sohva
 
 Sohva is built against scala 2.11
 
-Have a look at the [website](https://sohva.gnieh.org/) for more documentation
+Have a look at the [website](http://sohva.gnieh.org/) for more documentation
