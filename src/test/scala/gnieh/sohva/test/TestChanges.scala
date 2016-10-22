@@ -75,7 +75,7 @@ class TestChanges extends AsyncSohvaTestSpec with Matchers {
     } yield s should be(3)
   }
 
-  "several registered stream" should "all be notified" in {
+  "several registered stream" should "all be notified" taggedAs (NoTravis) in {
 
     val stream = db.changes.stream(since = now, style = Some("all_docs")).takeWithin(1.seconds).toMat(Sink.fold(0) { case (c, _) => c + 1 })(Keep.right)
 
