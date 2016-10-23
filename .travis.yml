@@ -9,6 +9,7 @@ jdk:
 branches:
   only:
     - master
+    - 2.0.x
 
 # start the couchdb service (runs in admin party)
 services: couchdb
