@@ -96,24 +96,10 @@ package object sohva {
 
   private[sohva] implicit class EnhancedFuture[T](val f: Future[T]) {
 
-    def withFailureMessage[U](msg: String)(implicit ec: ExecutionContext) = f.recover {
+    def withFailureMessage[U](msg: => String)(implicit ec: ExecutionContext) = f.recover {
       case e: Exception =>
         throw new SohvaException(msg, e)
     }
-  }
-
-  implicit class CouchJson[T <: IdRev](val value: T) extends AnyVal {
-
-    import DefaultJsonProtocol._
-
-    def toCouchJson(implicit writer: JsonWriter[T]): JsValue =
-      writer.write(value) match {
-        case JsObject(fields) =>
-          JsObject(fields + ("_rev" -> value._rev.toJson))
-        case _ =>
-          serializationError("Object expected")
-      }
-
   }
 
 }
