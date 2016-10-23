@@ -58,7 +58,7 @@ class TestChanges extends AsyncSohvaTestSpec with Matchers {
     } yield s should be(4)
   }
 
-  it should "not be notified anymore when closed" in {
+  it should "not be notified anymore when closed" taggedAs (NoTravis) in {
 
     val stream = db.changes.stream(since = now, style = Some("all_docs"))
 
