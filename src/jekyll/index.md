@@ -48,3 +48,7 @@ Once your project is linked to Sohva, you can start using it. Please have a look
  - [Database replication](replication/)
  - [Using Sohva synchronously](synchronous/)
  - [API documentation](latest/api/)
+
+# Getting help
+
+If you have any question or find a bug, you can always [file a bug report](https://github.com/gnieh/sohva/issues/new) or join the [gitter room](https://gitter.im/gnieh/sohva).
