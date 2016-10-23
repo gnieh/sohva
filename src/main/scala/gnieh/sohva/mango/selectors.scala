@@ -54,11 +54,11 @@ sealed trait Operator extends Selector
 
 sealed trait Combination extends Operator
 
-final case class And(selectors: Vector[Selector]) extends Combination
-final case class Or(selectors: Vector[Selector]) extends Combination
+final case class And(selectors: Seq[Selector]) extends Combination
+final case class Or(selectors: Seq[Selector]) extends Combination
 final case class Not(selector: Selector) extends Combination
-final case class Nor(selectors: Vector[Selector]) extends Combination
-final case class All(values: Vector[JsValue]) extends Combination
+final case class Nor(selectors: Seq[Selector]) extends Combination
+final case class All(values: Seq[JsValue]) extends Combination
 final case class ElemMatch(selector: Selector) extends Combination
 
 sealed trait Condition extends Operator
@@ -73,8 +73,8 @@ final case class Gte(value: JsValue) extends Condition
 final case class Exists(exists: Boolean) extends Condition
 final case class Type(tpe: ObjectType) extends Condition
 
-final case class In(values: Vector[JsValue]) extends Condition
-final case class Nin(values: Vector[JsValue]) extends Condition
+final case class In(values: Seq[JsValue]) extends Condition
+final case class Nin(values: Seq[JsValue]) extends Condition
 final case class Size(size: Int) extends Condition
 
 final case class Mod(divisor: Int, remainder: Int) extends Condition
@@ -140,11 +140,11 @@ class SelectorBase(field: String) {
     Field(field, Type(ObjectType(tpe)))
 
   /** Creates a `$in` condition. */
-  def in[T: JsonWriter](values: Vector[T]): Selector =
+  def in[T: JsonWriter](values: Seq[T]): Selector =
     Field(field, In(values.map(_.toJson)))
 
   /** Creates a `$nin` condition. */
-  def notIn[T: JsonWriter](values: Vector[T]): Selector =
+  def notIn[T: JsonWriter](values: Seq[T]): Selector =
     Field(field, Nin(values.map(_.toJson)))
 
   /** Creates a `$size` condition. */
@@ -159,12 +159,12 @@ class SelectorBase(field: String) {
     Field(field, Regex(re))
 
   /** Creates a `$all` selector. */
-  def containsAll[T: JsonWriter](values: Vector[T]): Selector =
+  def containsAll[T: JsonWriter](values: Seq[T]): Selector =
     All(values.map(_.toJson))
 
   /** Creates a `$all` selector. */
-  def containsAll[T: JsonWriter](values: T*): Selector =
-    containsAll(values.toVector)
+  def containsAll[T: JsonWriter](v: T, values: T*): Selector =
+    All((v +: values).map(_.toJson))
 
   /** Creates a `$elemMatch` selector. */
   def contains(sel: Selector): Selector =

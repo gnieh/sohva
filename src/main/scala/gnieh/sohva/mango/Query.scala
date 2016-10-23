@@ -19,7 +19,7 @@ package mango
 
 import spray.json._
 
-final case class Query(selector: Selector, fields: List[String], sort: List[Sort], limit: Option[Int], skip: Option[Int], use_index: Option[UseIndex]) {
+final case class Query(selector: Selector, fields: Iterable[String], sort: Seq[Sort], limit: Option[Int], skip: Option[Int], use_index: Option[UseIndex]) {
 
   /** Creates a query with a new selector. */
   def where(sel: Selector): Query =
