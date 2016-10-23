@@ -359,10 +359,20 @@ class Database private[sohva] (
   def deleteDocs(ids: List[String], all_or_nothing: Boolean = false): Future[List[DbResult]] =
     for {
       revs <- getDocRevisions(ids)
+      res <- deleteDocRevs(revs, all_or_nothing)
+    } yield res
+
+  /**
+   * Deletes a bunch of document revisions at once returning the results
+   *  for each identifier in the document list. One can choose the update strategy
+   *  by setting the parameter `all_or_nothing` to `true` or `false`.
+   */
+  def deleteDocRevs(docs: List[(String, String)], all_or_nothing: Boolean = false): Future[List[DbResult]] =
+    for {
       entity <- Marshal(JsObject(
         Map(
           "all_or_nothing" -> all_or_nothing.toJson,
-          "docs" -> revs.map {
+          "docs" -> docs.map {
             case (id, rev) => JsObject(
               "_id" -> id.toJson,
               "_rev" -> rev.toJson,
@@ -371,7 +381,7 @@ class Database private[sohva] (
         )
       )).to[RequestEntity]
       raw <- couch.http(
-        HttpRequest(HttpMethods.POST, uri = uri / "_bulk_docs", entity = entity)).withFailureMessage(f"Failed to bulk delete docs $ids from $uri")
+        HttpRequest(HttpMethods.POST, uri = uri / "_bulk_docs", entity = entity)).withFailureMessage(f"Failed to bulk delete document revisions ${docs.mkString("[", ", ", "]")} from $uri")
     } yield bulkSaveResult(raw)
 
   /**
