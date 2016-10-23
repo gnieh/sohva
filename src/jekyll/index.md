@@ -27,6 +27,15 @@ libraryDependencies += "org.gnieh" %% "sohva" % "2.0.0"
 
 Sohva is built for scala 2.11.
 
+## Snapshots
+
+Snapshot versions are regularly uploaded to the sonatype snapshots repository so that you can try the upcoming fixes and features.
+
+Currently available snapshots are:
+
+ - next bugfix release: `2.0.1-SNAPSHOT`
+ - next minor release: `2.1.0-SNAPSHOT`
+
 # Next steps
 
 Once your project is linked to Sohva, you can start using it. Please have a look at the links below for documentation.
@@ -39,3 +48,7 @@ Once your project is linked to Sohva, you can start using it. Please have a look
  - [Database replication](replication/)
  - [Using Sohva synchronously](synchronous/)
  - [API documentation](latest/api/)
+
+# Getting help
+
+If you have any question or find a bug, you can always [file a bug report](https://github.com/gnieh/sohva/issues/new) or join the [gitter room](https://gitter.im/gnieh/sohva).
