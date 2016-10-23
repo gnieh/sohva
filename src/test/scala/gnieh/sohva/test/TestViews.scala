@@ -67,6 +67,27 @@ class TestViews extends SohvaTestSpec with Matchers with BeforeAndAfterEach {
 
   }
 
+  "querying a view with some unknown keys" should "return error results in raw view query" in {
+
+    val view = db.builtInView("_all_docs")
+
+    val rawViewResult = synced(view.queryRaw(keys = List("unknown_doc".toJson)))
+
+    rawViewResult.rows.size should be(1)
+    rawViewResult.rows(0) should be(ErrorRawRow("unknown_doc".toJson, "not_found"))
+
+  }
+
+  it should "not return error results in type view query" in {
+
+    val view = db.builtInView("_all_docs")
+
+    val viewResult = synced(view.query(keys = List("unknown_doc")))
+
+    viewResult.rows.size should be(0)
+
+  }
+
   "querying a view with no parameter" should "result in all emitted key/values to be returned" in {
 
     val view = db.design("test_design").view("test_view")
@@ -99,7 +120,7 @@ class TestViews extends SohvaTestSpec with Matchers with BeforeAndAfterEach {
 
   "querying a built-in view" should "be similar to querying user defined view" in {
 
-    val all = synced(db._all_docs(startkey = Some("view_doc"), endkey = Some("view_docZ")))
+    val all = synced(db.allDocs(startkey = Some("view_doc"), endkey = Some("view_docZ")))
 
     all.size should be(docs.size)
     all should be(docs.map(doc => doc._id).sorted)

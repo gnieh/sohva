@@ -24,6 +24,9 @@ import akka.http.scaladsl.model._
 /**
  * A view can be queried to get the result.
  *
+ *  @groupdesc LowLevel Low-level classes that may break compatibility even between patch and minor versions
+ *  @groupprio LowLevel 1001
+ *
  *  @author Lucas Satabin
  */
 class View(
@@ -42,7 +45,13 @@ class View(
     for (h <- db.couch.rawHttp(HttpRequest(HttpMethods.HEAD, uri = uri)))
       yield h.status == StatusCodes.OK
 
-  /** Queries the view on the server and returned the untyped result. */
+  /**
+   * Queries the view on the server and returned the untyped result.
+   *
+   *  ''Warning'': This is low-level API, and might break compatibility even between patch releases
+   *
+   *  @group LowLevel
+   */
   def queryRaw(
     key: Option[JsValue] = None,
     keys: List[JsValue] = Nil,
@@ -94,6 +103,8 @@ class View(
 
   /**
    * Queries the view on the server and returned the typed result.
+   * Only the found keys are returned, errors are ignored in the result.
+   *
    *  BE CAREFUL: If the types given to the constructor are not correct,
    *  strange things may happen! By 'strange', I mean exceptions
    */
@@ -152,7 +163,7 @@ class View(
   private def viewResult[Key: JsonReader, Value: JsonReader, Doc: JsonReader](json: JsValue) = {
     val RawViewResult(total_rows, offset, rawRows, update_seq) = json.convertTo[RawViewResult]
     val rows =
-      for (RawRow(id, key, value, doc) <- rawRows)
+      for (SuccessRawRow(id, key, value, doc) <- rawRows)
         yield Row(id, key.convertTo[Key], value.convertTo[Value], doc.map(_.convertTo[Doc]))
     ViewResult(total_rows.toInt, offset.toInt, rows, update_seq.map(_.toInt))
   }
@@ -191,17 +202,41 @@ private class TemporaryView(
 }
 case class ViewDoc(map: String, reduce: Option[String])
 
+/**
+ *  ''Warning'': This is low-level API, and might break compatibility even between patch releases
+ *
+ *  @group LowLevel
+ */
 final case class RawViewResult(
   total_rows: Long,
   offset: Long,
   rows: List[RawRow],
   update_seq: Option[Long])
 
-final case class RawRow(
+/**
+ *  ''Warning'': This is low-level API, and might break compatibility even between patch releases
+ *
+ *  @group LowLevel
+ */
+sealed trait RawRow
+
+/**
+ *  ''Warning'': This is low-level API, and might break compatibility even between patch releases
+ *
+ *  @group LowLevel
+ */
+final case class SuccessRawRow(
   id: Option[String],
   key: JsValue,
   value: JsValue,
-  doc: Option[JsObject])
+  doc: Option[JsObject]) extends RawRow
+
+/**
+ *  ''Warning'': This is low-level API, and might break compatibility even between patch releases
+ *
+ *  @group LowLevel
+ */
+final case class ErrorRawRow(key: JsValue, error: String) extends RawRow
 
 final case class ViewResult[Key, Value, Doc](
     total_rows: Int,
@@ -270,4 +305,3 @@ case class Row[Key, Value, Doc](
   key: Key,
   value: Value,
   doc: Option[Doc] = None)
-

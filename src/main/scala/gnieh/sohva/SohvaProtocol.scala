@@ -64,9 +64,9 @@ trait SohvaProtocol extends DefaultJsonProtocol with MangoProtocol with CouchFor
 
     def read(value: JsValue): Date = value match {
       case JsString(str) =>
-        Try(f.parse(str)).getOrElse(deserializationError(s"Malformed date: ${value.prettyPrint}"))
+        Try(f.parse(str)).getOrElse(deserializationError(f"Malformed date: ${value.prettyPrint}"))
       case _ =>
-        deserializationError(s"Malformed date: ${value.prettyPrint}")
+        deserializationError(f"Malformed date: ${value.prettyPrint}")
     }
 
     def write(date: Date): JsValue =
@@ -119,10 +119,10 @@ trait SohvaProtocol extends DefaultJsonProtocol with MangoProtocol with CouchFor
           oauth = fields.get("oauth").map(_.convertTo[OAuthData])
         } yield CouchUser(name, "???", roles, oauth)
 
-        user.getOrElse(deserializationError(s"Malformed user object: ${value.prettyPrint}"))
+        user.getOrElse(deserializationError(f"Malformed user object: ${value.prettyPrint}"))
 
       case json =>
-        deserializationError(s"Malformed user object: ${json.prettyPrint}")
+        deserializationError(f"Malformed user object: ${json.prettyPrint}")
     }
 
     def write(user: CouchUser): JsObject = {
@@ -168,9 +168,9 @@ trait SohvaProtocol extends DefaultJsonProtocol with MangoProtocol with CouchFor
           doc = if (deleted) None else fields.get("doc").collect { case o: JsObject => o }
         } yield new Change(seq, id, changes, deleted, doc)
 
-        c.getOrElse(deserializationError(s"Malformed change object: ${value.prettyPrint}"))
+        c.getOrElse(deserializationError(f"Malformed change object: ${value.prettyPrint}"))
       case _ =>
-        deserializationError(s"Malformed change object: ${value.prettyPrint}")
+        deserializationError(f"Malformed change object: ${value.prettyPrint}")
     }
 
     def write(change: Change): JsValue = change match {
@@ -252,7 +252,21 @@ trait SohvaProtocol extends DefaultJsonProtocol with MangoProtocol with CouchFor
 
   }
 
-  implicit val rawRowFormat = jsonFormat4(RawRow)
+  implicit object rawRowFormat extends RootJsonReader[RawRow] {
+
+    def read(value: JsValue): RawRow = value match {
+      case JsObject(fields) =>
+        if (fields.contains("key") && fields.contains("value"))
+          SuccessRawRow(fields.get("id").map(_.convertTo[String]), fields("key"), fields("value"), fields.get("doc").flatMap(_.convertTo[Option[JsObject]]))
+        else if (fields.contains("key"))
+          ErrorRawRow(fields("key"), fields.get("error").map(_.convertTo[String]).getOrElse(""))
+        else
+          deserializationError(f"Malformed view raw object: ${value.prettyPrint}")
+      case _ =>
+        deserializationError(f"Malformed view raw object: ${value.prettyPrint}")
+    }
+
+  }
 
   implicit object RawViewResultFormat extends RootJsonReader[RawViewResult] {
 
@@ -270,7 +284,7 @@ trait SohvaProtocol extends DefaultJsonProtocol with MangoProtocol with CouchFor
         val update_seq = fields.get("update_seq").map(_.convertTo[Long])
         RawViewResult(total_rows, offset, rows, update_seq)
       case _ =>
-        deserializationError(s"Malformed view result object: ${value.prettyPrint}")
+        deserializationError(f"Malformed view result object: ${value.prettyPrint}")
     }
 
   }

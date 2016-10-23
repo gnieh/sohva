@@ -69,6 +69,11 @@ import akka.util.ByteString
  *  @param credit The credit assigned to the conflict resolver. It represents the number of times the client tries to save the document before giving up.
  *  @param strategy The strategy being used to resolve conflicts
  *
+ *  @groupdesc LowLevel Low-level classes that may break compatibility even between patch and minor versions
+ *  @groupdesc CouchDB1 Operation only available in CouchDB 1
+ *  @groupdesc CouchDB2 Operation only available in CouchDB 2
+ *  @groupprio LowLevel 1001
+ *
  *  @author Lucas Satabin
  */
 class Database private[sohva] (
@@ -176,7 +181,10 @@ class Database private[sohva] (
       ) withFailureMessage f"Failed to access _all_docs view for $uri"
     } yield for (Row(Some(id), _, _, _) <- res.rows) yield id
 
-  /** Returns the raw representation of the document identified by the given id if it exists. */
+  /**
+   * Returns the raw representation of the document identified by the given id if it exists.
+   *  @group LowLevel
+   */
   @deprecated("Use `getDocById` with return type `JsValue` instead", "2.0.0")
   def getRawDocById(id: String, revision: Option[String] = None): Future[Option[JsValue]] =
     getDocById[JsValue](id, revision)
