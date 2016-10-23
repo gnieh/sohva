@@ -54,7 +54,7 @@ class View(
    */
   def queryRaw(
     key: Option[JsValue] = None,
-    keys: List[JsValue] = Nil,
+    keys: Iterable[JsValue] = Nil,
     startkey: Option[JsValue] = None,
     startkey_docid: Option[String] = None,
     endkey: Option[JsValue] = None,
@@ -110,7 +110,7 @@ class View(
    */
   def query[Key: JsonFormat, Value: JsonReader, Doc: JsonReader](
     key: Option[Key] = None,
-    keys: List[Key] = Nil,
+    keys: Iterable[Key] = Nil,
     startkey: Option[Key] = None,
     startkey_docid: Option[String] = None,
     endkey: Option[Key] = None,

@@ -310,13 +310,13 @@ class Design(val db: Database,
    * Creates or updates the list of rewrite rules.
    *  If the design does not exist yet, it is created.
    */
-  def saveRewriteRules(rules: List[RewriteRule]): Future[Unit] =
+  def saveRewriteRules(rules: Seq[RewriteRule]): Future[Unit] =
     for {
       design <- getDesignDocument
       _ <- db.saveDoc(newDocWithRewriteRules(design, rules))
     } yield ()
 
-  private[this] def newDocWithRewriteRules(design: Option[DesignDoc], rules: List[RewriteRule]) =
+  private[this] def newDocWithRewriteRules(design: Option[DesignDoc], rules: Seq[RewriteRule]) =
     design match {
       case Some(design) =>
         // the updated design
@@ -327,7 +327,7 @@ class Design(val db: Database,
     }
 
   /** Retrieves the rewrite rules associated to this design document. */
-  def getRewriteRules(): Future[List[RewriteRule]] =
+  def getRewriteRules(): Future[Seq[RewriteRule]] =
     for (design <- getDesignDocument)
       yield design match {
       case Some(d) => d.rewrites
@@ -358,6 +358,6 @@ case class DesignDoc(
   filters: Map[String, String],
   shows: Map[String, String],
   lists: Map[String, String],
-  rewrites: List[RewriteRule]) extends IdRev
+  rewrites: Seq[RewriteRule]) extends IdRev
 
 case class RewriteRule(from: String, to: String, method: String, query: Map[String, String])

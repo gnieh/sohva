@@ -141,7 +141,7 @@ class Database private[sohva] (
 
   @deprecated("Use `allDocs` instead", "2.0.0")
   def _all_docs(key: Option[String] = None,
-    keys: List[String] = Nil,
+    keys: Iterable[String] = Nil,
     startkey: Option[String] = None,
     startkey_docid: Option[String] = None,
     endkey: Option[String] = None,
@@ -155,7 +155,7 @@ class Database private[sohva] (
 
   /** Returns the list of identifiers of the documents in this database */
   def allDocs(key: Option[String] = None,
-    keys: List[String] = Nil,
+    keys: Iterable[String] = Nil,
     startkey: Option[String] = None,
     startkey_docid: Option[String] = None,
     endkey: Option[String] = None,
@@ -194,7 +194,7 @@ class Database private[sohva] (
    *  If the document with an identifier exists in the database but has not the
    *  required type, it is not added to the result
    */
-  def getDocsById[T: JsonReader](ids: List[String]): Future[List[T]] =
+  def getDocsById[T: JsonReader](ids: Iterable[String]): Future[List[T]] =
     for {
       res <- builtInView("_all_docs").query[String, JsValue, T](keys = ids, include_docs = true)
     } yield res.rows.flatMap { case Row(_, _, _, doc) => doc }
@@ -205,7 +205,7 @@ class Database private[sohva] (
       f"Failed to fetch document revision by ID $id from $uri"
 
   /** Returns the current revision of the documents */
-  def getDocRevisions(ids: List[String]): Future[List[(String, String)]] =
+  def getDocRevisions(ids: Iterable[String]): Future[List[(String, String)]] =
     for {
       res <- builtInView("_all_docs").query[String, Map[String, String], JsObject](keys = ids) withFailureMessage
         f"Failed to fetch document revisions by IDs $ids from $uri"
@@ -216,7 +216,7 @@ class Database private[sohva] (
    *
    *  @group CouchDB2
    */
-  def find[T <: AnyRef: JsonReader](selector: Selector, fields: List[String] = Nil, sort: List[Sort], limit: Option[Int] = None, skip: Option[Int] = None, use_index: Option[UseIndex] = None): Future[SearchResult[T]] =
+  def find[T <: AnyRef: JsonReader](selector: Selector, fields: Iterable[String] = Nil, sort: Seq[Sort], limit: Option[Int] = None, skip: Option[Int] = None, use_index: Option[UseIndex] = None): Future[SearchResult[T]] =
     find[T](Query(selector, fields, sort, limit, skip, use_index))
 
   /**
@@ -254,14 +254,14 @@ class Database private[sohva] (
   object local extends Local(this)
 
   /** Creates or updates a bunch of documents into the database. */
-  def saveDocs[T: CouchFormat](docs: List[T], all_or_nothing: Boolean = false): Future[List[DbResult]] =
+  def saveDocs[T: CouchFormat](docs: Iterable[T], all_or_nothing: Boolean = false): Future[List[DbResult]] =
     for {
       entity <- Marshal(BulkSave(all_or_nothing, docs.map(_.toJson))).to[RequestEntity]
       raw <- couch.http(HttpRequest(HttpMethods.POST, uri = uri / "_bulk_docs", entity = entity)) withFailureMessage
         f"Failed to bulk save documents to $uri"
     } yield bulkSaveResult(raw)
 
-  private def saveRawDocs(docs: List[JsValue], all_or_nothing: Boolean = false): Future[List[DbResult]] =
+  private def saveRawDocs(docs: Iterable[JsValue], all_or_nothing: Boolean = false): Future[List[DbResult]] =
     for {
       entity <- Marshal(JsObject(Map("all_or_nothing" -> JsBoolean(all_or_nothing), "docs" -> JsArray(docs.toVector)))).to[RequestEntity]
       raw <- couch.http(HttpRequest(HttpMethods.POST, uri = uri / "_bulk_docs", entity = entity)) withFailureMessage
@@ -294,7 +294,7 @@ class Database private[sohva] (
    *  If the json version of an object has a `_id` field, this identifier is used for the document,
    *  otherwise a new one is generated.
    */
-  def createDocs[T: JsonWriter](docs: List[T]): Future[List[DbResult]] =
+  def createDocs[T: JsonWriter](docs: Iterable[T]): Future[List[DbResult]] =
     saveRawDocs(docs.map(_.toJson))
 
   /**
@@ -356,7 +356,7 @@ class Database private[sohva] (
    *  for each identifier in the document list. One can choose the update strategy
    *  by setting the parameter `all_or_nothing` to `true` or `false`.
    */
-  def deleteDocs(ids: List[String], all_or_nothing: Boolean = false): Future[List[DbResult]] =
+  def deleteDocs(ids: Iterable[String], all_or_nothing: Boolean = false): Future[List[DbResult]] =
     for {
       revs <- getDocRevisions(ids)
       entity <- Marshal(JsObject(
@@ -500,14 +500,14 @@ class Database private[sohva] (
       yield resp.asJsObject.fields("ok").convertTo[Boolean]
 
   /** Returns the revision for each document in the map that are not present in this node. */
-  def missingRevs(revs: Map[String, Vector[String]]): Future[Map[String, Vector[String]]] =
+  def missingRevs(revs: Map[String, Iterable[String]]): Future[Map[String, Vector[String]]] =
     for {
       entity <- Marshal(revs).to[RequestEntity]
       resp <- couch.http(HttpRequest(HttpMethods.POST, uri = uri / "_missing_revs", entity = entity)).withFailureMessage(f"Unable to get missing revisions from $uri")
     } yield resp.asJsObject.fields("missing_revs").convertTo[Map[String, Vector[String]]]
 
   /** Given a list of documents and revisions, returns the revision that are missing in this node. */
-  def revsDiff(revs: Map[String, Vector[String]]): Future[Map[String, RevDiff]] =
+  def revsDiff(revs: Map[String, Iterable[String]]): Future[Map[String, RevDiff]] =
     for {
       entity <- Marshal(revs).to[RequestEntity]
       resp <- couch.http(HttpRequest(HttpMethods.POST, uri = uri / "_revs_diff", entity = entity)).withFailureMessage(f"Unable to get revision difffrom $uri")
@@ -611,6 +611,6 @@ final case class DocUpdate(
 private[sohva] final case class BulkDocs[T](rows: List[BulkDocRow[T]])
 
 private[sohva] final case class BulkDocRow[T](id: String, rev: String, doc: Option[T])
-private[sohva] final case class BulkSave(all_or_nothing: Boolean, docs: List[JsValue])
+private[sohva] final case class BulkSave(all_or_nothing: Boolean, docs: Iterable[JsValue])
 
 final case class RevDiff(missing: Vector[String], possible_ancestors: Vector[String])

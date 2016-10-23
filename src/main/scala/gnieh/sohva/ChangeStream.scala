@@ -57,7 +57,7 @@ class ChangeStream(database: Database) {
   import database.couch.ec
 
   /** Returns a one-shot view of changes for this database. */
-  def once(docIds: Vector[String] = Vector.empty[String],
+  def once(docIds: Iterable[String] = Vector.empty[String],
     conflicts: Boolean = false,
     descending: Boolean = false,
     filter: Option[String] = None,
@@ -109,7 +109,7 @@ class ChangeStream(database: Database) {
    *  killSwitch.shutdown()
    *  }}}
    */
-  def stream(docIds: Vector[String] = Vector.empty[String],
+  def stream(docIds: Iterable[String] = Vector.empty[String],
     conflicts: Boolean = false,
     descending: Boolean = false,
     filter: Option[String] = None,
