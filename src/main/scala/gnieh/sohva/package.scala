@@ -35,6 +35,9 @@ import scala.concurrent.{
  *  - create/update/delete couchdb users,
  *  - use couchdb authentication API to create sessions and use built-in permission system.
  *
+ *  @groupdesc LowLevel Low-level classes that may break compatibility even between patch and minor versions
+ *  @groupprio LowLevel 1001
+ *
  *  @author Lucas Satabin
  *
  */

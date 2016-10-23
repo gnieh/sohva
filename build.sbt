@@ -12,7 +12,8 @@ lazy val globalSettings = Seq(
   libraryDependencies ++= globalDependencies,
   parallelExecution := false,
   fork in Test := true,
-  scalacOptions ++= Seq("-deprecation", "-feature")
+  scalacOptions ++= Seq("-deprecation", "-feature"),
+  scalacOptions in (Compile, doc) ++= Seq("-groups")
 )
 
 lazy val scalariform = scalariformSettings ++ Seq(
