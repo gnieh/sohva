@@ -56,7 +56,46 @@ trait SohvaProtocol extends DefaultJsonProtocol with MangoProtocol with CouchFor
 
   implicit val attachmentFormat = jsonFormat7(Attachment)
 
-  implicit val designDocFormat = couchFormat[DesignDoc]
+  implicit val designDocFormat = new CouchFormat[DesignDoc] {
+    def _id(d: DesignDoc) = d._id
+    def _rev(d: DesignDoc) = d._rev
+    def withRev(d: DesignDoc, r: Option[String]) = d.withRev(r)
+
+    def read(json: JsValue): DesignDoc = json match {
+      case JsObject(fields) if fields.contains("_id") =>
+        val id = fields("_id").convertTo[String]
+        val rev = fields("_rev").convertTo[Option[String]]
+        val language = fields.get("language").map(_.convertTo[String]).getOrElse("javascript")
+        val views = fields.get("views").map(_.convertTo[Map[String, ViewDoc]]).getOrElse(Map())
+        val validate_doc_update = fields.get("validate_doc_update").map(_.convertTo[String])
+        val updates = fields.get("updates").map(_.convertTo[Map[String, String]]).getOrElse(Map())
+        val filters = fields.get("filters").map(_.convertTo[Map[String, String]]).getOrElse(Map())
+        val shows = fields.get("shows").map(_.convertTo[Map[String, String]]).getOrElse(Map())
+        val lists = fields.get("lists").map(_.convertTo[Map[String, String]]).getOrElse(Map())
+        val rewrites = fields.get("rewrites").map(_.convertTo[List[RewriteRule]]).getOrElse(Nil)
+        DesignDoc(id, language, views, validate_doc_update, updates, filters, shows, lists, rewrites).withRev(rev)
+      case _ =>
+        deserializationError(f"Malfromed design document $json")
+    }
+
+    def write(d: DesignDoc): JsObject = {
+      val DesignDoc(id, language, views, validate_doc_update, updates, filters, shows, lists, rewrites) = d
+      val fields = List(
+        Some("_id" -> id.toJson),
+        d._rev.map("_rev" -> _.toJson),
+        Some("language" -> language.toJson),
+        if (views.isEmpty) None else Some("views" -> views.toJson),
+        validate_doc_update.map("validate_doc_update" -> _.toJson),
+        if (updates.isEmpty) None else Some("updates" -> updates.toJson),
+        if (views.isEmpty) None else Some("filters" -> filters.toJson),
+        if (views.isEmpty) None else Some("shows" -> shows.toJson),
+        if (views.isEmpty) None else Some("lists" -> lists.toJson),
+        if (views.isEmpty) None else Some("rewrites" -> rewrites.toJson))
+        .flatten
+        .toMap
+      JsObject(fields)
+    }
+  }
 
   implicit object DateFormat extends JsonFormat[Date] {
 
