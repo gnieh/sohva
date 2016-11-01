@@ -61,7 +61,7 @@
         <div id="order">
               <span class="filtertype">Ordering</span>
               <ol>
-                
+                <li class="group out"><span>Grouped</span></li>
                 <li class="alpha in"><span>Alphabetic</span></li>
                 <li class="inherit out"><span>By Inheritance</span></li>
               </ol>
@@ -1409,7 +1409,7 @@
                 <span class="name">@deprecated</span>
               
         </dd><dt>Deprecated</dt><dd class="cmt"><p><i>(Since version 2.0.0)</i> You shouldn't need to call this if you have the recommended setting <code>delayed_commits=false</code></p></dd></dl></div>
-    </li><li name="gnieh.sohva.Database#getRawDocById" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+    </li><li name="gnieh.sohva.Database#getRawDocById" visbl="pub" data-isabs="false" fullComment="yes" group="LowLevel">
       <a id="getRawDocById(id:String,revision:Option[String]):scala.concurrent.Future[Option[spray.json.JsValue]]"></a>
       <a id="getRawDocById(String,Option[String]):Future[Option[JsValue]]"></a>
       <h4 class="signature">
@@ -1470,13 +1470,16 @@
         <div id="groupedMembers">
         <div class="group" name="CouchDB1">
               <h3>CouchDB1</h3>
-              
+              <div class="comment cmt"><p>Operation only available in CouchDB 1</p></div>
             </div><div class="group" name="CouchDB2">
               <h3>CouchDB2</h3>
-              
+              <div class="comment cmt"><p>Operation only available in CouchDB 2</p></div>
             </div><div class="group" name="Ungrouped">
               <h3>Ungrouped</h3>
               
+            </div><div class="group" name="LowLevel">
+              <h3>LowLevel</h3>
+              <div class="comment cmt"><p>Low-level classes that may break compatibility even between patch and minor versions</p></div>
             </div>
         </div>
 

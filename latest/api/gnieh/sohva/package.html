@@ -60,7 +60,7 @@
         <div id="order">
               <span class="filtertype">Ordering</span>
               <ol>
-                
+                <li class="group out"><span>Grouped</span></li>
                 <li class="alpha in"><span>Alphabetic</span></li>
                 <li class="inherit out"><span>By Inheritance</span></li>
               </ol>
@@ -603,6 +603,24 @@
       </a>
     </span>
       
+    </li><li name="gnieh.sohva.ErrorRawRow" visbl="pub" data-isabs="false" fullComment="no" group="LowLevel">
+      <a id="ErrorRawRowextendsRawRowwithProductwithSerializable"></a>
+      <a id="ErrorRawRow:ErrorRawRow"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="ErrorRawRow.html"><span class="name">ErrorRawRow</span></a><span class="params">(<span name="key">key: <span class="extype" name="spray.json.JsValue">JsValue</span></span>, <span name="error">error: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result"> extends <a href="RawRow.html" class="extype" name="gnieh.sohva.RawRow">RawRow</a> with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../index.html#gnieh.sohva.package@ErrorRawRowextendsRawRowwithProductwithSerializable" title="Permalink" target="_top">
+        <img src="../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt"> <i>Warning</i>: This is low-level API, and might break compatibility even between patch releases
+</p>
     </li><li name="gnieh.sohva.ErrorResult" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="ErrorResultextendsDbResultwithProductwithSerializable"></a>
       <a id="ErrorResult:ErrorResult"></a>
@@ -793,24 +811,25 @@
       </a>
     </span>
       
-    </li><li name="gnieh.sohva.RawRow" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="RawRowextendsProductwithSerializable"></a>
+    </li><li name="gnieh.sohva.RawRow" visbl="pub" data-isabs="true" fullComment="no" group="LowLevel">
+      <a id="RawRowextendsAnyRef"></a>
       <a id="RawRow:RawRow"></a>
       <h4 class="signature">
       <span class="modifier_kind">
-        <span class="modifier">final </span>
-        <span class="kind">case class</span>
+        <span class="modifier">sealed </span>
+        <span class="kind">trait</span>
       </span>
       <span class="symbol">
-        <a href="RawRow.html"><span class="name">RawRow</span></a><span class="params">(<span name="id">id: <span class="extype" name="scala.Option">Option</span>[<span class="extype" name="scala.Predef.String">String</span>]</span>, <span name="key">key: <span class="extype" name="spray.json.JsValue">JsValue</span></span>, <span name="value">value: <span class="extype" name="spray.json.JsValue">JsValue</span></span>, <span name="doc">doc: <span class="extype" name="scala.Option">Option</span>[<span class="extype" name="spray.json.JsObject">JsObject</span>]</span>)</span><span class="result"> extends <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+        <a href="RawRow.html"><span class="name">RawRow</span></a><span class="result"> extends <span class="extype" name="scala.AnyRef">AnyRef</span></span>
       </span>
       </h4><span class="permalink">
-      <a href="../../index.html#gnieh.sohva.package@RawRowextendsProductwithSerializable" title="Permalink" target="_top">
+      <a href="../../index.html#gnieh.sohva.package@RawRowextendsAnyRef" title="Permalink" target="_top">
         <img src="../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
-      
-    </li><li name="gnieh.sohva.RawViewResult" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <p class="shortcomment cmt"> <i>Warning</i>: This is low-level API, and might break compatibility even between patch releases
+</p>
+    </li><li name="gnieh.sohva.RawViewResult" visbl="pub" data-isabs="false" fullComment="no" group="LowLevel">
       <a id="RawViewResultextendsProductwithSerializable"></a>
       <a id="RawViewResult:RawViewResult"></a>
       <h4 class="signature">
@@ -826,7 +845,8 @@
         <img src="../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
-      
+      <p class="shortcomment cmt"> <i>Warning</i>: This is low-level API, and might break compatibility even between patch releases
+</p>
     </li><li name="gnieh.sohva.RemoteDb" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="RemoteDbextendsDbRefwithProductwithSerializable"></a>
       <a id="RemoteDb:RemoteDb"></a>
@@ -1087,6 +1107,24 @@
       </a>
     </span>
       
+    </li><li name="gnieh.sohva.SuccessRawRow" visbl="pub" data-isabs="false" fullComment="no" group="LowLevel">
+      <a id="SuccessRawRowextendsRawRowwithProductwithSerializable"></a>
+      <a id="SuccessRawRow:SuccessRawRow"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier">final </span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a href="SuccessRawRow.html"><span class="name">SuccessRawRow</span></a><span class="params">(<span name="id">id: <span class="extype" name="scala.Option">Option</span>[<span class="extype" name="scala.Predef.String">String</span>]</span>, <span name="key">key: <span class="extype" name="spray.json.JsValue">JsValue</span></span>, <span name="value">value: <span class="extype" name="spray.json.JsValue">JsValue</span></span>, <span name="doc">doc: <span class="extype" name="scala.Option">Option</span>[<span class="extype" name="spray.json.JsObject">JsObject</span>]</span>)</span><span class="result"> extends <a href="RawRow.html" class="extype" name="gnieh.sohva.RawRow">RawRow</a> with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../index.html#gnieh.sohva.package@SuccessRawRowextendsRawRowwithProductwithSerializable" title="Permalink" target="_top">
+        <img src="../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt"> <i>Warning</i>: This is low-level API, and might break compatibility even between patch releases
+</p>
     </li><li name="gnieh.sohva.Update" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="UpdateextendsAnyRef"></a>
       <a id="Update:Update"></a>
@@ -1406,6 +1444,9 @@
         <div class="group" name="Ungrouped">
               <h3>Ungrouped</h3>
               
+            </div><div class="group" name="LowLevel">
+              <h3>LowLevel</h3>
+              <div class="comment cmt"><p>Low-level classes that may break compatibility even between patch and minor versions</p></div>
             </div>
         </div>
 

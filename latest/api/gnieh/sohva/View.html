@@ -61,7 +61,7 @@
         <div id="order">
               <span class="filtertype">Ordering</span>
               <ol>
-                
+                <li class="group out"><span>Grouped</span></li>
                 <li class="alpha in"><span>Alphabetic</span></li>
                 <li class="inherit out"><span>By Inheritance</span></li>
               </ol>
@@ -450,10 +450,10 @@
       </a>
     </span>
       <p class="shortcomment cmt">Queries the view on the server and returned the typed result.</p><div class="fullcomment"><div class="comment cmt"><p>Queries the view on the server and returned the typed result.
- BE CAREFUL: If the types given to the constructor are not correct,
+Only the found keys are returned, errors are ignored in the result.</p><p> BE CAREFUL: If the types given to the constructor are not correct,
  strange things may happen! By 'strange', I mean exceptions
 </p></div></div>
-    </li><li name="gnieh.sohva.View#queryRaw" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+    </li><li name="gnieh.sohva.View#queryRaw" visbl="pub" data-isabs="false" fullComment="yes" group="LowLevel">
       <a id="queryRaw(key:Option[spray.json.JsValue],keys:List[spray.json.JsValue],startkey:Option[spray.json.JsValue],startkey_docid:Option[String],endkey:Option[spray.json.JsValue],endkey_docid:Option[String],limit:Int,stale:Option[String],descending:Boolean,skip:Int,group:Boolean,group_level:Int,reduce:Boolean,include_docs:Boolean,inclusive_end:Boolean,update_seq:Boolean):scala.concurrent.Future[gnieh.sohva.RawViewResult]"></a>
       <a id="queryRaw(Option[JsValue],List[JsValue],Option[JsValue],Option[String],Option[JsValue],Option[String],Int,Option[String],Boolean,Int,Boolean,Int,Boolean,Boolean,Boolean,Boolean):Future[RawViewResult]"></a>
       <h4 class="signature">
@@ -469,7 +469,8 @@
         <img src="../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
-      <p class="shortcomment cmt">Queries the view on the server and returned the untyped result.</p>
+      <p class="shortcomment cmt">Queries the view on the server and returned the untyped result.</p><div class="fullcomment"><div class="comment cmt"><p>Queries the view on the server and returned the untyped result.</p><p> <i>Warning</i>: This is low-level API, and might break compatibility even between patch releases
+</p></div></div>
     </li><li name="scala.AnyRef#synchronized" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="synchronized[T0](x$1:=&gt;T0):T0"></a>
       <a id="synchronized[T0](⇒T0):T0"></a>
@@ -628,6 +629,9 @@
         <div class="group" name="Ungrouped">
               <h3>Ungrouped</h3>
               
+            </div><div class="group" name="LowLevel">
+              <h3>LowLevel</h3>
+              <div class="comment cmt"><p>Low-level classes that may break compatibility even between patch and minor versions</p></div>
             </div>
         </div>
 
