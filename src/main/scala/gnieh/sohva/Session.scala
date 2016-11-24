@@ -23,8 +23,7 @@ import spray.json._
 
 import akka.http.scaladsl.model._
 
-/**
- * Methods that must be implemented by a session.
+/** Methods that must be implemented by a session.
  *
  *  @author Lucas Satabin
  */
@@ -42,13 +41,13 @@ trait Session extends CouchDB {
   /** Indicates whether the current session is authenticated with the couch server */
   def isAuthenticated: Future[Boolean] = userContext.map {
     case UserCtx(Some(name), _) => true
-    case _ => false
+    case _                      => false
   }
 
   /** Indicates whether the current session gives the given role to the user */
   def hasRole(role: String): Future[Boolean] = userContext.map {
     case UserCtx(_, roles) => roles.contains(role)
-    case _ => false
+    case _                 => false
   }
 
   /** Indicates whether the current session is a server admin session */
@@ -72,8 +71,7 @@ case class AuthResult(ok: Boolean, userCtx: UserCtx, info: Option[AuthInfo])
 /** The user context giving his name and roles */
 case class UserCtx(name: Option[String], roles: List[String])
 
-/**
- * Authentication information indicating the authentication database,
+/** Authentication information indicating the authentication database,
  *  the handler used and the authentication method
  */
 case class AuthInfo(authentication_db: String,

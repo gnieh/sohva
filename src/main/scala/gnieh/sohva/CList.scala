@@ -22,8 +22,7 @@ import akka.stream.ActorMaterializer
 import akka.http.scaladsl.model._
 import akka.http.scaladsl.unmarshalling._
 
-/**
- * A list that can be queried for a given view.
+/** A list that can be queried for a given view.
  *
  *  @author Lucas Satabin
  */

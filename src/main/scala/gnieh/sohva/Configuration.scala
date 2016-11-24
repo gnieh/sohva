@@ -19,8 +19,7 @@ import scala.util.Properties
 
 import java.util.Date
 
-/**
- * The configuration object of a couchdb instance
+/** The configuration object of a couchdb instance
  *
  *  @author Lucas Satabin
  */

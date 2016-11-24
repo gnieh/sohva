@@ -18,8 +18,7 @@ package strategy
 
 import spray.json._
 
-/**
- * This strategy is the anti-[[BarneyStinsonStrategy]] by definition as it applies
+/** This strategy is the anti-[[BarneyStinsonStrategy]] by definition as it applies
  *  a simple rule: ''Old is always better''.
  *  Whenever a conflict occurs when trying to save a document in the database,
  *  the oldest document (the one from the database) is kept.

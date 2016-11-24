@@ -75,7 +75,7 @@ lazy val sohva = project.in(file("."))
   .settings(globalSettings: _*)
   .settings(publishSettings: _*)
   .settings(osgiSettings: _*)
-  .settings(scalariformSettings: _*)
+  .settings(scalariform: _*)
   .settings (
     name := "sohva",
     description := "Couchdb client library",

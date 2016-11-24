@@ -24,8 +24,7 @@ import akka.http.scaladsl.marshalling._
 import akka.http.scaladsl.unmarshalling._
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
 
-/**
- * An update handler that can be queried.
+/** An update handler that can be queried.
  *
  *  @author Lucas Satabin
  */
@@ -44,8 +43,7 @@ class Update(val design: String, val db: Database, val update: String) {
     for (h <- db.couch.rawHttp(HttpRequest(HttpMethods.HEAD, uri = uri)))
       yield h.status == StatusCodes.OK
 
-  /**
-   * Queries the update handler as a POST request.
+  /** Queries the update handler as a POST request.
    *  `body` is sent as a json value.
    */
   def query[Body: RootJsonWriter, Resp: FromEntityUnmarshaller](
@@ -56,7 +54,7 @@ class Update(val design: String, val db: Database, val update: String) {
       entity <- Marshal(body).to[RequestEntity]
       req = docId match {
         case Some(docId) => HttpRequest(HttpMethods.PUT, uri = uri / docId <<? parameters, entity = entity)
-        case None => HttpRequest(HttpMethods.POST, uri = uri <<? parameters, entity = entity)
+        case None        => HttpRequest(HttpMethods.POST, uri = uri <<? parameters, entity = entity)
       }
       resp <- db.couch.rawHttp(req)
       r <- Unmarshal(resp).to[Resp]

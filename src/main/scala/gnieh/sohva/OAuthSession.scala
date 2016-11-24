@@ -21,8 +21,7 @@ import scala.concurrent.Future
 
 import akka.http.scaladsl.model._
 
-/**
- * An instance of a Couch session that allows the user to perform authenticated
+/** An instance of a Couch session that allows the user to perform authenticated
  *  operations using OAuth.
  *
  *  @author Lucas Satabin

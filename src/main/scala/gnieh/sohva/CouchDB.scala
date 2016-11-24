@@ -44,8 +44,7 @@ import akka.util.ByteString
 
 import spray.json._
 
-/**
- * A CouchDB instance.
+/** A CouchDB instance.
  *  Allows users to access the different databases and information.
  *  This is the key class to start with when one wants to work with couchdb.
  *  Through this one you will get access to the databases.
@@ -114,8 +113,7 @@ abstract class CouchDB {
       .viaMat(KillSwitches.single)(Keep.right)
   }
 
-  /**
-   * Returns the list of nodes known by this node and the clusters.
+  /** Returns the list of nodes known by this node and the clusters.
    *
    *  @group CouchDB2
    */
@@ -164,8 +162,7 @@ abstract class CouchDB {
   def _config(section: String): Future[Map[String, String]] =
     config(section)
 
-  /**
-   * Returns the configuration section identified by its name
+  /** Returns the configuration section identified by its name
    *  (an empty map is returned if the section does not exist)
    */
   def config(section: String): Future[Map[String, String]] =
@@ -178,8 +175,7 @@ abstract class CouchDB {
   def _config(section: String, key: String): Future[Option[String]] =
     config(section, key)
 
-  /**
-   * Returns the configuration value
+  /** Returns the configuration value
    *  Returns `None` if the value does not exist
    */
   def config(section: String, key: String): Future[Option[String]] =
@@ -188,8 +184,7 @@ abstract class CouchDB {
         f"Failed to fetch config for $section with key `$key' from $uri"
     ) yield section.get(key)
 
-  /**
-   * Saves the given key/value association in the specified section
+  /** Saves the given key/value association in the specified section
    *  The section and/or the key is created if it does not exist
    */
   def saveConfigValue(section: String, key: String, value: String): Future[Boolean] =
@@ -252,7 +247,7 @@ abstract class CouchDB {
   private def handleOptionalCouchResponse(response: HttpResponse): Future[Option[JsValue]] =
     handleCouchResponse(response).map(Some(_)).recoverWith {
       case CouchException(404, _) => Future.successful(None)
-      case err => Future.failed(err)
+      case err                    => Future.failed(err)
     }
 
   @inline

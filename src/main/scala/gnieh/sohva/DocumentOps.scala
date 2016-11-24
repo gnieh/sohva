@@ -44,8 +44,7 @@ abstract class DocumentOps {
     for (raw <- optHttp(HttpRequest(uri = uri / id <<? revision.flatMap(r => if (r.nonEmpty) Some("rev" -> r) else None))).withFailureMessage(f"Failed to fetch document by ID $id and revision $revision"))
       yield raw.map(_.convertTo[T])
 
-  /**
-   * Creates or updates the given object as a document into this database
+  /** Creates or updates the given object as a document into this database
    *  The given object must have an `_id` and an optional `_rev` fields
    *  to conform to the couchdb document structure.
    *  The saved revision is returned. If something went wrong, an exception is raised
@@ -103,7 +102,7 @@ abstract class DocumentOps {
             resolved = strategy(base, last, current)
             res <- resolved match {
               case Some(resolved) => resolver(credit - 1, docId, lastRev, resolved)
-              case None => Future.failed(exn)
+              case None           => Future.failed(exn)
             }
           } yield res
       } withFailureMessage f"Unable to resolve document with ID $docId at revision $baseRev"
@@ -123,8 +122,7 @@ abstract class DocumentOps {
       Future.failed(new SohvaException("Document $id could not be saved"))
   }
 
-  /**
-   * Deletes the document from the database.
+  /** Deletes the document from the database.
    *  The document will only be deleted if the caller provided the last revision
    */
   def deleteDoc[T: CouchFormat](doc: T): Future[Boolean] = {

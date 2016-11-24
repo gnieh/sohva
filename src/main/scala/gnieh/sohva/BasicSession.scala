@@ -20,8 +20,7 @@ import scala.concurrent.Future
 import akka.http.scaladsl.model._
 import akka.http.scaladsl.model.headers.BasicHttpCredentials
 
-/**
- * An instance of a Couch session that allows the user to perform authenticated
+/** An instance of a Couch session that allows the user to perform authenticated
  *  operations using HTTP basic authentication.
  *
  *  @author Lucas Satabin

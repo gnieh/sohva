@@ -21,8 +21,7 @@ import java.net.URL
 
 import scala.concurrent.Future
 
-/**
- * A replicator database that allows people to manage replications:
+/** A replicator database that allows people to manage replications:
  *   - start replication
  *   - cancel or stop replications
  *   - list current replications
@@ -34,8 +33,7 @@ class Replicator(name: String, couch: CouchDB, credit: Int, strategy: Strategy)
 
   import SohvaProtocol._
 
-  /**
-   * Starts a new replication from `source` to `target`. if a replication
+  /** Starts a new replication from `source` to `target`. if a replication
    *  task already exists for the same source and target, the document is added
    *  but the replication is not started again. The result only contains the identifier
    *  of the actual replication task, not its state.
@@ -43,8 +41,7 @@ class Replicator(name: String, couch: CouchDB, credit: Int, strategy: Strategy)
   def start(replication: Replication): Future[Replication] =
     saveDoc(replication)
 
-  /**
-   * Stops the replication identified by the given replication document id.
+  /** Stops the replication identified by the given replication document id.
    *  if the identifier does not describe the document that started the replication,
    *  it is deleted from the replicator database, but the replication task is not stopped.
    *  It returns `true` only if the replication was actually stopped, `false` otherwise.
@@ -67,29 +64,25 @@ class Replicator(name: String, couch: CouchDB, credit: Int, strategy: Strategy)
 
 }
 
-/**
- * A Reference to a database.
+/** A Reference to a database.
  *
  *  @author Lucas Satabin
  */
 abstract class DbRef(val string: String)
 
-/**
- * A Reference to a local database identified by its name.
+/** A Reference to a local database identified by its name.
  *
  *  @author Lucas Satabin
  */
 case class LocalDb(name: String) extends DbRef(name)
 
-/**
- * A Reference to a remote database identified by its url.
+/** A Reference to a remote database identified by its url.
  *
  *  @author Lucas Satabin
  */
 case class RemoteDb(url: URL) extends DbRef(url.toString)
 
-/**
- * A replication document contains information about a particular replication
+/** A replication document contains information about a particular replication
  *  process (continuous or not, ...)
  *
  *  @author Lucas Satabin

@@ -20,8 +20,7 @@ import scala.concurrent.Future
 import akka.http.scaladsl.model._
 import akka.http.scaladsl.unmarshalling._
 
-/**
- * A show function that can be queried.
+/** A show function that can be queried.
  *
  *  @author Lucas Satabin
  */
@@ -41,8 +40,7 @@ class Show(
     for (h <- db.couch.rawHttp(HttpRequest(HttpMethods.HEAD, uri = uri)))
       yield h.status == StatusCodes.OK
 
-  /**
-   * Returns the result of querying the show function with the document with the given identifier
+  /** Returns the result of querying the show function with the document with the given identifier
    *  or `None` for the `null` document.
    */
   def query[T: FromEntityUnmarshaller](docId: Option[String] = None, format: Option[String] = None): Future[T] =
