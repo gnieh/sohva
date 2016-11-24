@@ -18,8 +18,7 @@ package strategy
 
 import spray.json._
 
-/**
- * A strategy indicates how update conflict are resolved.
+/** A strategy indicates how update conflict are resolved.
  *  It is used by the conflict resolver at each try and may be called
  *  several times with the same document if the document changed while the
  *  strategy was applied.
@@ -28,8 +27,7 @@ import spray.json._
  */
 trait Strategy {
 
-  /**
-   * Applies the resolving strategy between the last known revision `baseDoc`
+  /** Applies the resolving strategy between the last known revision `baseDoc`
    *  (or `None` if the document did not exist before to the client knowledge),
    *  the last revision in the database `lastDoc` (or `None` if the document was deleted)
    *  and the document the client wants to save `currentDoc`.

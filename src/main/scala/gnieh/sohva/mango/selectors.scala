@@ -24,24 +24,24 @@ sealed abstract class Selector {
   def &&(that: Selector): Selector =
     (this, that) match {
       case (And(subs1), And(subs2)) => And(subs1 ++ subs2)
-      case (And(subs), _) => And(subs :+ that)
-      case (_, And(subs)) => And(this +: subs)
-      case (_, _) => And(Vector(this, that))
+      case (And(subs), _)           => And(subs :+ that)
+      case (_, And(subs))           => And(this +: subs)
+      case (_, _)                   => And(Vector(this, that))
     }
 
   def ||(that: Selector): Selector =
     (this, that) match {
       case (Or(subs1), Or(subs2)) => Or(subs1 ++ subs2)
-      case (Or(subs), _) => Or(subs :+ that)
-      case (_, Or(subs)) => Or(this +: subs)
-      case (_, _) => Or(Vector(this, that))
+      case (Or(subs), _)          => Or(subs :+ that)
+      case (_, Or(subs))          => Or(this +: subs)
+      case (_, _)                 => Or(Vector(this, that))
     }
 
   def unary_! : Selector =
     this match {
       case Not(sub) => sub
       case Or(subs) => Nor(subs)
-      case _ => Not(this)
+      case _        => Not(this)
     }
 
 }
@@ -90,13 +90,13 @@ case object ObjectObject extends ObjectType("object")
 object ObjectType {
   def apply(str: String): ObjectType =
     str match {
-      case "null" => NullObject
+      case "null"    => NullObject
       case "boolean" => BooleanObject
-      case "number" => NumberObject
-      case "string" => StringObject
-      case "array" => ArrayObject
-      case "object" => ObjectObject
-      case _ => throw new SohvaException(f"Unknown type $str")
+      case "number"  => NumberObject
+      case "string"  => StringObject
+      case "array"   => ArrayObject
+      case "object"  => ObjectObject
+      case _         => throw new SohvaException(f"Unknown type $str")
     }
 }
 

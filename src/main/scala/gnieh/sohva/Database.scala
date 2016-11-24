@@ -209,7 +209,10 @@ class Database private[sohva] (
     for {
       res <- builtInView("_all_docs").query[String, Map[String, String], JsObject](keys = ids) withFailureMessage
         f"Failed to fetch document revisions by IDs $ids from $uri"
-    } yield res.rows.map { case Row(Some(id), _, value, _) => (id, value("rev")) }
+    } yield res.rows.flatMap {
+      case Row(Some(id), _, value, _) => Some(id -> value("rev"))
+      case Row(None, _, _, _) => None
+    }
 
   /**
    * Finds documents using the declarative mango query syntax. See [[sohva.mango]] for details.

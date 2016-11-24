@@ -21,8 +21,7 @@ import spray.json._
 
 import akka.http.scaladsl.model._
 
-/**
- * A design gives access to the different views.
+/** A design gives access to the different views.
  *  Use this class to get or create new views.
  *
  *  @author Lucas Satabin
@@ -37,8 +36,7 @@ class Design(val db: Database,
 
   protected[sohva] val uri = db.uri / "_design" / name.trim
 
-  /**
-   * Check if the design exists.
+  /** Check if the design exists.
    *
    *  @return true if it does, false otherwise
    */
@@ -46,8 +44,7 @@ class Design(val db: Database,
     for (h <- db.couch.rawHttp(HttpRequest(HttpMethods.HEAD, uri = uri)))
       yield h.status == StatusCodes.OK
 
-  /**
-   * Create an empty design document if none exists.
+  /** Create an empty design document if none exists.
    *  Raises an exception if the design already exists.
    *
    *  @return the design document if created..
@@ -59,8 +56,7 @@ class Design(val db: Database,
       else db.saveDoc(DesignDoc("_design/" + name, language, Map(), None, Map(), Map(), Map(), Map(), Nil))
     } yield cr
 
-  /**
-   * Returns the design document from the couchdb instance.
+  /** Returns the design document from the couchdb instance.
    *  Returns `None` if the design document does not exist.
    */
   def getDesignDocument: Future[Option[DesignDoc]] =
@@ -73,8 +69,7 @@ class Design(val db: Database,
   def delete: Future[Boolean] =
     db.deleteDoc("_design/" + name.trim)
 
-  /**
-   * Creates or updates the view in this design
+  /** Creates or updates the view in this design
    *  with the given name, map function and reduce function.
    *  If the design does not exist yet, it is created.
    */
@@ -83,8 +78,7 @@ class Design(val db: Database,
     reduceFun: Option[String] = None): Future[Unit] =
     saveView(viewName, ViewDoc(mapFun, reduceFun))
 
-  /**
-   * Creates or updates the view in this design with the given name.
+  /** Creates or updates the view in this design with the given name.
    *  If the design does not exist yet, it is created.
    */
   def saveView(viewName: String, view: ViewDoc): Future[Unit] =
@@ -121,8 +115,7 @@ class Design(val db: Database,
   def view(viewName: String): View =
     new View(this.name, db, viewName)
 
-  /**
-   * Creates or update the show function in this design with the given name.
+  /** Creates or update the show function in this design with the given name.
    *  If the design does not exist yet, it is created.
    */
   def saveShow(showName: String, showFun: String): Future[Unit] =
@@ -159,8 +152,7 @@ class Design(val db: Database,
   def show(showName: String): Show =
     new Show(this.name, db, showName)
 
-  /**
-   * Creates or update the update function in this design with the given name.
+  /** Creates or update the update function in this design with the given name.
    *  If the design does not exist yet, it is created.
    */
   def saveList(listName: String, listFun: String): Future[Unit] =
@@ -197,8 +189,7 @@ class Design(val db: Database,
   def list(listName: String): CList =
     new CList(this.name, db, listName)
 
-  /**
-   * Creates or update the update function in this design with the given name.
+  /** Creates or update the update function in this design with the given name.
    *  If the design does not exist yet, it is created.
    */
   def saveUpdate(updateName: String, updateFun: String): Future[Unit] =
@@ -235,8 +226,7 @@ class Design(val db: Database,
   def update(updateName: String): Update =
     new Update(this.name, db, updateName)
 
-  /**
-   * Creates or updates the document validation function.
+  /** Creates or updates the document validation function.
    *  If the design does not exist yet, it is created.
    */
   def saveValidateFunction(validateFun: String): Future[Unit] =
@@ -270,8 +260,7 @@ class Design(val db: Database,
       case None => Future.failed(new SohvaException("Unable to delete validate function for unknown design: " + name))
     }
 
-  /**
-   * Creates or updates a filter function.
+  /** Creates or updates a filter function.
    *  If the design does not exist yet, it is created.
    */
   def saveFilter(name: String, filterFun: String): Future[Unit] =
@@ -306,8 +295,7 @@ class Design(val db: Database,
         Future.failed(new SohvaException("Unable to delete filter " + filterName + " for unknown design " + name))
     }
 
-  /**
-   * Creates or updates the list of rewrite rules.
+  /** Creates or updates the list of rewrite rules.
    *  If the design does not exist yet, it is created.
    */
   def saveRewriteRules(rules: List[RewriteRule]): Future[Unit] =
@@ -331,7 +319,7 @@ class Design(val db: Database,
     for (design <- getDesignDocument)
       yield design match {
       case Some(d) => d.rewrites
-      case None => Nil
+      case None    => Nil
     }
 
   /** Requests compaction of this design. */

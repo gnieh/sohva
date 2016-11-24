@@ -15,8 +15,7 @@
 */
 package gnieh.sohva
 
-/**
- * A security document is a special document for couchdb. It has no `_id` or
+/** A security document is a special document for couchdb. It has no `_id` or
  *  `_rev` field.
  *
  *  @author Lucas Satabin

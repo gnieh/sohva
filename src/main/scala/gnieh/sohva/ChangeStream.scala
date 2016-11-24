@@ -43,8 +43,7 @@ import scala.concurrent.duration.Duration
 
 import java.util.concurrent.atomic.AtomicLong
 
-/**
- * A stream that represents a connection to the `_changes` stream of a database.
+/** A stream that represents a connection to the `_changes` stream of a database.
  *
  *  @author Lucas Satabin
  */
@@ -81,8 +80,8 @@ class ChangeStream(database: Database) {
       limit.map(n => "limit" -> n.toString),
       since.map {
         case Left("now") => "since" -> "now"
-        case Left(s) => throw new SohvaException(f"Unsupported `since` value $s")
-        case Right(s) => "since" -> CompactPrinter(s)
+        case Left(s)     => throw new SohvaException(f"Unsupported `since` value $s")
+        case Right(s)    => "since" -> CompactPrinter(s)
       },
       style.map(s => "style" -> s),
       view.map(v => "view" -> v)).flatten
@@ -98,8 +97,7 @@ class ChangeStream(database: Database) {
 
   }
 
-  /**
-   * Returns a continuous stream representing the changes in the database. Each change produces an element in the stream.
+  /** Returns a continuous stream representing the changes in the database. Each change produces an element in the stream.
    *  The returned stream can be cancelled using the kill switch returned by materializing it.
    *  E.g. if you want to log the changes to the console and shut it down after a while, you can write
    *  {{{
@@ -135,8 +133,8 @@ class ChangeStream(database: Database) {
       limit.map(n => "limit" -> n.toString),
       since.map {
         case Left("now") => "since" -> "now"
-        case Left(s) => throw new SohvaException(f"Unsupported `since` value $s")
-        case Right(s) => "since" -> CompactPrinter(s)
+        case Left(s)     => throw new SohvaException(f"Unsupported `since` value $s")
+        case Right(s)    => "since" -> CompactPrinter(s)
       },
       style.map(s => "style" -> s),
       view.map(v => "view" -> v)).flatten

@@ -33,8 +33,7 @@ import akka.stream.{
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.model._
 
-/**
- * A CouchDB instance.
+/** A CouchDB instance.
  *  Allows users to access the different databases and instance information.
  *  This is the key class to start with when one wants to work with couchdb.
  *  Through this one you will get access to the sessions and anonymous access

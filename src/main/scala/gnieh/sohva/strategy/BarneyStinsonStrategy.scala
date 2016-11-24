@@ -18,8 +18,7 @@ package strategy
 
 import spray.json._
 
-/**
- * This strategy applies a simple rule: ''New is always better''
+/** This strategy applies a simple rule: ''New is always better''
  *  Whenever a conflict occurs when trying to save a document in the database,
  *  the newest document (the one the client wants to store) is taken and overrides
  *  the previous revision.
@@ -37,7 +36,7 @@ object BarneyStinsonStrategy extends Strategy {
           // remove the _rev field if present
           val clean = fields.filter {
             case ("_rev", _) => false
-            case _ => true
+            case _           => true
           }
           Some(JsObject(clean + ("_rev" -> lastDoc("_rev"))))
         case _ =>
@@ -49,7 +48,7 @@ object BarneyStinsonStrategy extends Strategy {
       // the document was deleted, drop the revision from the new document and retry
       Some(JsObject(currentDoc.asJsObject.fields.filter {
         case ("_rev", _) => false
-        case _ => true
+        case _           => true
       }))
   }
 }

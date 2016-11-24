@@ -23,8 +23,7 @@ import sprayJson._
 
 import spray.json._
 
-/**
- * This strategy applies a simple structural merge algorithm between variation from
+/** This strategy applies a simple structural merge algorithm between variation from
  *  a base document to the last one in the database and from the base to the current
  *  revision of the document to merge
  *
@@ -171,7 +170,7 @@ object StructuralMergeStrategy extends Strategy {
       // the document was deleted, simply remove the revision from the current document
       Some(JsObject(currentJson.asJsObject.fields.filter {
         case ("_rev", _) => false
-        case _ => true
+        case _           => true
       }))
   }
 
@@ -200,7 +199,7 @@ object StructuralMergeStrategy extends Strategy {
           val parent = elems.dropRight(1)
           elems.last match {
             case int(idx) => Some(Pointer(parent: _*) -> idx.toInt)
-            case _ => None
+            case _        => None
           }
         case _ =>
           None
@@ -211,7 +210,7 @@ object StructuralMergeStrategy extends Strategy {
   def addedIn(ops: List[Operation], p: Pointer): Boolean =
     ops exists {
       case Add(path, _) => path == p
-      case _ => false
+      case _            => false
     }
 
   /** Indicates whether an operation exists in the list that modifies the pointer or one of its parents */
