@@ -36,6 +36,8 @@ Currently available snapshots are:
  - next bugfix release: `2.0.2-SNAPSHOT`
  - next minor release: `2.1.0-SNAPSHOT`
 
+ Snapshots are built against scala 2.11 and scala 2.12.
+
 # Next steps
 
 Once your project is linked to Sohva, you can start using it. Please have a look at the links below for documentation.
