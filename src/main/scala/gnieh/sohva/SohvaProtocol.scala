@@ -128,15 +128,15 @@ trait SohvaProtocol extends DefaultJsonProtocol with MangoProtocol with CouchFor
         case JsObject(fields) =>
           fields.get("ok") match {
             case Some(JsBoolean(_)) => value.convertTo[OkResult]
-            case None => value.convertTo[ErrorResult]
-            case _ => deserializationError(f"database result expected but got $value")
+            case None               => value.convertTo[ErrorResult]
+            case _                  => deserializationError(f"database result expected but got $value")
           }
         case _ =>
           deserializationError(f"database result expected but got $value")
       }
 
     def write(result: DbResult): JsValue = result match {
-      case ok: OkResult => ok.toJson
+      case ok: OkResult       => ok.toJson
       case error: ErrorResult => error.toJson
     }
 
@@ -173,11 +173,11 @@ trait SohvaProtocol extends DefaultJsonProtocol with MangoProtocol with CouchFor
         "password" -> JsString(user.password))
       val fields2 = user._rev match {
         case Some(r) => fields1 + ("_rev" -> JsString(r))
-        case None => fields1
+        case None    => fields1
       }
       val fields3 = user.oauth match {
         case Some(oauth) => fields2 + ("oauth" -> oauth.toJson)
-        case None => fields2
+        case None        => fields2
       }
       JsObject(fields3)
     }
@@ -223,8 +223,7 @@ trait SohvaProtocol extends DefaultJsonProtocol with MangoProtocol with CouchFor
 
   implicit val changesFormat = jsonFormat3(Changes)
 
-  /**
-   * (De)Serialize a database reference (remote or local).
+  /** (De)Serialize a database reference (remote or local).
    *
    *  @author Lucas Satabin
    */

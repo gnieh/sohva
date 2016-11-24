@@ -21,8 +21,7 @@ import scala.concurrent.Future
 
 import akka.http.scaladsl.model._
 
-/**
- * A view can be queried to get the result.
+/** A view can be queried to get the result.
  *
  *  @groupdesc LowLevel Low-level classes that may break compatibility even between patch and minor versions
  *  @groupprio LowLevel 1001
@@ -45,8 +44,7 @@ class View(
     for (h <- db.couch.rawHttp(HttpRequest(HttpMethods.HEAD, uri = uri)))
       yield h.status == StatusCodes.OK
 
-  /**
-   * Queries the view on the server and returned the untyped result.
+  /** Queries the view on the server and returned the untyped result.
    *
    *  ''Warning'': This is low-level API, and might break compatibility even between patch releases
    *
@@ -101,9 +99,8 @@ class View(
 
   }
 
-  /**
-   * Queries the view on the server and returned the typed result.
-   * Only the found keys are returned, errors are ignored in the result.
+  /** Queries the view on the server and returned the typed result.
+   *  Only the found keys are returned, errors are ignored in the result.
    *
    *  BE CAREFUL: If the types given to the constructor are not correct,
    *  strange things may happen! By 'strange', I mean exceptions
@@ -172,8 +169,7 @@ class View(
     uri.toString
 }
 
-/**
- * Used to query built-in view such as `_all_docs`.
+/** Used to query built-in view such as `_all_docs`.
  *
  *  @author Lucas Satabin
  */
@@ -202,8 +198,7 @@ private class TemporaryView(
 }
 case class ViewDoc(map: String, reduce: Option[String])
 
-/**
- *  ''Warning'': This is low-level API, and might break compatibility even between patch releases
+/** ''Warning'': This is low-level API, and might break compatibility even between patch releases
  *
  *  @group LowLevel
  */
@@ -213,15 +208,13 @@ final case class RawViewResult(
   rows: List[RawRow],
   update_seq: Option[Long])
 
-/**
- *  ''Warning'': This is low-level API, and might break compatibility even between patch releases
+/** ''Warning'': This is low-level API, and might break compatibility even between patch releases
  *
  *  @group LowLevel
  */
 sealed trait RawRow
 
-/**
- *  ''Warning'': This is low-level API, and might break compatibility even between patch releases
+/** ''Warning'': This is low-level API, and might break compatibility even between patch releases
  *
  *  @group LowLevel
  */
@@ -231,8 +224,7 @@ final case class SuccessRawRow(
   value: JsValue,
   doc: Option[JsObject]) extends RawRow
 
-/**
- *  ''Warning'': This is low-level API, and might break compatibility even between patch releases
+/** ''Warning'': This is low-level API, and might break compatibility even between patch releases
  *
  *  @group LowLevel
  */

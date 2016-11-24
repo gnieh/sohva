@@ -25,8 +25,7 @@ import akka.http.scaladsl.model._
 import akka.http.scaladsl.marshalling._
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
 
-/**
- * The index manager for a given database.
+/** The index manager for a given database.
  *
  *  @author Lucas Satabin
  */

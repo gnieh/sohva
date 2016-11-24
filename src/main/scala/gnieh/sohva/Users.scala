@@ -27,8 +27,7 @@ import akka.http.scaladsl.model._
 import akka.http.scaladsl.marshalling._
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
 
-/**
- * The users database, exposing the interface for managing couchdb users.
+/** The users database, exposing the interface for managing couchdb users.
  *
  *  @author Lucas Satabin
  */
@@ -43,8 +42,7 @@ class Users(couch: CouchDB) {
 
   private def userDb = couch.database(dbName)
 
-  /**
-   * Adds a new user with the given role list to the user database,
+  /** Adds a new user with the given role list to the user database,
    *  and returns the new instance.
    */
   def add(name: String,

@@ -18,8 +18,7 @@ package gnieh.sohva
 
 import spray.json._
 
-/**
- * The [mango query server](http://docs.couchdb.org/en/2.0.0/api/database/find.html) was introduced in CouchDB 2.0.
+/** The [mango query server](http://docs.couchdb.org/en/2.0.0/api/database/find.html) was introduced in CouchDB 2.0.
  *  It allows for querying documents in a database with a declarative syntax and is easier to use that the classic CouchDB views.
  */
 package object mango {

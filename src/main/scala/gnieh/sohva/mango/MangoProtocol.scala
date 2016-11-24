@@ -30,7 +30,7 @@ trait MangoProtocol extends DefaultJsonProtocol {
     }
 
     def write(sort: Sort): JsValue = sort match {
-      case Asc(field) => JsString(field)
+      case Asc(field)  => JsString(field)
       case Desc(field) => JsObject(Map(field -> JsString("desc")))
     }
 
@@ -38,13 +38,13 @@ trait MangoProtocol extends DefaultJsonProtocol {
 
   implicit object objectTypeFormat extends JsonFormat[ObjectType] {
     def read(json: JsValue): ObjectType = json match {
-      case JsString("null") => NullObject
+      case JsString("null")    => NullObject
       case JsString("boolean") => BooleanObject
-      case JsString("number") => NumberObject
-      case JsString("string") => StringObject
-      case JsString("array") => ArrayObject
-      case JsString("object") => ObjectObject
-      case _ => deserializationError(f"object type object expected but got $json")
+      case JsString("number")  => NumberObject
+      case JsString("string")  => StringObject
+      case JsString("array")   => ArrayObject
+      case JsString("object")  => ObjectObject
+      case _                   => deserializationError(f"object type object expected but got $json")
     }
     def write(tpe: ObjectType): JsString =
       JsString(tpe.value)
@@ -100,34 +100,34 @@ trait MangoProtocol extends DefaultJsonProtocol {
       case JsObject(fields) if fields.size > 0 =>
         fields.map(read).toVector match {
           case Vector(sel) => sel
-          case sels => And(sels)
+          case sels        => And(sels)
         }
       case _ =>
         Eq(json)
     }
 
     def write(selector: Selector): JsObject = selector match {
-      case Empty => JsObject()
+      case Empty            => JsObject()
       case Field(name, sub) => JsObject(Map(name -> write(sub)))
-      case And(sub) => JsObject(Map("$and" -> JsArray(sub.map(write).toVector)))
-      case Or(sub) => JsObject(Map("$or" -> JsArray(sub.map(write).toVector)))
-      case Not(sub) => JsObject(Map("$not" -> write(sub)))
-      case Nor(sub) => JsObject(Map("$nor" -> JsArray(sub.map(write).toVector)))
-      case All(values) => JsObject(Map("$all" -> JsArray(values.toVector)))
-      case ElemMatch(sub) => JsObject(Map("$elemMatch" -> write(sub)))
-      case Eq(value) => JsObject(Map("$eq" -> value))
-      case Ne(value) => JsObject(Map("$ne" -> value))
-      case Lt(value) => JsObject(Map("$lt" -> value))
-      case Lte(value) => JsObject(Map("$lte" -> value))
-      case Gt(value) => JsObject(Map("$gt" -> value))
-      case Gte(value) => JsObject(Map("$gte" -> value))
-      case Exists(e) => JsObject(Map("$exists" -> JsBoolean(e)))
-      case Type(tpe) => JsObject(Map("$type" -> JsString(tpe.value)))
-      case In(values) => JsObject(Map("$in" -> JsArray(values.toVector)))
-      case Nin(values) => JsObject(Map("$nin" -> JsArray(values.toVector)))
-      case Size(s) => JsObject(Map("$size" -> JsNumber(s)))
-      case Mod(div, rem) => JsObject(Map("$mod" -> JsArray(JsNumber(div), JsNumber(rem))))
-      case Regex(re) => JsObject(Map("$regex" -> JsString(re)))
+      case And(sub)         => JsObject(Map("$and" -> JsArray(sub.map(write))))
+      case Or(sub)          => JsObject(Map("$or" -> JsArray(sub.map(write))))
+      case Not(sub)         => JsObject(Map("$not" -> write(sub)))
+      case Nor(sub)         => JsObject(Map("$nor" -> JsArray(sub.map(write))))
+      case All(values)      => JsObject(Map("$all" -> JsArray(values)))
+      case ElemMatch(sub)   => JsObject(Map("$elemMatch" -> write(sub)))
+      case Eq(value)        => JsObject(Map("$eq" -> value))
+      case Ne(value)        => JsObject(Map("$ne" -> value))
+      case Lt(value)        => JsObject(Map("$lt" -> value))
+      case Lte(value)       => JsObject(Map("$lte" -> value))
+      case Gt(value)        => JsObject(Map("$gt" -> value))
+      case Gte(value)       => JsObject(Map("$gte" -> value))
+      case Exists(e)        => JsObject(Map("$exists" -> JsBoolean(e)))
+      case Type(tpe)        => JsObject(Map("$type" -> JsString(tpe.value)))
+      case In(values)       => JsObject(Map("$in" -> JsArray(values)))
+      case Nin(values)      => JsObject(Map("$nin" -> JsArray(values)))
+      case Size(s)          => JsObject(Map("$size" -> JsNumber(s)))
+      case Mod(div, rem)    => JsObject(Map("$mod" -> JsArray(JsNumber(div), JsNumber(rem))))
+      case Regex(re)        => JsObject(Map("$regex" -> JsString(re)))
     }
   }
 

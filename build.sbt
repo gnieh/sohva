@@ -8,7 +8,8 @@ lazy val globalSettings = Seq(
   licenses += ("The Apache Software License, Version 2.0" -> url("http://www.apache.org/licenses/LICENSE-2.0.txt")),
   homepage := Some(url("https://github.com/gnieh/sohva")),
   version := "2.1.0-SNAPSHOT",
-  scalaVersion := "2.11.8",
+  scalaVersion := "2.12.0",
+  crossScalaVersions := Seq("2.12.0", "2.11.8"),
   libraryDependencies ++= globalDependencies,
   parallelExecution := false,
   fork in Test := true,
@@ -27,8 +28,8 @@ lazy val scalariform = scalariformSettings ++ Seq(
 
 lazy val globalDependencies = Seq(
   "org.scalatest" %% "scalatest" % "3.0.0" % "test",
-  "com.typesafe.akka" %% "akka-http-spray-json-experimental" % "2.4.10",
-  "org.gnieh" %% "diffson" % "2.0.2",
+  "com.typesafe.akka" %% "akka-http-spray-json" % "10.0.0",
+  "org.gnieh" %% "diffson-spray-json" % "2.1.0",
   "io.spray" %% "spray-json" % "1.3.2",
   "org.slf4j" % "slf4j-api" % "1.7.21"
 )
@@ -37,11 +38,11 @@ lazy val publishSettings = Seq(
   publishMavenStyle := true,
   publishArtifact in Test := false,
   // The Nexus repo we're publishing to.
-  publishTo <<= version { (v: String) =>
+  publishTo := (version { (v: String) =>
     val nexus = "https://oss.sonatype.org/"
       if (v.trim.endsWith("SNAPSHOT")) Some("snapshots" at nexus + "content/repositories/snapshots")
       else Some("releases" at nexus + "service/local/staging/deploy/maven2")
-  },
+  }).value,
   pomIncludeRepository := { x => false },
   pomExtra := (
     <scm>
@@ -74,7 +75,7 @@ lazy val sohva = project.in(file("."))
   .settings(globalSettings: _*)
   .settings(publishSettings: _*)
   .settings(osgiSettings: _*)
-  .settings(scalariformSettings: _*)
+  .settings(scalariform: _*)
   .settings (
     name := "sohva",
     description := "Couchdb client library",
@@ -99,4 +100,4 @@ lazy val json = project.in(file("sohva-json"))
   .settings(globalSettings: _*)
   .settings(
     libraryDependencies ++= globalDependencies,
-    libraryDependencies <+= scalaVersion("org.scala-lang" % "scala-reflect" % _))
+    libraryDependencies += scalaVersion("org.scala-lang" % "scala-reflect" % _).value)
