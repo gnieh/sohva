@@ -43,7 +43,7 @@ class TestBasic extends SohvaTestSpec with Matchers {
   "an existing document" should "have a revision" in {
     synced(db.getDocById[TestDoc2]("new-doc")) match {
       case Some(doc) => doc._rev should not be (None)
-      case None => fail("The document with id `new-doc` should exist")
+      case None      => fail("The document with id `new-doc` should exist")
     }
   }
 
