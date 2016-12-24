@@ -28,7 +28,7 @@ class TestViews extends SohvaTestSpec with Matchers with BeforeAndAfterEach {
   implicit object NullReader extends JsonReader[Null] {
     def read(json: JsValue) = json match {
       case JsNull => null
-      case _ => deserializationError("null expected")
+      case _      => deserializationError("null expected")
     }
   }
 
