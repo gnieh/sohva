@@ -18,8 +18,7 @@ package test
 
 import org.scalatest._
 
-/**
- * @author satabin
+/** @author satabin
  *
  */
 class TestSecurity extends SohvaTestSpec with Matchers with BeforeAndAfterEach {

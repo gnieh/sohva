@@ -52,23 +52,16 @@ final case class Query(selector: Selector, fields: List[String], sort: List[Sort
   /** Creates a query where some properties are removed. */
   def without(without: Without*): Query =
     without.foldLeft(this) {
-      case (q, mango.fields) =>
+      case (q, Without.Fields) =>
         q.copy(fields = Nil)
-      case (q, mango.sort) =>
+      case (q, Without.Sort) =>
         q.copy(sort = Nil)
-      case (q, mango.limit) =>
+      case (q, Without.Limit) =>
         q.copy(limit = None)
-      case (q, mango.skip) =>
+      case (q, Without.Skip) =>
         q.copy(skip = None)
-      case (q, mango.index) =>
+      case (q, Without.Index) =>
         q.copy(use_index = None)
     }
 
 }
-
-sealed trait Without
-case object fields extends Without
-case object sort extends Without
-case object limit extends Without
-case object skip extends Without
-case object index extends Without

@@ -73,7 +73,7 @@ class TestAttachments extends SohvaTestSpec with Matchers {
     val withAttachment = synced(db.getDocById[TestDocAtt](doc._id))
     withAttachment.value._attachments.headOption match {
       case Some(a) => a._1 should equal("attachment-id")
-      case None => fail("no attachment")
+      case None    => fail("no attachment")
     }
   }
 
