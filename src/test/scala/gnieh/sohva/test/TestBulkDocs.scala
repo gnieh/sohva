@@ -29,7 +29,7 @@ class TestBulkDocs extends SohvaTestSpec with Matchers {
     val result = synced(db.saveDocs(docs))
 
     result.filter {
-      case OkResult(_, _, _) => false
+      case OkResult(_, _, _)    => false
       case ErrorResult(_, _, _) => true
     }.size should be(0)
 
@@ -59,7 +59,7 @@ class TestBulkDocs extends SohvaTestSpec with Matchers {
     val result1 = synced(db.saveDocs(docsString))
 
     result1.filter {
-      case OkResult(_, _, _) => false
+      case OkResult(_, _, _)    => false
       case ErrorResult(_, _, _) => true
     }.size should be(0)
 
@@ -82,7 +82,7 @@ class TestBulkDocs extends SohvaTestSpec with Matchers {
     val deleted = synced(db.deleteDocs(ids))
 
     deleted.filter {
-      case OkResult(_, _, _) => false
+      case OkResult(_, _, _)    => false
       case ErrorResult(_, _, _) => true
     }.size should be(0)
 
@@ -103,7 +103,7 @@ class TestBulkDocs extends SohvaTestSpec with Matchers {
     val deleted = synced(db.deleteDocs(ids.take(5)))
 
     deleted.filter {
-      case OkResult(_, _, _) => false
+      case OkResult(_, _, _)    => false
       case ErrorResult(_, _, _) => true
     }.size should be(0)
 
