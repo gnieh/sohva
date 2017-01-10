@@ -1,42 +1,597 @@
 <!DOCTYPE html >
 <html>
         <head>
-          <title>Configuration - gnieh.sohva.Configuration</title>
-          <meta name="description" content="Configuration - gnieh.sohva.Configuration" />
-          <meta name="keywords" content="Configuration gnieh.sohva.Configuration" />
+          <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+          <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+          <title></title>
+          <meta name="description" content="" />
+          <meta name="keywords" content="" />
           <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
           
+      <link href="../../lib/index.css" media="screen" type="text/css" rel="stylesheet" />
       <link href="../../lib/template.css" media="screen" type="text/css" rel="stylesheet" />
       <link href="../../lib/diagrams.css" media="screen" type="text/css" rel="stylesheet" id="diagrams-css" />
-      <script type="text/javascript" src="../../lib/jquery.js" id="jquery-js"></script>
-      <script type="text/javascript" src="../../lib/jquery-ui.js"></script>
+      <script type="text/javascript" src="../../lib/jquery.js"></script>
+      <script type="text/javascript" src="../../lib/jquery.panzoom.min.js"></script>
+      <script type="text/javascript" src="../../lib/jquery.mousewheel.min.js"></script>
+      <script type="text/javascript" src="../../lib/index.js"></script>
+      <script type="text/javascript" src="../../index.js"></script>
+      <script type="text/javascript" src="../../lib/scheduler.js"></script>
       <script type="text/javascript" src="../../lib/template.js"></script>
       <script type="text/javascript" src="../../lib/tools.tooltip.js"></script>
       
       <script type="text/javascript">
-         if(top === self) {
-            var url = '../../index.html';
-            var hash = 'gnieh.sohva.Configuration';
-            var anchor = window.location.hash;
-            var anchor_opt = '';
-            if (anchor.length >= 1)
-              anchor_opt = '@' + anchor.substring(1);
-            window.location.href = url + '#' + hash + anchor_opt;
-         }
-   	  </script>
+        /* this variable can be used by the JS to determine the path to the root document */
+        var toRoot = '../../';
+      </script>
     
         </head>
-        <body class="type">
-      <div id="definition">
-        <img alt="Class" src="../../lib/class_big.png" />
-        <p id="owner"><a href="../package.html" class="extype" name="gnieh">gnieh</a>.<a href="package.html" class="extype" name="gnieh.sohva">sohva</a></p>
-        <h1>Configuration</h1><h3><span class="morelinks"><div>Related Doc:
-            <a href="package.html" class="extype" name="gnieh.sohva">package sohva</a>
-          </div></span></h3><span class="permalink">
-      <a href="../../index.html#gnieh.sohva.Configuration" title="Permalink" target="_top">
-        <img src="../../lib/permalink.png" alt="Permalink" />
+        <body>
+      <div id="search">
+        <span id="doc-title"><span id="doc-version"></span></span>
+        <span class="close-results"><span class="left">&lt;</span> Back</span>
+        <div id="textfilter">
+          <span class="input">
+            <input autocapitalize="none" placeholder="Search" id="index-input" type="text" accesskey="/" />
+            <i class="clear material-icons"></i>
+            <i id="search-icon" class="material-icons"></i>
+          </span>
+        </div>
+    </div>
+      <div id="search-results">
+        <div id="search-progress">
+          <div id="progress-fill"></div>
+        </div>
+        <div id="results-content">
+          <div id="entity-results"></div>
+          <div id="member-results"></div>
+        </div>
+      </div>
+      <div id="content-scroll-container" style="-webkit-overflow-scrolling: touch;">
+        <div id="content-container" style="-webkit-overflow-scrolling: touch;">
+          <div id="subpackage-spacer">
+            <div id="packages">
+              <h1>Packages</h1>
+              <ul>
+                <li name="_root_.root" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="_root_"></a><a id="root:_root_"></a>
+      <span class="permalink">
+      <a href="index.html#_root_" title="Permalink">
+        <i class="material-icons"></i>
       </a>
     </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">package</span>
+      </span>
+      <span class="symbol">
+        <a title="" href="../../index.html">
+              <span class="name">root</span>
+            </a>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../../index.html" class="extype" name="_root_">root</a></dd></dl></div>
+    </li><li name="_root_.gnieh" visbl="pub" class="indented1 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="gnieh"></a><a id="gnieh:gnieh"></a>
+      <span class="permalink">
+      <a href="index.html#gnieh" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">package</span>
+      </span>
+      <span class="symbol">
+        <a title="" href="../index.html">
+              <span class="name">gnieh</span>
+            </a>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../../index.html" class="extype" name="_root_">root</a></dd></dl></div>
+    </li><li name="gnieh.sohva" visbl="pub" class="indented2 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="sohva"></a><a id="sohva:sohva"></a>
+      <span class="permalink">
+      <a href="../gnieh/index.html#sohva" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">package</span>
+      </span>
+      <span class="symbol">
+        <a title="Contains all the classes needed to interact with a couchdb server." href="index.html">
+              <span class="name">sohva</span>
+            </a>
+      </span>
+      
+      <p class="shortcomment cmt">Contains all the classes needed to interact with a couchdb server.</p><div class="fullcomment"><div class="comment cmt"><p>Contains all the classes needed to interact with a couchdb server.
+ Classes in this package allows the user to:</p><ul><li>create/delete new databases into a couchdb instance,</li><li>create/update/delete documents into a couchdb database,</li><li>create/update/delete designs and views,</li><li>manage built-in security document of a given database,</li><li>create/update/delete couchdb users,</li><li>use couchdb authentication API to create sessions and use built-in permission system.
+</li></ul></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../index.html" class="extype" name="gnieh">gnieh</a></dd></dl></div>
+    </li><li name="gnieh.sohva.mango" visbl="pub" class="indented3 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="mango"></a><a id="mango:mango"></a>
+      <span class="permalink">
+      <a href="../../gnieh/sohva/index.html#mango" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">package</span>
+      </span>
+      <span class="symbol">
+        <a title="The [mango query server](http://docs.couchdb.org/en/2.0.0/api/database/find.html) was introduced in CouchDB 2.0." href="mango/index.html">
+              <span class="name">mango</span>
+            </a>
+      </span>
+      
+      <p class="shortcomment cmt">The [mango query server](http://docs.couchdb.org/en/2.0.0/api/database/find.html) was introduced in CouchDB 2.0.</p><div class="fullcomment"><div class="comment cmt"><p>The [mango query server](http://docs.couchdb.org/en/2.0.0/api/database/find.html) was introduced in CouchDB 2.0.
+ It allows for querying documents in a database with a declarative syntax and is easier to use that the classic CouchDB views.
+</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="index.html" class="extype" name="gnieh.sohva">sohva</a></dd></dl></div>
+    </li><li name="gnieh.sohva.strategy" visbl="pub" class="indented3 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="strategy"></a><a id="strategy:strategy"></a>
+      <span class="permalink">
+      <a href="../../gnieh/sohva/index.html#strategy" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">package</span>
+      </span>
+      <span class="symbol">
+        <a title="" href="strategy/index.html">
+              <span class="name">strategy</span>
+            </a>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="index.html" class="extype" name="gnieh.sohva">sohva</a></dd></dl></div>
+    </li><li class="current-entities indented2">
+                        <span class="separator"></span>
+                        <a class="class" href="Attachment.html" title=""></a>
+                        <a href="Attachment.html" title="">
+                          Attachment
+                        </a>
+                      </li><li class="current-entities indented2">
+                        <span class="separator"></span>
+                        <a class="trait" href="Attachments.html" title="Mix in this trait with any object to have automatic management of the attachment fields
+"></a>
+                        <a href="Attachments.html" title="Mix in this trait with any object to have automatic management of the attachment fields
+">
+                          Attachments
+                        </a>
+                      </li><li class="current-entities indented2">
+                        <span class="separator"></span>
+                        <a class="class" href="AuthInfo.html" title="Authentication information indicating the authentication database,
+ the handler used and the authentication method
+"></a>
+                        <a href="AuthInfo.html" title="Authentication information indicating the authentication database,
+ the handler used and the authentication method
+">
+                          AuthInfo
+                        </a>
+                      </li><li class="current-entities indented2">
+                        <span class="separator"></span>
+                        <a class="class" href="AuthResult.html" title="Result of the authentication request"></a>
+                        <a href="AuthResult.html" title="Result of the authentication request">
+                          AuthResult
+                        </a>
+                      </li><li class="current-entities indented2">
+                        <span class="separator"></span>
+                        <a class="class" href="AutoCloseabled.html" title=""></a>
+                        <a href="AutoCloseabled.html" title="">
+                          AutoCloseabled
+                        </a>
+                      </li><li class="current-entities indented2">
+                        <span class="separator"></span>
+                        <a class="class" href="BasicSession.html" title="An instance of a Couch session that allows the user to perform authenticated
+ operations using HTTP basic authentication."></a>
+                        <a href="BasicSession.html" title="An instance of a Couch session that allows the user to perform authenticated
+ operations using HTTP basic authentication.">
+                          BasicSession
+                        </a>
+                      </li><li class="current-entities indented2">
+                        <span class="separator"></span>
+                        <a class="class" href="CList.html" title="A list that can be queried for a given view."></a>
+                        <a href="CList.html" title="A list that can be queried for a given view.">
+                          CList
+                        </a>
+                      </li><li class="current-entities indented2">
+                        <span class="separator"></span>
+                        <a class="class" href="Change.html" title=""></a>
+                        <a href="Change.html" title="">
+                          Change
+                        </a>
+                      </li><li class="current-entities indented2">
+                        <span class="separator"></span>
+                        <a class="class" href="ChangeStream.html" title="A stream that represents a connection to the _changes stream of a database."></a>
+                        <a href="ChangeStream.html" title="A stream that represents a connection to the _changes stream of a database.">
+                          ChangeStream
+                        </a>
+                      </li><li class="current-entities indented2">
+                        <span class="separator"></span>
+                        <a class="class" href="Changes.html" title=""></a>
+                        <a href="Changes.html" title="">
+                          Changes
+                        </a>
+                      </li><li class="current-entities indented2">
+                        <span class="separator"></span>
+                        <a class="class" href="" title="The configuration object of a couchdb instance
+"></a>
+                        <a href="" title="The configuration object of a couchdb instance
+">
+                          Configuration
+                        </a>
+                      </li><li class="current-entities indented2">
+                        <a class="object" href="ConflictException$.html" title=""></a>
+                        <a class="class" href="ConflictException.html" title=""></a>
+                        <a href="ConflictException.html" title="">
+                          ConflictException
+                        </a>
+                      </li><li class="current-entities indented2">
+                        <span class="separator"></span>
+                        <a class="class" href="CouchClient.html" title="A CouchDB instance."></a>
+                        <a href="CouchClient.html" title="A CouchDB instance.">
+                          CouchClient
+                        </a>
+                      </li><li class="current-entities indented2">
+                        <span class="separator"></span>
+                        <a class="trait" href="CouchCredentials.html" title=""></a>
+                        <a href="CouchCredentials.html" title="">
+                          CouchCredentials
+                        </a>
+                      </li><li class="current-entities indented2">
+                        <span class="separator"></span>
+                        <a class="class" href="CouchDB.html" title="A CouchDB instance."></a>
+                        <a href="CouchDB.html" title="A CouchDB instance.">
+                          CouchDB
+                        </a>
+                      </li><li class="current-entities indented2">
+                        <a class="object" href="CouchException$.html" title=""></a>
+                        <a class="class" href="CouchException.html" title=""></a>
+                        <a href="CouchException.html" title="">
+                          CouchException
+                        </a>
+                      </li><li class="current-entities indented2">
+                        <span class="separator"></span>
+                        <a class="trait" href="CouchFormat.html" title=""></a>
+                        <a href="CouchFormat.html" title="">
+                          CouchFormat
+                        </a>
+                      </li><li class="current-entities indented2">
+                        <a class="object" href="CouchFormatImpl$.html" title=""></a>
+                        <a class="trait" href="CouchFormatImpl.html" title=""></a>
+                        <a href="CouchFormatImpl.html" title="">
+                          CouchFormatImpl
+                        </a>
+                      </li><li class="current-entities indented2">
+                        <span class="separator"></span>
+                        <a class="class" href="CouchInfo.html" title=""></a>
+                        <a href="CouchInfo.html" title="">
+                          CouchInfo
+                        </a>
+                      </li><li class="current-entities indented2">
+                        <span class="separator"></span>
+                        <a class="class" href="CouchUser.html" title=""></a>
+                        <a href="CouchUser.html" title="">
+                          CouchUser
+                        </a>
+                      </li><li class="current-entities indented2">
+                        <span class="separator"></span>
+                        <a class="class" href="Database.html" title="Gives the user access to the different operations available on a database."></a>
+                        <a href="Database.html" title="Gives the user access to the different operations available on a database.">
+                          Database
+                        </a>
+                      </li><li class="current-entities indented2">
+                        <span class="separator"></span>
+                        <a class="class" href="DbRef.html" title="A Reference to a database."></a>
+                        <a href="DbRef.html" title="A Reference to a database.">
+                          DbRef
+                        </a>
+                      </li><li class="current-entities indented2">
+                        <span class="separator"></span>
+                        <a class="trait" href="DbResult.html" title=""></a>
+                        <a href="DbResult.html" title="">
+                          DbResult
+                        </a>
+                      </li><li class="current-entities indented2">
+                        <span class="separator"></span>
+                        <a class="class" href="DbUpdate.html" title=""></a>
+                        <a href="DbUpdate.html" title="">
+                          DbUpdate
+                        </a>
+                      </li><li class="current-entities indented2">
+                        <span class="separator"></span>
+                        <a class="class" href="Design.html" title="A design gives access to the different views."></a>
+                        <a href="Design.html" title="A design gives access to the different views.">
+                          Design
+                        </a>
+                      </li><li class="current-entities indented2">
+                        <span class="separator"></span>
+                        <a class="class" href="DesignDoc.html" title=""></a>
+                        <a href="DesignDoc.html" title="">
+                          DesignDoc
+                        </a>
+                      </li><li class="current-entities indented2">
+                        <span class="separator"></span>
+                        <a class="class" href="DocUpdate.html" title=""></a>
+                        <a href="DocUpdate.html" title="">
+                          DocUpdate
+                        </a>
+                      </li><li class="current-entities indented2">
+                        <span class="separator"></span>
+                        <a class="class" href="DocumentOps.html" title=""></a>
+                        <a href="DocumentOps.html" title="">
+                          DocumentOps
+                        </a>
+                      </li><li class="current-entities indented2">
+                        <span class="separator"></span>
+                        <a class="object" href="EmptySecurityList$.html" title=""></a>
+                        <a href="EmptySecurityList$.html" title="">
+                          EmptySecurityList
+                        </a>
+                      </li><li class="current-entities indented2">
+                        <span class="separator"></span>
+                        <a class="class" href="ErrorRawRow.html" title="Warning: This is low-level API, and might break compatibility even between patch releases
+"></a>
+                        <a href="ErrorRawRow.html" title="Warning: This is low-level API, and might break compatibility even between patch releases
+">
+                          ErrorRawRow
+                        </a>
+                      </li><li class="current-entities indented2">
+                        <span class="separator"></span>
+                        <a class="class" href="ErrorResult.html" title=""></a>
+                        <a href="ErrorResult.html" title="">
+                          ErrorResult
+                        </a>
+                      </li><li class="current-entities indented2">
+                        <span class="separator"></span>
+                        <a class="trait" href="IdRev.html" title="Mix in this trait with any object to have more efficient automatic handling
+ of documents (no reflective method call is performed)
+"></a>
+                        <a href="IdRev.html" title="Mix in this trait with any object to have more efficient automatic handling
+ of documents (no reflective method call is performed)
+">
+                          IdRev
+                        </a>
+                      </li><li class="current-entities indented2">
+                        <span class="separator"></span>
+                        <a class="class" href="InfoResult.html" title=""></a>
+                        <a href="InfoResult.html" title="">
+                          InfoResult
+                        </a>
+                      </li><li class="current-entities indented2">
+                        <span class="separator"></span>
+                        <a class="class" href="Local.html" title=""></a>
+                        <a href="Local.html" title="">
+                          Local
+                        </a>
+                      </li><li class="current-entities indented2">
+                        <span class="separator"></span>
+                        <a class="class" href="LocalDb.html" title="A Reference to a local database identified by its name."></a>
+                        <a href="LocalDb.html" title="A Reference to a local database identified by its name.">
+                          LocalDb
+                        </a>
+                      </li><li class="current-entities indented2">
+                        <span class="separator"></span>
+                        <a class="class" href="LoginPasswordCredentials.html" title=""></a>
+                        <a href="LoginPasswordCredentials.html" title="">
+                          LoginPasswordCredentials
+                        </a>
+                      </li><li class="current-entities indented2">
+                        <span class="separator"></span>
+                        <a class="class" href="Membership.html" title=""></a>
+                        <a href="Membership.html" title="">
+                          Membership
+                        </a>
+                      </li><li class="current-entities indented2">
+                        <span class="separator"></span>
+                        <a class="object" href="OAuth$.html" title=""></a>
+                        <a href="OAuth$.html" title="">
+                          OAuth
+                        </a>
+                      </li><li class="current-entities indented2">
+                        <span class="separator"></span>
+                        <a class="class" href="OAuthCredentials.html" title=""></a>
+                        <a href="OAuthCredentials.html" title="">
+                          OAuthCredentials
+                        </a>
+                      </li><li class="current-entities indented2">
+                        <span class="separator"></span>
+                        <a class="class" href="OAuthData.html" title=""></a>
+                        <a href="OAuthData.html" title="">
+                          OAuthData
+                        </a>
+                      </li><li class="current-entities indented2">
+                        <span class="separator"></span>
+                        <a class="class" href="OAuthSession.html" title="An instance of a Couch session that allows the user to perform authenticated
+ operations using OAuth."></a>
+                        <a href="OAuthSession.html" title="An instance of a Couch session that allows the user to perform authenticated
+ operations using OAuth.">
+                          OAuthSession
+                        </a>
+                      </li><li class="current-entities indented2">
+                        <span class="separator"></span>
+                        <a class="class" href="OkResult.html" title=""></a>
+                        <a href="OkResult.html" title="">
+                          OkResult
+                        </a>
+                      </li><li class="current-entities indented2">
+                        <span class="separator"></span>
+                        <a class="trait" href="RawRow.html" title="Warning: This is low-level API, and might break compatibility even between patch releases
+"></a>
+                        <a href="RawRow.html" title="Warning: This is low-level API, and might break compatibility even between patch releases
+">
+                          RawRow
+                        </a>
+                      </li><li class="current-entities indented2">
+                        <span class="separator"></span>
+                        <a class="class" href="RawViewResult.html" title="Warning: This is low-level API, and might break compatibility even between patch releases
+"></a>
+                        <a href="RawViewResult.html" title="Warning: This is low-level API, and might break compatibility even between patch releases
+">
+                          RawViewResult
+                        </a>
+                      </li><li class="current-entities indented2">
+                        <span class="separator"></span>
+                        <a class="class" href="RemoteDb.html" title="A Reference to a remote database identified by its url."></a>
+                        <a href="RemoteDb.html" title="A Reference to a remote database identified by its url.">
+                          RemoteDb
+                        </a>
+                      </li><li class="current-entities indented2">
+                        <span class="separator"></span>
+                        <a class="class" href="Replication.html" title="A replication document contains information about a particular replication
+ process (continuous or not, ...)
+"></a>
+                        <a href="Replication.html" title="A replication document contains information about a particular replication
+ process (continuous or not, ...)
+">
+                          Replication
+                        </a>
+                      </li><li class="current-entities indented2">
+                        <span class="separator"></span>
+                        <a class="class" href="Replicator.html" title="A replicator database that allows people to manage replications:"></a>
+                        <a href="Replicator.html" title="A replicator database that allows people to manage replications:">
+                          Replicator
+                        </a>
+                      </li><li class="current-entities indented2">
+                        <span class="separator"></span>
+                        <a class="class" href="Rev.html" title=""></a>
+                        <a href="Rev.html" title="">
+                          Rev
+                        </a>
+                      </li><li class="current-entities indented2">
+                        <span class="separator"></span>
+                        <a class="class" href="RevDiff.html" title=""></a>
+                        <a href="RevDiff.html" title="">
+                          RevDiff
+                        </a>
+                      </li><li class="current-entities indented2">
+                        <span class="separator"></span>
+                        <a class="class" href="RewriteRule.html" title=""></a>
+                        <a href="RewriteRule.html" title="">
+                          RewriteRule
+                        </a>
+                      </li><li class="current-entities indented2">
+                        <span class="separator"></span>
+                        <a class="class" href="Row.html" title=""></a>
+                        <a href="Row.html" title="">
+                          Row
+                        </a>
+                      </li><li class="current-entities indented2">
+                        <span class="separator"></span>
+                        <a class="class" href="SecurityDoc.html" title="A security document is a special document for couchdb."></a>
+                        <a href="SecurityDoc.html" title="A security document is a special document for couchdb.">
+                          SecurityDoc
+                        </a>
+                      </li><li class="current-entities indented2">
+                        <span class="separator"></span>
+                        <a class="class" href="SecurityList.html" title=""></a>
+                        <a href="SecurityList.html" title="">
+                          SecurityList
+                        </a>
+                      </li><li class="current-entities indented2">
+                        <span class="separator"></span>
+                        <a class="trait" href="Session.html" title="Methods that must be implemented by a session."></a>
+                        <a href="Session.html" title="Methods that must be implemented by a session.">
+                          Session
+                        </a>
+                      </li><li class="current-entities indented2">
+                        <span class="separator"></span>
+                        <a class="class" href="Show.html" title="A show function that can be queried."></a>
+                        <a href="Show.html" title="A show function that can be queried.">
+                          Show
+                        </a>
+                      </li><li class="current-entities indented2">
+                        <span class="separator"></span>
+                        <a class="class" href="Sizes.html" title=""></a>
+                        <a href="Sizes.html" title="">
+                          Sizes
+                        </a>
+                      </li><li class="current-entities indented2">
+                        <span class="separator"></span>
+                        <a class="class" href="SohvaException.html" title=""></a>
+                        <a href="SohvaException.html" title="">
+                          SohvaException
+                        </a>
+                      </li><li class="current-entities indented2">
+                        <span class="separator"></span>
+                        <a class="class" href="SohvaJsonException.html" title=""></a>
+                        <a href="SohvaJsonException.html" title="">
+                          SohvaJsonException
+                        </a>
+                      </li><li class="current-entities indented2">
+                        <a class="object" href="SohvaProtocol$.html" title=""></a>
+                        <a class="trait" href="SohvaProtocol.html" title=""></a>
+                        <a href="SohvaProtocol.html" title="">
+                          SohvaProtocol
+                        </a>
+                      </li><li class="current-entities indented2">
+                        <span class="separator"></span>
+                        <a class="class" href="SuccessRawRow.html" title="Warning: This is low-level API, and might break compatibility even between patch releases
+"></a>
+                        <a href="SuccessRawRow.html" title="Warning: This is low-level API, and might break compatibility even between patch releases
+">
+                          SuccessRawRow
+                        </a>
+                      </li><li class="current-entities indented2">
+                        <span class="separator"></span>
+                        <a class="class" href="Update.html" title="An update handler that can be queried."></a>
+                        <a href="Update.html" title="An update handler that can be queried.">
+                          Update
+                        </a>
+                      </li><li class="current-entities indented2">
+                        <span class="separator"></span>
+                        <a class="class" href="UserCtx.html" title="The user context giving his name and roles"></a>
+                        <a href="UserCtx.html" title="The user context giving his name and roles">
+                          UserCtx
+                        </a>
+                      </li><li class="current-entities indented2">
+                        <span class="separator"></span>
+                        <a class="class" href="UserInfo.html" title="A couchdb user has a name, a password and a lit of roles."></a>
+                        <a href="UserInfo.html" title="A couchdb user has a name, a password and a lit of roles.">
+                          UserInfo
+                        </a>
+                      </li><li class="current-entities indented2">
+                        <span class="separator"></span>
+                        <a class="class" href="Users.html" title="The users database, exposing the interface for managing couchdb users."></a>
+                        <a href="Users.html" title="The users database, exposing the interface for managing couchdb users.">
+                          Users
+                        </a>
+                      </li><li class="current-entities indented2">
+                        <span class="separator"></span>
+                        <a class="class" href="View.html" title="A view can be queried to get the result."></a>
+                        <a href="View.html" title="A view can be queried to get the result.">
+                          View
+                        </a>
+                      </li><li class="current-entities indented2">
+                        <span class="separator"></span>
+                        <a class="class" href="ViewDoc.html" title=""></a>
+                        <a href="ViewDoc.html" title="">
+                          ViewDoc
+                        </a>
+                      </li><li class="current-entities indented2">
+                        <span class="separator"></span>
+                        <a class="class" href="ViewResult.html" title=""></a>
+                        <a href="ViewResult.html" title="">
+                          ViewResult
+                        </a>
+                      </li>
+              </ul>
+            </div>
+          </div>
+          <div id="content">
+            <body class="class type">
+      <div id="definition">
+        <div class="big-circle class">c</div>
+        <p id="owner"><a href="../index.html" class="extype" name="gnieh">gnieh</a>.<a href="index.html" class="extype" name="gnieh.sohva">sohva</a></p>
+        <h1>Configuration<span class="permalink">
+      <a href="../../gnieh/sohva/Configuration.html" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span></h1>
+        <h3><span class="morelinks"></span></h3>
       </div>
 
       <h4 id="signature" class="signature">
@@ -48,51 +603,66 @@
         <span class="name">Configuration</span><span class="params">(<span name="sections">sections: <span class="extype" name="scala.Predef.Map">Map</span>[<span class="extype" name="scala.Predef.String">String</span>, <span class="extype" name="scala.Predef.Map">Map</span>[<span class="extype" name="scala.Predef.String">String</span>, <span class="extype" name="scala.Predef.String">String</span>]]</span>)</span><span class="result"> extends <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
       </span>
       </h4>
+
       
           <div id="comment" class="fullcommenttop"><div class="comment cmt"><p>The configuration object of a couchdb instance
 </p></div><div class="toggleContainer block">
-          <span class="toggle">Linear Supertypes</span>
+          <span class="toggle">
+            Linear Supertypes
+          </span>
           <div class="superTypes hiddenContent"><span class="extype" name="scala.Serializable">Serializable</span>, <span class="extype" name="java.io.Serializable">Serializable</span>, <span class="extype" name="scala.Product">Product</span>, <span class="extype" name="scala.Equals">Equals</span>, <span class="extype" name="scala.AnyRef">AnyRef</span>, <span class="extype" name="scala.Any">Any</span></div>
         </div></div>
         
 
       <div id="mbrsel">
-        <div id="textfilter"><span class="pre"></span><span class="input"><input id="mbrsel-input" type="text" accesskey="/" /></span><span class="post"></span></div>
-        <div id="order">
-              <span class="filtertype">Ordering</span>
-              <ol>
-                
-                <li class="alpha in"><span>Alphabetic</span></li>
-                <li class="inherit out"><span>By Inheritance</span></li>
-              </ol>
-            </div>
-        <div id="ancestors">
-                <span class="filtertype">Inherited<br />
-                </span>
-                <ol id="linearization">
-                  <li class="in" name="gnieh.sohva.Configuration"><span>Configuration</span></li><li class="in" name="scala.Serializable"><span>Serializable</span></li><li class="in" name="java.io.Serializable"><span>Serializable</span></li><li class="in" name="scala.Product"><span>Product</span></li><li class="in" name="scala.Equals"><span>Equals</span></li><li class="in" name="scala.AnyRef"><span>AnyRef</span></li><li class="in" name="scala.Any"><span>Any</span></li>
-                </ol>
-              </div><div id="ancestors">
-            <span class="filtertype"></span>
+        <div class="toggle"></div>
+        <div id="memberfilter">
+          <i class="material-icons arrow"></i>
+          <span class="input">
+            <input id="mbrsel-input" placeholder="Filter all members" type="text" accesskey="/" />
+          </span>
+          <i class="clear material-icons"></i>
+        </div>
+        <div id="filterby">
+          <div id="order">
+            <span class="filtertype">Ordering</span>
             <ol>
-              <li class="hideall out"><span>Hide All</span></li>
-              <li class="showall in"><span>Show All</span></li>
+              
+              <li class="alpha in"><span>Alphabetic</span></li>
+              <li class="inherit out"><span>By Inheritance</span></li>
             </ol>
           </div>
-        <div id="visbl">
-            <span class="filtertype">Visibility</span>
-            <ol><li class="public in"><span>Public</span></li><li class="all out"><span>All</span></li></ol>
-          </div>
+          <div class="ancestors">
+                  <span class="filtertype">Inherited<br />
+                  </span>
+                  <ol id="linearization">
+                    <li class="in" name="gnieh.sohva.Configuration"><span>Configuration</span></li><li class="in" name="scala.Serializable"><span>Serializable</span></li><li class="in" name="java.io.Serializable"><span>Serializable</span></li><li class="in" name="scala.Product"><span>Product</span></li><li class="in" name="scala.Equals"><span>Equals</span></li><li class="in" name="scala.AnyRef"><span>AnyRef</span></li><li class="in" name="scala.Any"><span>Any</span></li>
+                  </ol>
+                </div><div class="ancestors">
+              <span class="filtertype"></span>
+              <ol>
+                <li class="hideall out"><span>Hide All</span></li>
+                <li class="showall in"><span>Show All</span></li>
+              </ol>
+            </div>
+          <div id="visbl">
+              <span class="filtertype">Visibility</span>
+              <ol><li class="public in"><span>Public</span></li><li class="all out"><span>All</span></li></ol>
+            </div>
+        </div>
       </div>
 
       <div id="template">
         <div id="allMembers">
         <div id="constructors" class="members">
               <h3>Instance Constructors</h3>
-              <ol><li name="gnieh.sohva.Configuration#&lt;init&gt;" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="&lt;init&gt;(sections:Map[String,Map[String,String]]):gnieh.sohva.Configuration"></a>
-      <a id="&lt;init&gt;:Configuration"></a>
-      <h4 class="signature">
+              <ol><li name="gnieh.sohva.Configuration#&lt;init&gt;" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="&lt;init&gt;(sections:Map[String,Map[String,String]]):gnieh.sohva.Configuration"></a><a id="&lt;init&gt;:Configuration"></a>
+      <span class="permalink">
+      <a href="../../gnieh/sohva/Configuration.html#&lt;init&gt;(sections:Map[String,Map[String,String]]):gnieh.sohva.Configuration" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">new</span>
@@ -100,11 +670,7 @@
       <span class="symbol">
         <span class="name">Configuration</span><span class="params">(<span name="sections">sections: <span class="extype" name="scala.Predef.Map">Map</span>[<span class="extype" name="scala.Predef.String">String</span>, <span class="extype" name="scala.Predef.Map">Map</span>[<span class="extype" name="scala.Predef.String">String</span>, <span class="extype" name="scala.Predef.String">String</span>]]</span>)</span>
       </span>
-      </h4><span class="permalink">
-      <a href="../../index.html#gnieh.sohva.Configuration@&lt;init&gt;(sections:Map[String,Map[String,String]]):gnieh.sohva.Configuration" title="Permalink" target="_top">
-        <img src="../../lib/permalink.png" alt="Permalink" />
-      </a>
-    </span>
+      
       
     </li></ol>
             </div>
@@ -113,12 +679,16 @@
 
         
 
-        <div id="values" class="values members">
+        <div class="values members">
               <h3>Value Members</h3>
-              <ol><li name="scala.AnyRef#!=" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="!=(x$1:Any):Boolean"></a>
-      <a id="!=(Any):Boolean"></a>
-      <h4 class="signature">
+              <ol>
+                <li name="scala.AnyRef#!=" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="!=(x$1:Any):Boolean"></a><a id="!=(Any):Boolean"></a>
+      <span class="permalink">
+      <a href="../../gnieh/sohva/Configuration.html#!=(x$1:Any):Boolean" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
       <span class="modifier_kind">
         <span class="modifier">final </span>
         <span class="kind">def</span>
@@ -126,16 +696,15 @@
       <span class="symbol">
         <span title="gt4s: $bang$eq" class="name">!=</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Any">Any</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
-      </h4><span class="permalink">
-      <a href="../../index.html#gnieh.sohva.Configuration@!=(x$1:Any):Boolean" title="Permalink" target="_top">
-        <img src="../../lib/permalink.png" alt="Permalink" />
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+    </li><li name="scala.AnyRef###" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="##():Int"></a>
+      <span class="permalink">
+      <a href="../../gnieh/sohva/Configuration.html###():Int" title="Permalink">
+        <i class="material-icons"></i>
       </a>
     </span>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
-    </li><li name="scala.AnyRef###" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="##():Int"></a>
-      <a id="##():Int"></a>
-      <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier">final </span>
         <span class="kind">def</span>
@@ -143,16 +712,15 @@
       <span class="symbol">
         <span title="gt4s: $hash$hash" class="name">##</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Int">Int</span></span>
       </span>
-      </h4><span class="permalink">
-      <a href="../../index.html#gnieh.sohva.Configuration@##():Int" title="Permalink" target="_top">
-        <img src="../../lib/permalink.png" alt="Permalink" />
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+    </li><li name="scala.AnyRef#==" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="==(x$1:Any):Boolean"></a><a id="==(Any):Boolean"></a>
+      <span class="permalink">
+      <a href="../../gnieh/sohva/Configuration.html#==(x$1:Any):Boolean" title="Permalink">
+        <i class="material-icons"></i>
       </a>
     </span>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
-    </li><li name="scala.AnyRef#==" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="==(x$1:Any):Boolean"></a>
-      <a id="==(Any):Boolean"></a>
-      <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier">final </span>
         <span class="kind">def</span>
@@ -160,16 +728,15 @@
       <span class="symbol">
         <span title="gt4s: $eq$eq" class="name">==</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Any">Any</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
-      </h4><span class="permalink">
-      <a href="../../index.html#gnieh.sohva.Configuration@==(x$1:Any):Boolean" title="Permalink" target="_top">
-        <img src="../../lib/permalink.png" alt="Permalink" />
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+    </li><li name="scala.Any#asInstanceOf" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="asInstanceOf[T0]:T0"></a>
+      <span class="permalink">
+      <a href="../../gnieh/sohva/Configuration.html#asInstanceOf[T0]:T0" title="Permalink">
+        <i class="material-icons"></i>
       </a>
     </span>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
-    </li><li name="scala.Any#asInstanceOf" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="asInstanceOf[T0]:T0"></a>
-      <a id="asInstanceOf[T0]:T0"></a>
-      <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier">final </span>
         <span class="kind">def</span>
@@ -177,16 +744,15 @@
       <span class="symbol">
         <span class="name">asInstanceOf</span><span class="tparams">[<span name="T0">T0</span>]</span><span class="result">: <span class="extype" name="scala.Any.asInstanceOf.T0">T0</span></span>
       </span>
-      </h4><span class="permalink">
-      <a href="../../index.html#gnieh.sohva.Configuration@asInstanceOf[T0]:T0" title="Permalink" target="_top">
-        <img src="../../lib/permalink.png" alt="Permalink" />
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
+    </li><li name="gnieh.sohva.Configuration#attachments" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="attachments:Map[String,String]"></a>
+      <span class="permalink">
+      <a href="../../gnieh/sohva/Configuration.html#attachments:Map[String,String]" title="Permalink">
+        <i class="material-icons"></i>
       </a>
     </span>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
-    </li><li name="gnieh.sohva.Configuration#attachments" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="attachments:Map[String,String]"></a>
-      <a id="attachments:Map[String,String]"></a>
-      <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
@@ -194,16 +760,15 @@
       <span class="symbol">
         <span class="name">attachments</span><span class="result">: <span class="extype" name="scala.Predef.Map">Map</span>[<span class="extype" name="scala.Predef.String">String</span>, <span class="extype" name="scala.Predef.String">String</span>]</span>
       </span>
-      </h4><span class="permalink">
-      <a href="../../index.html#gnieh.sohva.Configuration@attachments:Map[String,String]" title="Permalink" target="_top">
-        <img src="../../lib/permalink.png" alt="Permalink" />
+      
+      
+    </li><li name="scala.AnyRef#clone" visbl="prt" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="clone():Object"></a><a id="clone():AnyRef"></a>
+      <span class="permalink">
+      <a href="../../gnieh/sohva/Configuration.html#clone():Object" title="Permalink">
+        <i class="material-icons"></i>
       </a>
     </span>
-      
-    </li><li name="scala.AnyRef#clone" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="clone():Object"></a>
-      <a id="clone():AnyRef"></a>
-      <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
@@ -211,11 +776,7 @@
       <span class="symbol">
         <span class="name">clone</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.AnyRef">AnyRef</span></span>
       </span>
-      </h4><span class="permalink">
-      <a href="../../index.html#gnieh.sohva.Configuration@clone():Object" title="Permalink" target="_top">
-        <img src="../../lib/permalink.png" alt="Permalink" />
-      </a>
-    </span>
+      
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a href="../../java$lang.html" class="extype" name="java.lang">java.lang</a>] </dd><dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
                 <span class="name">@throws</span><span class="args">(<span>
       
@@ -223,10 +784,13 @@
     </span>)</span>
               
         </dd></dl></div>
-    </li><li name="gnieh.sohva.Configuration#couchHttpdAuth" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+    </li><li name="gnieh.sohva.Configuration#couchHttpdAuth" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
       <a id="couchHttpdAuth:Map[String,String]"></a>
-      <a id="couchHttpdAuth:Map[String,String]"></a>
-      <h4 class="signature">
+      <span class="permalink">
+      <a href="../../gnieh/sohva/Configuration.html#couchHttpdAuth:Map[String,String]" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
@@ -234,16 +798,15 @@
       <span class="symbol">
         <span class="name">couchHttpdAuth</span><span class="result">: <span class="extype" name="scala.Predef.Map">Map</span>[<span class="extype" name="scala.Predef.String">String</span>, <span class="extype" name="scala.Predef.String">String</span>]</span>
       </span>
-      </h4><span class="permalink">
-      <a href="../../index.html#gnieh.sohva.Configuration@couchHttpdAuth:Map[String,String]" title="Permalink" target="_top">
-        <img src="../../lib/permalink.png" alt="Permalink" />
+      
+      
+    </li><li name="gnieh.sohva.Configuration#couchdb" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="couchdb:Map[String,String]"></a>
+      <span class="permalink">
+      <a href="../../gnieh/sohva/Configuration.html#couchdb:Map[String,String]" title="Permalink">
+        <i class="material-icons"></i>
       </a>
     </span>
-      
-    </li><li name="gnieh.sohva.Configuration#couchdb" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="couchdb:Map[String,String]"></a>
-      <a id="couchdb:Map[String,String]"></a>
-      <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
@@ -251,16 +814,15 @@
       <span class="symbol">
         <span class="name">couchdb</span><span class="result">: <span class="extype" name="scala.Predef.Map">Map</span>[<span class="extype" name="scala.Predef.String">String</span>, <span class="extype" name="scala.Predef.String">String</span>]</span>
       </span>
-      </h4><span class="permalink">
-      <a href="../../index.html#gnieh.sohva.Configuration@couchdb:Map[String,String]" title="Permalink" target="_top">
-        <img src="../../lib/permalink.png" alt="Permalink" />
+      
+      
+    </li><li name="gnieh.sohva.Configuration#daemons" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="daemons:Map[String,String]"></a>
+      <span class="permalink">
+      <a href="../../gnieh/sohva/Configuration.html#daemons:Map[String,String]" title="Permalink">
+        <i class="material-icons"></i>
       </a>
     </span>
-      
-    </li><li name="gnieh.sohva.Configuration#daemons" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="daemons:Map[String,String]"></a>
-      <a id="daemons:Map[String,String]"></a>
-      <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
@@ -268,16 +830,15 @@
       <span class="symbol">
         <span class="name">daemons</span><span class="result">: <span class="extype" name="scala.Predef.Map">Map</span>[<span class="extype" name="scala.Predef.String">String</span>, <span class="extype" name="scala.Predef.String">String</span>]</span>
       </span>
-      </h4><span class="permalink">
-      <a href="../../index.html#gnieh.sohva.Configuration@daemons:Map[String,String]" title="Permalink" target="_top">
-        <img src="../../lib/permalink.png" alt="Permalink" />
+      
+      
+    </li><li name="scala.AnyRef#eq" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="eq(x$1:AnyRef):Boolean"></a><a id="eq(AnyRef):Boolean"></a>
+      <span class="permalink">
+      <a href="../../gnieh/sohva/Configuration.html#eq(x$1:AnyRef):Boolean" title="Permalink">
+        <i class="material-icons"></i>
       </a>
     </span>
-      
-    </li><li name="scala.AnyRef#eq" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="eq(x$1:AnyRef):Boolean"></a>
-      <a id="eq(AnyRef):Boolean"></a>
-      <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier">final </span>
         <span class="kind">def</span>
@@ -285,16 +846,15 @@
       <span class="symbol">
         <span class="name">eq</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.AnyRef">AnyRef</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
-      </h4><span class="permalink">
-      <a href="../../index.html#gnieh.sohva.Configuration@eq(x$1:AnyRef):Boolean" title="Permalink" target="_top">
-        <img src="../../lib/permalink.png" alt="Permalink" />
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+    </li><li name="scala.AnyRef#finalize" visbl="prt" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="finalize():Unit"></a>
+      <span class="permalink">
+      <a href="../../gnieh/sohva/Configuration.html#finalize():Unit" title="Permalink">
+        <i class="material-icons"></i>
       </a>
     </span>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
-    </li><li name="scala.AnyRef#finalize" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="finalize():Unit"></a>
-      <a id="finalize():Unit"></a>
-      <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
@@ -302,11 +862,7 @@
       <span class="symbol">
         <span class="name">finalize</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
-      </h4><span class="permalink">
-      <a href="../../index.html#gnieh.sohva.Configuration@finalize():Unit" title="Permalink" target="_top">
-        <img src="../../lib/permalink.png" alt="Permalink" />
-      </a>
-    </span>
+      
       <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a href="../../java$lang.html" class="extype" name="java.lang">java.lang</a>] </dd><dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
                 <span class="name">@throws</span><span class="args">(<span>
       
@@ -314,10 +870,13 @@
     </span>)</span>
               
         </dd></dl></div>
-    </li><li name="scala.AnyRef#getClass" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+    </li><li name="scala.AnyRef#getClass" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="getClass():Class[_]"></a>
-      <a id="getClass():Class[_]"></a>
-      <h4 class="signature">
+      <span class="permalink">
+      <a href="../../gnieh/sohva/Configuration.html#getClass():Class[_]" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
       <span class="modifier_kind">
         <span class="modifier">final </span>
         <span class="kind">def</span>
@@ -325,16 +884,15 @@
       <span class="symbol">
         <span class="name">getClass</span><span class="params">()</span><span class="result">: <span class="extype" name="java.lang.Class">Class</span>[_]</span>
       </span>
-      </h4><span class="permalink">
-      <a href="../../index.html#gnieh.sohva.Configuration@getClass():Class[_]" title="Permalink" target="_top">
-        <img src="../../lib/permalink.png" alt="Permalink" />
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+    </li><li name="gnieh.sohva.Configuration#httpd" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="httpd:Map[String,String]"></a>
+      <span class="permalink">
+      <a href="../../gnieh/sohva/Configuration.html#httpd:Map[String,String]" title="Permalink">
+        <i class="material-icons"></i>
       </a>
     </span>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
-    </li><li name="gnieh.sohva.Configuration#httpd" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="httpd:Map[String,String]"></a>
-      <a id="httpd:Map[String,String]"></a>
-      <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
@@ -342,16 +900,15 @@
       <span class="symbol">
         <span class="name">httpd</span><span class="result">: <span class="extype" name="scala.Predef.Map">Map</span>[<span class="extype" name="scala.Predef.String">String</span>, <span class="extype" name="scala.Predef.String">String</span>]</span>
       </span>
-      </h4><span class="permalink">
-      <a href="../../index.html#gnieh.sohva.Configuration@httpd:Map[String,String]" title="Permalink" target="_top">
-        <img src="../../lib/permalink.png" alt="Permalink" />
+      
+      
+    </li><li name="gnieh.sohva.Configuration#httpdDbHandlers" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="httpdDbHandlers:Map[String,String]"></a>
+      <span class="permalink">
+      <a href="../../gnieh/sohva/Configuration.html#httpdDbHandlers:Map[String,String]" title="Permalink">
+        <i class="material-icons"></i>
       </a>
     </span>
-      
-    </li><li name="gnieh.sohva.Configuration#httpdDbHandlers" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="httpdDbHandlers:Map[String,String]"></a>
-      <a id="httpdDbHandlers:Map[String,String]"></a>
-      <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
@@ -359,16 +916,15 @@
       <span class="symbol">
         <span class="name">httpdDbHandlers</span><span class="result">: <span class="extype" name="scala.Predef.Map">Map</span>[<span class="extype" name="scala.Predef.String">String</span>, <span class="extype" name="scala.Predef.String">String</span>]</span>
       </span>
-      </h4><span class="permalink">
-      <a href="../../index.html#gnieh.sohva.Configuration@httpdDbHandlers:Map[String,String]" title="Permalink" target="_top">
-        <img src="../../lib/permalink.png" alt="Permalink" />
+      
+      
+    </li><li name="gnieh.sohva.Configuration#httpdDesignHandlers" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="httpdDesignHandlers:Map[String,String]"></a>
+      <span class="permalink">
+      <a href="../../gnieh/sohva/Configuration.html#httpdDesignHandlers:Map[String,String]" title="Permalink">
+        <i class="material-icons"></i>
       </a>
     </span>
-      
-    </li><li name="gnieh.sohva.Configuration#httpdDesignHandlers" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="httpdDesignHandlers:Map[String,String]"></a>
-      <a id="httpdDesignHandlers:Map[String,String]"></a>
-      <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
@@ -376,16 +932,15 @@
       <span class="symbol">
         <span class="name">httpdDesignHandlers</span><span class="result">: <span class="extype" name="scala.Predef.Map">Map</span>[<span class="extype" name="scala.Predef.String">String</span>, <span class="extype" name="scala.Predef.String">String</span>]</span>
       </span>
-      </h4><span class="permalink">
-      <a href="../../index.html#gnieh.sohva.Configuration@httpdDesignHandlers:Map[String,String]" title="Permalink" target="_top">
-        <img src="../../lib/permalink.png" alt="Permalink" />
+      
+      
+    </li><li name="gnieh.sohva.Configuration#httpdGlobalHandlers" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="httpdGlobalHandlers:Map[String,String]"></a>
+      <span class="permalink">
+      <a href="../../gnieh/sohva/Configuration.html#httpdGlobalHandlers:Map[String,String]" title="Permalink">
+        <i class="material-icons"></i>
       </a>
     </span>
-      
-    </li><li name="gnieh.sohva.Configuration#httpdGlobalHandlers" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="httpdGlobalHandlers:Map[String,String]"></a>
-      <a id="httpdGlobalHandlers:Map[String,String]"></a>
-      <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
@@ -393,16 +948,15 @@
       <span class="symbol">
         <span class="name">httpdGlobalHandlers</span><span class="result">: <span class="extype" name="scala.Predef.Map">Map</span>[<span class="extype" name="scala.Predef.String">String</span>, <span class="extype" name="scala.Predef.String">String</span>]</span>
       </span>
-      </h4><span class="permalink">
-      <a href="../../index.html#gnieh.sohva.Configuration@httpdGlobalHandlers:Map[String,String]" title="Permalink" target="_top">
-        <img src="../../lib/permalink.png" alt="Permalink" />
+      
+      
+    </li><li name="scala.Any#isInstanceOf" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="isInstanceOf[T0]:Boolean"></a>
+      <span class="permalink">
+      <a href="../../gnieh/sohva/Configuration.html#isInstanceOf[T0]:Boolean" title="Permalink">
+        <i class="material-icons"></i>
       </a>
     </span>
-      
-    </li><li name="scala.Any#isInstanceOf" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="isInstanceOf[T0]:Boolean"></a>
-      <a id="isInstanceOf[T0]:Boolean"></a>
-      <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier">final </span>
         <span class="kind">def</span>
@@ -410,16 +964,15 @@
       <span class="symbol">
         <span class="name">isInstanceOf</span><span class="tparams">[<span name="T0">T0</span>]</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
-      </h4><span class="permalink">
-      <a href="../../index.html#gnieh.sohva.Configuration@isInstanceOf[T0]:Boolean" title="Permalink" target="_top">
-        <img src="../../lib/permalink.png" alt="Permalink" />
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
+    </li><li name="gnieh.sohva.Configuration#log" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="log:Map[String,String]"></a>
+      <span class="permalink">
+      <a href="../../gnieh/sohva/Configuration.html#log:Map[String,String]" title="Permalink">
+        <i class="material-icons"></i>
       </a>
     </span>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
-    </li><li name="gnieh.sohva.Configuration#log" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="log:Map[String,String]"></a>
-      <a id="log:Map[String,String]"></a>
-      <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
@@ -427,16 +980,15 @@
       <span class="symbol">
         <span class="name">log</span><span class="result">: <span class="extype" name="scala.Predef.Map">Map</span>[<span class="extype" name="scala.Predef.String">String</span>, <span class="extype" name="scala.Predef.String">String</span>]</span>
       </span>
-      </h4><span class="permalink">
-      <a href="../../index.html#gnieh.sohva.Configuration@log:Map[String,String]" title="Permalink" target="_top">
-        <img src="../../lib/permalink.png" alt="Permalink" />
+      
+      
+    </li><li name="gnieh.sohva.Configuration#merge" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="merge(that:gnieh.sohva.Configuration):gnieh.sohva.Configuration"></a><a id="merge(Configuration):Configuration"></a>
+      <span class="permalink">
+      <a href="../../gnieh/sohva/Configuration.html#merge(that:gnieh.sohva.Configuration):gnieh.sohva.Configuration" title="Permalink">
+        <i class="material-icons"></i>
       </a>
     </span>
-      
-    </li><li name="gnieh.sohva.Configuration#merge" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="merge(that:gnieh.sohva.Configuration):gnieh.sohva.Configuration"></a>
-      <a id="merge(Configuration):Configuration"></a>
-      <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
@@ -444,16 +996,15 @@
       <span class="symbol">
         <span class="name">merge</span><span class="params">(<span name="that">that: <a href="" class="extype" name="gnieh.sohva.Configuration">Configuration</a></span>)</span><span class="result">: <a href="" class="extype" name="gnieh.sohva.Configuration">Configuration</a></span>
       </span>
-      </h4><span class="permalink">
-      <a href="../../index.html#gnieh.sohva.Configuration@merge(that:gnieh.sohva.Configuration):gnieh.sohva.Configuration" title="Permalink" target="_top">
-        <img src="../../lib/permalink.png" alt="Permalink" />
+      
+      
+    </li><li name="scala.AnyRef#ne" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="ne(x$1:AnyRef):Boolean"></a><a id="ne(AnyRef):Boolean"></a>
+      <span class="permalink">
+      <a href="../../gnieh/sohva/Configuration.html#ne(x$1:AnyRef):Boolean" title="Permalink">
+        <i class="material-icons"></i>
       </a>
     </span>
-      
-    </li><li name="scala.AnyRef#ne" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="ne(x$1:AnyRef):Boolean"></a>
-      <a id="ne(AnyRef):Boolean"></a>
-      <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier">final </span>
         <span class="kind">def</span>
@@ -461,16 +1012,15 @@
       <span class="symbol">
         <span class="name">ne</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.AnyRef">AnyRef</span></span>)</span><span class="result">: <span class="extype" name="scala.Boolean">Boolean</span></span>
       </span>
-      </h4><span class="permalink">
-      <a href="../../index.html#gnieh.sohva.Configuration@ne(x$1:AnyRef):Boolean" title="Permalink" target="_top">
-        <img src="../../lib/permalink.png" alt="Permalink" />
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+    </li><li name="scala.AnyRef#notify" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="notify():Unit"></a>
+      <span class="permalink">
+      <a href="../../gnieh/sohva/Configuration.html#notify():Unit" title="Permalink">
+        <i class="material-icons"></i>
       </a>
     </span>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
-    </li><li name="scala.AnyRef#notify" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="notify():Unit"></a>
-      <a id="notify():Unit"></a>
-      <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier">final </span>
         <span class="kind">def</span>
@@ -478,16 +1028,15 @@
       <span class="symbol">
         <span class="name">notify</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
-      </h4><span class="permalink">
-      <a href="../../index.html#gnieh.sohva.Configuration@notify():Unit" title="Permalink" target="_top">
-        <img src="../../lib/permalink.png" alt="Permalink" />
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+    </li><li name="scala.AnyRef#notifyAll" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="notifyAll():Unit"></a>
+      <span class="permalink">
+      <a href="../../gnieh/sohva/Configuration.html#notifyAll():Unit" title="Permalink">
+        <i class="material-icons"></i>
       </a>
     </span>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
-    </li><li name="scala.AnyRef#notifyAll" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="notifyAll():Unit"></a>
-      <a id="notifyAll():Unit"></a>
-      <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier">final </span>
         <span class="kind">def</span>
@@ -495,16 +1044,15 @@
       <span class="symbol">
         <span class="name">notifyAll</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
-      </h4><span class="permalink">
-      <a href="../../index.html#gnieh.sohva.Configuration@notifyAll():Unit" title="Permalink" target="_top">
-        <img src="../../lib/permalink.png" alt="Permalink" />
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+    </li><li name="gnieh.sohva.Configuration#queryServerConfig" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="queryServerConfig:Map[String,String]"></a>
+      <span class="permalink">
+      <a href="../../gnieh/sohva/Configuration.html#queryServerConfig:Map[String,String]" title="Permalink">
+        <i class="material-icons"></i>
       </a>
     </span>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
-    </li><li name="gnieh.sohva.Configuration#queryServerConfig" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="queryServerConfig:Map[String,String]"></a>
-      <a id="queryServerConfig:Map[String,String]"></a>
-      <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
@@ -512,16 +1060,15 @@
       <span class="symbol">
         <span class="name">queryServerConfig</span><span class="result">: <span class="extype" name="scala.Predef.Map">Map</span>[<span class="extype" name="scala.Predef.String">String</span>, <span class="extype" name="scala.Predef.String">String</span>]</span>
       </span>
-      </h4><span class="permalink">
-      <a href="../../index.html#gnieh.sohva.Configuration@queryServerConfig:Map[String,String]" title="Permalink" target="_top">
-        <img src="../../lib/permalink.png" alt="Permalink" />
+      
+      
+    </li><li name="gnieh.sohva.Configuration#queryServers" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="queryServers:Map[String,String]"></a>
+      <span class="permalink">
+      <a href="../../gnieh/sohva/Configuration.html#queryServers:Map[String,String]" title="Permalink">
+        <i class="material-icons"></i>
       </a>
     </span>
-      
-    </li><li name="gnieh.sohva.Configuration#queryServers" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="queryServers:Map[String,String]"></a>
-      <a id="queryServers:Map[String,String]"></a>
-      <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
@@ -529,16 +1076,15 @@
       <span class="symbol">
         <span class="name">queryServers</span><span class="result">: <span class="extype" name="scala.Predef.Map">Map</span>[<span class="extype" name="scala.Predef.String">String</span>, <span class="extype" name="scala.Predef.String">String</span>]</span>
       </span>
-      </h4><span class="permalink">
-      <a href="../../index.html#gnieh.sohva.Configuration@queryServers:Map[String,String]" title="Permalink" target="_top">
-        <img src="../../lib/permalink.png" alt="Permalink" />
+      
+      
+    </li><li name="gnieh.sohva.Configuration#replicator" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="replicator:Map[String,String]"></a>
+      <span class="permalink">
+      <a href="../../gnieh/sohva/Configuration.html#replicator:Map[String,String]" title="Permalink">
+        <i class="material-icons"></i>
       </a>
     </span>
-      
-    </li><li name="gnieh.sohva.Configuration#replicator" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="replicator:Map[String,String]"></a>
-      <a id="replicator:Map[String,String]"></a>
-      <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
@@ -546,16 +1092,15 @@
       <span class="symbol">
         <span class="name">replicator</span><span class="result">: <span class="extype" name="scala.Predef.Map">Map</span>[<span class="extype" name="scala.Predef.String">String</span>, <span class="extype" name="scala.Predef.String">String</span>]</span>
       </span>
-      </h4><span class="permalink">
-      <a href="../../index.html#gnieh.sohva.Configuration@replicator:Map[String,String]" title="Permalink" target="_top">
-        <img src="../../lib/permalink.png" alt="Permalink" />
+      
+      
+    </li><li name="gnieh.sohva.Configuration#section" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="section(name:String):Map[String,String]"></a><a id="section(String):Map[String,String]"></a>
+      <span class="permalink">
+      <a href="../../gnieh/sohva/Configuration.html#section(name:String):Map[String,String]" title="Permalink">
+        <i class="material-icons"></i>
       </a>
     </span>
-      
-    </li><li name="gnieh.sohva.Configuration#section" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="section(name:String):Map[String,String]"></a>
-      <a id="section(String):Map[String,String]"></a>
-      <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
@@ -563,16 +1108,15 @@
       <span class="symbol">
         <span class="name">section</span><span class="params">(<span name="name">name: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result">: <span class="extype" name="scala.Predef.Map">Map</span>[<span class="extype" name="scala.Predef.String">String</span>, <span class="extype" name="scala.Predef.String">String</span>]</span>
       </span>
-      </h4><span class="permalink">
-      <a href="../../index.html#gnieh.sohva.Configuration@section(name:String):Map[String,String]" title="Permalink" target="_top">
-        <img src="../../lib/permalink.png" alt="Permalink" />
+      
+      
+    </li><li name="gnieh.sohva.Configuration#sections" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="sections:Map[String,Map[String,String]]"></a>
+      <span class="permalink">
+      <a href="../../gnieh/sohva/Configuration.html#sections:Map[String,Map[String,String]]" title="Permalink">
+        <i class="material-icons"></i>
       </a>
     </span>
-      
-    </li><li name="gnieh.sohva.Configuration#sections" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="sections:Map[String,Map[String,String]]"></a>
-      <a id="sections:Map[String,Map[String,String]]"></a>
-      <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">val</span>
@@ -580,16 +1124,15 @@
       <span class="symbol">
         <span class="name">sections</span><span class="result">: <span class="extype" name="scala.Predef.Map">Map</span>[<span class="extype" name="scala.Predef.String">String</span>, <span class="extype" name="scala.Predef.Map">Map</span>[<span class="extype" name="scala.Predef.String">String</span>, <span class="extype" name="scala.Predef.String">String</span>]]</span>
       </span>
-      </h4><span class="permalink">
-      <a href="../../index.html#gnieh.sohva.Configuration@sections:Map[String,Map[String,String]]" title="Permalink" target="_top">
-        <img src="../../lib/permalink.png" alt="Permalink" />
+      
+      
+    </li><li name="gnieh.sohva.Configuration#stats" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="stats:Map[String,String]"></a>
+      <span class="permalink">
+      <a href="../../gnieh/sohva/Configuration.html#stats:Map[String,String]" title="Permalink">
+        <i class="material-icons"></i>
       </a>
     </span>
-      
-    </li><li name="gnieh.sohva.Configuration#stats" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="stats:Map[String,String]"></a>
-      <a id="stats:Map[String,String]"></a>
-      <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
@@ -597,16 +1140,15 @@
       <span class="symbol">
         <span class="name">stats</span><span class="result">: <span class="extype" name="scala.Predef.Map">Map</span>[<span class="extype" name="scala.Predef.String">String</span>, <span class="extype" name="scala.Predef.String">String</span>]</span>
       </span>
-      </h4><span class="permalink">
-      <a href="../../index.html#gnieh.sohva.Configuration@stats:Map[String,String]" title="Permalink" target="_top">
-        <img src="../../lib/permalink.png" alt="Permalink" />
+      
+      
+    </li><li name="scala.AnyRef#synchronized" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="synchronized[T0](x$1:=&gt;T0):T0"></a><a id="synchronized[T0](⇒T0):T0"></a>
+      <span class="permalink">
+      <a href="../../gnieh/sohva/Configuration.html#synchronized[T0](x$1:=&gt;T0):T0" title="Permalink">
+        <i class="material-icons"></i>
       </a>
     </span>
-      
-    </li><li name="scala.AnyRef#synchronized" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="synchronized[T0](x$1:=&gt;T0):T0"></a>
-      <a id="synchronized[T0](⇒T0):T0"></a>
-      <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier">final </span>
         <span class="kind">def</span>
@@ -614,16 +1156,15 @@
       <span class="symbol">
         <span class="name">synchronized</span><span class="tparams">[<span name="T0">T0</span>]</span><span class="params">(<span name="arg0">arg0: ⇒ <span class="extype" name="java.lang.AnyRef.synchronized.T0">T0</span></span>)</span><span class="result">: <span class="extype" name="java.lang.AnyRef.synchronized.T0">T0</span></span>
       </span>
-      </h4><span class="permalink">
-      <a href="../../index.html#gnieh.sohva.Configuration@synchronized[T0](x$1:=&gt;T0):T0" title="Permalink" target="_top">
-        <img src="../../lib/permalink.png" alt="Permalink" />
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+    </li><li name="gnieh.sohva.Configuration#toString" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="toString():String"></a>
+      <span class="permalink">
+      <a href="../../gnieh/sohva/Configuration.html#toString():String" title="Permalink">
+        <i class="material-icons"></i>
       </a>
     </span>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
-    </li><li name="gnieh.sohva.Configuration#toString" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="toString():String"></a>
-      <a id="toString():String"></a>
-      <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
@@ -631,16 +1172,15 @@
       <span class="symbol">
         <span class="name">toString</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Predef.String">String</span></span>
       </span>
-      </h4><span class="permalink">
-      <a href="../../index.html#gnieh.sohva.Configuration@toString():String" title="Permalink" target="_top">
-        <img src="../../lib/permalink.png" alt="Permalink" />
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="gnieh.sohva.Configuration">Configuration</a> → AnyRef → Any</dd></dl></div>
+    </li><li name="gnieh.sohva.Configuration#uuids" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="uuids:Map[String,String]"></a>
+      <span class="permalink">
+      <a href="../../gnieh/sohva/Configuration.html#uuids:Map[String,String]" title="Permalink">
+        <i class="material-icons"></i>
       </a>
     </span>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="gnieh.sohva.Configuration">Configuration</a> → AnyRef → Any</dd></dl></div>
-    </li><li name="gnieh.sohva.Configuration#uuids" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="uuids:Map[String,String]"></a>
-      <a id="uuids:Map[String,String]"></a>
-      <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
@@ -648,16 +1188,15 @@
       <span class="symbol">
         <span class="name">uuids</span><span class="result">: <span class="extype" name="scala.Predef.Map">Map</span>[<span class="extype" name="scala.Predef.String">String</span>, <span class="extype" name="scala.Predef.String">String</span>]</span>
       </span>
-      </h4><span class="permalink">
-      <a href="../../index.html#gnieh.sohva.Configuration@uuids:Map[String,String]" title="Permalink" target="_top">
-        <img src="../../lib/permalink.png" alt="Permalink" />
+      
+      
+    </li><li name="scala.AnyRef#wait" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="wait():Unit"></a>
+      <span class="permalink">
+      <a href="../../gnieh/sohva/Configuration.html#wait():Unit" title="Permalink">
+        <i class="material-icons"></i>
       </a>
     </span>
-      
-    </li><li name="scala.AnyRef#wait" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="wait():Unit"></a>
-      <a id="wait():Unit"></a>
-      <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier">final </span>
         <span class="kind">def</span>
@@ -665,11 +1204,7 @@
       <span class="symbol">
         <span class="name">wait</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
-      </h4><span class="permalink">
-      <a href="../../index.html#gnieh.sohva.Configuration@wait():Unit" title="Permalink" target="_top">
-        <img src="../../lib/permalink.png" alt="Permalink" />
-      </a>
-    </span>
+      
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
                 <span class="name">@throws</span><span class="args">(<span>
       
@@ -677,10 +1212,13 @@
     </span>)</span>
               
         </dd></dl></div>
-    </li><li name="scala.AnyRef#wait" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="wait(x$1:Long,x$2:Int):Unit"></a>
-      <a id="wait(Long,Int):Unit"></a>
-      <h4 class="signature">
+    </li><li name="scala.AnyRef#wait" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="wait(x$1:Long,x$2:Int):Unit"></a><a id="wait(Long,Int):Unit"></a>
+      <span class="permalink">
+      <a href="../../gnieh/sohva/Configuration.html#wait(x$1:Long,x$2:Int):Unit" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
       <span class="modifier_kind">
         <span class="modifier">final </span>
         <span class="kind">def</span>
@@ -688,11 +1226,7 @@
       <span class="symbol">
         <span class="name">wait</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Long">Long</span></span>, <span name="arg1">arg1: <span class="extype" name="scala.Int">Int</span></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
-      </h4><span class="permalink">
-      <a href="../../index.html#gnieh.sohva.Configuration@wait(x$1:Long,x$2:Int):Unit" title="Permalink" target="_top">
-        <img src="../../lib/permalink.png" alt="Permalink" />
-      </a>
-    </span>
+      
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
                 <span class="name">@throws</span><span class="args">(<span>
       
@@ -700,10 +1234,13 @@
     </span>)</span>
               
         </dd></dl></div>
-    </li><li name="scala.AnyRef#wait" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="wait(x$1:Long):Unit"></a>
-      <a id="wait(Long):Unit"></a>
-      <h4 class="signature">
+    </li><li name="scala.AnyRef#wait" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="wait(x$1:Long):Unit"></a><a id="wait(Long):Unit"></a>
+      <span class="permalink">
+      <a href="../../gnieh/sohva/Configuration.html#wait(x$1:Long):Unit" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
       <span class="modifier_kind">
         <span class="modifier">final </span>
         <span class="kind">def</span>
@@ -711,11 +1248,7 @@
       <span class="symbol">
         <span class="name">wait</span><span class="params">(<span name="arg0">arg0: <span class="extype" name="scala.Long">Long</span></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
-      </h4><span class="permalink">
-      <a href="../../index.html#gnieh.sohva.Configuration@wait(x$1:Long):Unit" title="Permalink" target="_top">
-        <img src="../../lib/permalink.png" alt="Permalink" />
-      </a>
-    </span>
+      
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
                 <span class="name">@throws</span><span class="args">(<span>
       
@@ -723,17 +1256,21 @@
     </span>)</span>
               
         </dd></dl></div>
-    </li></ol>
+    </li>
+              </ol>
             </div>
 
         
 
-        <div id="values" class="values members">
+        <div class="values members">
               <h3>Deprecated Value Members</h3>
-              <ol><li name="gnieh.sohva.Configuration#couch_httpd_auth" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+              <ol><li name="gnieh.sohva.Configuration#couch_httpd_auth" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="couch_httpd_auth:Map[String,String]"></a>
-      <a id="couch_httpd_auth:Map[String,String]"></a>
-      <h4 class="signature">
+      <span class="permalink">
+      <a href="../../gnieh/sohva/Configuration.html#couch_httpd_auth:Map[String,String]" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
@@ -741,19 +1278,18 @@
       <span class="symbol">
         <span class="name deprecated" title="Deprecated: (Since version 2.0.0) Use couchHttpdAuth instead">couch_httpd_auth</span><span class="result">: <span class="extype" name="scala.Predef.Map">Map</span>[<span class="extype" name="scala.Predef.String">String</span>, <span class="extype" name="scala.Predef.String">String</span>]</span>
       </span>
-      </h4><span class="permalink">
-      <a href="../../index.html#gnieh.sohva.Configuration@couch_httpd_auth:Map[String,String]" title="Permalink" target="_top">
-        <img src="../../lib/permalink.png" alt="Permalink" />
-      </a>
-    </span>
+      
       <div class="fullcomment"><dl class="attributes block"> <dt>Annotations</dt><dd>
                 <span class="name">@deprecated</span>
               
         </dd><dt>Deprecated</dt><dd class="cmt"><p><i>(Since version 2.0.0)</i> Use <code>couchHttpdAuth</code> instead</p></dd></dl></div>
-    </li><li name="gnieh.sohva.Configuration#httpd_db_handlers" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+    </li><li name="gnieh.sohva.Configuration#httpd_db_handlers" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="httpd_db_handlers:Map[String,String]"></a>
-      <a id="httpd_db_handlers:Map[String,String]"></a>
-      <h4 class="signature">
+      <span class="permalink">
+      <a href="../../gnieh/sohva/Configuration.html#httpd_db_handlers:Map[String,String]" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
@@ -761,19 +1297,18 @@
       <span class="symbol">
         <span class="name deprecated" title="Deprecated: (Since version 2.0.0) Use httpdDbHandlers instead">httpd_db_handlers</span><span class="result">: <span class="extype" name="scala.Predef.Map">Map</span>[<span class="extype" name="scala.Predef.String">String</span>, <span class="extype" name="scala.Predef.String">String</span>]</span>
       </span>
-      </h4><span class="permalink">
-      <a href="../../index.html#gnieh.sohva.Configuration@httpd_db_handlers:Map[String,String]" title="Permalink" target="_top">
-        <img src="../../lib/permalink.png" alt="Permalink" />
-      </a>
-    </span>
+      
       <div class="fullcomment"><dl class="attributes block"> <dt>Annotations</dt><dd>
                 <span class="name">@deprecated</span>
               
         </dd><dt>Deprecated</dt><dd class="cmt"><p><i>(Since version 2.0.0)</i> Use <code>httpdDbHandlers</code> instead</p></dd></dl></div>
-    </li><li name="gnieh.sohva.Configuration#httpd_design_handlers" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+    </li><li name="gnieh.sohva.Configuration#httpd_design_handlers" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="httpd_design_handlers:Map[String,String]"></a>
-      <a id="httpd_design_handlers:Map[String,String]"></a>
-      <h4 class="signature">
+      <span class="permalink">
+      <a href="../../gnieh/sohva/Configuration.html#httpd_design_handlers:Map[String,String]" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
@@ -781,19 +1316,18 @@
       <span class="symbol">
         <span class="name deprecated" title="Deprecated: (Since version 2.0.0) Use httpdDesignHandlers instead">httpd_design_handlers</span><span class="result">: <span class="extype" name="scala.Predef.Map">Map</span>[<span class="extype" name="scala.Predef.String">String</span>, <span class="extype" name="scala.Predef.String">String</span>]</span>
       </span>
-      </h4><span class="permalink">
-      <a href="../../index.html#gnieh.sohva.Configuration@httpd_design_handlers:Map[String,String]" title="Permalink" target="_top">
-        <img src="../../lib/permalink.png" alt="Permalink" />
-      </a>
-    </span>
+      
       <div class="fullcomment"><dl class="attributes block"> <dt>Annotations</dt><dd>
                 <span class="name">@deprecated</span>
               
         </dd><dt>Deprecated</dt><dd class="cmt"><p><i>(Since version 2.0.0)</i> Use <code>httpdDesignHandlers</code> instead</p></dd></dl></div>
-    </li><li name="gnieh.sohva.Configuration#httpd_global_handlers" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+    </li><li name="gnieh.sohva.Configuration#httpd_global_handlers" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="httpd_global_handlers:Map[String,String]"></a>
-      <a id="httpd_global_handlers:Map[String,String]"></a>
-      <h4 class="signature">
+      <span class="permalink">
+      <a href="../../gnieh/sohva/Configuration.html#httpd_global_handlers:Map[String,String]" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
@@ -801,19 +1335,18 @@
       <span class="symbol">
         <span class="name deprecated" title="Deprecated: (Since version 2.0.0) Use httpdGlobalHandlers instead">httpd_global_handlers</span><span class="result">: <span class="extype" name="scala.Predef.Map">Map</span>[<span class="extype" name="scala.Predef.String">String</span>, <span class="extype" name="scala.Predef.String">String</span>]</span>
       </span>
-      </h4><span class="permalink">
-      <a href="../../index.html#gnieh.sohva.Configuration@httpd_global_handlers:Map[String,String]" title="Permalink" target="_top">
-        <img src="../../lib/permalink.png" alt="Permalink" />
-      </a>
-    </span>
+      
       <div class="fullcomment"><dl class="attributes block"> <dt>Annotations</dt><dd>
                 <span class="name">@deprecated</span>
               
         </dd><dt>Deprecated</dt><dd class="cmt"><p><i>(Since version 2.0.0)</i> Use <code>httpdGlobalHandlers</code> instead</p></dd></dl></div>
-    </li><li name="gnieh.sohva.Configuration#query_server_config" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+    </li><li name="gnieh.sohva.Configuration#query_server_config" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="query_server_config:Map[String,String]"></a>
-      <a id="query_server_config:Map[String,String]"></a>
-      <h4 class="signature">
+      <span class="permalink">
+      <a href="../../gnieh/sohva/Configuration.html#query_server_config:Map[String,String]" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
@@ -821,19 +1354,18 @@
       <span class="symbol">
         <span class="name deprecated" title="Deprecated: (Since version 2.0.0) Use queryServerConfig instead">query_server_config</span><span class="result">: <span class="extype" name="scala.Predef.Map">Map</span>[<span class="extype" name="scala.Predef.String">String</span>, <span class="extype" name="scala.Predef.String">String</span>]</span>
       </span>
-      </h4><span class="permalink">
-      <a href="../../index.html#gnieh.sohva.Configuration@query_server_config:Map[String,String]" title="Permalink" target="_top">
-        <img src="../../lib/permalink.png" alt="Permalink" />
-      </a>
-    </span>
+      
       <div class="fullcomment"><dl class="attributes block"> <dt>Annotations</dt><dd>
                 <span class="name">@deprecated</span>
               
         </dd><dt>Deprecated</dt><dd class="cmt"><p><i>(Since version 2.0.0)</i> Use <code>queryServerConfig</code> instead</p></dd></dl></div>
-    </li><li name="gnieh.sohva.Configuration#query_servers" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+    </li><li name="gnieh.sohva.Configuration#query_servers" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="query_servers:Map[String,String]"></a>
-      <a id="query_servers:Map[String,String]"></a>
-      <h4 class="signature">
+      <span class="permalink">
+      <a href="../../gnieh/sohva/Configuration.html#query_servers:Map[String,String]" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
@@ -841,11 +1373,7 @@
       <span class="symbol">
         <span class="name deprecated" title="Deprecated: (Since version 2.0.0) Use queryServers instead">query_servers</span><span class="result">: <span class="extype" name="scala.Predef.Map">Map</span>[<span class="extype" name="scala.Predef.String">String</span>, <span class="extype" name="scala.Predef.String">String</span>]</span>
       </span>
-      </h4><span class="permalink">
-      <a href="../../index.html#gnieh.sohva.Configuration@query_servers:Map[String,String]" title="Permalink" target="_top">
-        <img src="../../lib/permalink.png" alt="Permalink" />
-      </a>
-    </span>
+      
       <div class="fullcomment"><dl class="attributes block"> <dt>Annotations</dt><dd>
                 <span class="name">@deprecated</span>
               
@@ -883,7 +1411,9 @@
       <div id="tooltip"></div>
 
       <div id="footer">  </div>
-
-
+    </body>
+          </div>
+        </div>
+      </div>
     </body>
       </html>
