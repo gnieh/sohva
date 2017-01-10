@@ -13,7 +13,7 @@ To use Sohva in your code, add it to your dependencies in your build.
 
 ```scala
 // sbt
-libraryDependencies += "org.gnieh" %% "sohva" % "2.0.2"
+libraryDependencies += "org.gnieh" %% "sohva" % "2.0.3"
 ```
 
 ```xml
@@ -21,7 +21,7 @@ libraryDependencies += "org.gnieh" %% "sohva" % "2.0.2"
 <dependency>
   <groupId>org.gnieh</groupId>
   <artifactId>sohva_${scala.version}</artifactId>
-  <version>2.0.2</version>
+  <version>2.0.3</version>
 </dependency>
 ```
 
@@ -33,7 +33,7 @@ Snapshot versions are regularly uploaded to the sonatype snapshots repository so
 
 Currently available snapshots are:
 
- - next bugfix release: `2.0.3-SNAPSHOT`
+ - next bugfix release: `2.0.4-SNAPSHOT`
  - next minor release: `2.1.0-SNAPSHOT`
 
  Snapshots are built against scala 2.11 and scala 2.12.
