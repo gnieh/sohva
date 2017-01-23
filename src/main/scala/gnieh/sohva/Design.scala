@@ -107,7 +107,7 @@ class Design(val db: Database,
   private[this] def deleteView(design: Option[DesignDoc], viewName: String) =
     design match {
       case Some(design) =>
-        db.saveDoc(design.copy(views = design.views - viewName))
+        db.saveDoc(design.copy(views = design.views - viewName).withRev(design._rev))
       case None => Future.failed(new SohvaException(f"Unable to delete view $viewName for unknown design $name"))
     }
 
@@ -128,7 +128,7 @@ class Design(val db: Database,
     design match {
       case Some(design) =>
         // the updated design
-        design.copy(shows = design.shows.updated(showName, showFun))
+        design.copy(shows = design.shows.updated(showName, showFun)).withRev(design._rev)
       case None =>
         // the design does not exist...
         DesignDoc("_design/" + name, language, Map(), None, Map(), Map(showName -> showFun), Map(), Map(), Nil)
@@ -144,7 +144,7 @@ class Design(val db: Database,
   private[this] def deleteShow(design: Option[DesignDoc], showName: String) =
     design match {
       case Some(design) =>
-        db.saveDoc(design.copy(shows = design.shows - showName))
+        db.saveDoc(design.copy(shows = design.shows - showName).withRev(design._rev))
       case None => Future.failed(new SohvaException(f"Unable to delete show function $showName for unknown design $name"))
     }
 
@@ -165,7 +165,7 @@ class Design(val db: Database,
     design match {
       case Some(design) =>
         // the updated design
-        design.copy(lists = design.lists.updated(listName, listFun))
+        design.copy(lists = design.lists.updated(listName, listFun)).withRev(design._rev)
       case None =>
         // the design does not exist...
         DesignDoc("_design/" + name, language, Map(), None, Map(), Map(), Map(), Map(listName -> listFun), Nil)
@@ -181,7 +181,7 @@ class Design(val db: Database,
   private[this] def deleteList(design: Option[DesignDoc], listName: String) =
     design match {
       case Some(design) =>
-        db.saveDoc(design.copy(lists = design.lists - listName))
+        db.saveDoc(design.copy(lists = design.lists - listName).withRev(design._rev))
       case None => Future.failed(new SohvaException(f"Unable to delete list function $listName for unknown design $name"))
     }
 
@@ -202,7 +202,7 @@ class Design(val db: Database,
     design match {
       case Some(design) =>
         // the updated design
-        design.copy(updates = design.updates.updated(updateName, updateFun))
+        design.copy(updates = design.updates.updated(updateName, updateFun)).withRev(design._rev)
       case None =>
         // the design does not exist...
         DesignDoc("_design/" + name, language, Map(), None, Map(updateName -> updateFun), Map(), Map(), Map(), Nil)
@@ -218,7 +218,7 @@ class Design(val db: Database,
   private[this] def deleteUpdate(design: Option[DesignDoc], updateName: String) =
     design match {
       case Some(design) =>
-        db.saveDoc(design.copy(updates = design.updates - updateName))
+        db.saveDoc(design.copy(updates = design.updates - updateName).withRev(design._rev))
       case None => Future.failed(new SohvaException(f"Unable to delete update function $updateName for unknown design $name"))
     }
 
@@ -239,7 +239,7 @@ class Design(val db: Database,
     design match {
       case Some(design) =>
         // the updated design
-        design.copy(validate_doc_update = Some(validateFun))
+        design.copy(validate_doc_update = Some(validateFun)).withRev(design._rev)
       case None =>
         // the design does not exist...
         DesignDoc("_design/" + name, language, Map(), Some(validateFun), Map(), Map(), Map(), Map(), Nil)
@@ -255,7 +255,7 @@ class Design(val db: Database,
   private[this] def deleteValidateFunction(design: Option[DesignDoc]) =
     design match {
       case Some(design) =>
-        for (doc <- db.saveDoc(design.copy(validate_doc_update = None)))
+        for (doc <- db.saveDoc(design.copy(validate_doc_update = None).withRev(design._rev)))
           yield doc
       case None => Future.failed(new SohvaException("Unable to delete validate function for unknown design: " + name))
     }
@@ -273,7 +273,7 @@ class Design(val db: Database,
     design match {
       case Some(design) =>
         // the updated design
-        design.copy(filters = design.filters.updated(filterName, filterFun))
+        design.copy(filters = design.filters.updated(filterName, filterFun)).withRev(design._rev)
       case None =>
         // the design does not exist yet
         DesignDoc("_design/" + name, language, Map(), None, Map(), Map(filterName -> filterFun), Map(), Map(), Nil)
@@ -289,7 +289,7 @@ class Design(val db: Database,
   private[this] def deleteFilter(design: Option[DesignDoc], filterName: String) =
     design match {
       case Some(design) =>
-        for (doc <- db.saveDoc(design.copy(filters = design.filters - filterName)))
+        for (doc <- db.saveDoc(design.copy(filters = design.filters - filterName).withRev(design._rev)))
           yield doc
       case None =>
         Future.failed(new SohvaException("Unable to delete filter " + filterName + " for unknown design " + name))
@@ -308,7 +308,7 @@ class Design(val db: Database,
     design match {
       case Some(design) =>
         // the updated design
-        design.copy(rewrites = rules)
+        design.copy(rewrites = rules).withRev(design._rev)
       case None =>
         // the design does not exist...
         DesignDoc("_design/" + name, language, Map(), None, Map(), Map(), Map(), Map(), rules)
