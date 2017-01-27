@@ -32,9 +32,13 @@ package object mango {
 
   }
 
+  /** Initiates a selector for the current json value. */
+  val self: SelectorBase =
+    new SelectorBase(None)
+
   /** Initiates a selector for the given field. */
   def field(fld: String): SelectorBase =
-    new SelectorBase(fld)
+    new SelectorBase(Some(fld))
 
   /** Creates a sub selector applying within the given field. */
   def within(fld: String)(sel: Selector): Selector =
