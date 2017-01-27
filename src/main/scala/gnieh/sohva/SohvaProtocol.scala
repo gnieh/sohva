@@ -50,7 +50,32 @@ trait SohvaProtocol extends DefaultJsonProtocol with MangoProtocol with CouchFor
 
   implicit val securityDocFormat = jsonFormat2(SecurityDoc)
 
-  implicit val viewDocFormat = jsonFormat2(ViewDoc)
+  implicit object viewDocFormat extends JsonFormat[ViewDoc] {
+
+    def read(json: JsValue): ViewDoc = json match {
+      case obj @ JsObject(flds) =>
+        obj.getFields("map", "reduce") match {
+          case Seq(JsString(map), JsString(reduce)) =>
+            StandardView(map, Some(reduce), flds - "map" - "reduce")
+          case Seq(JsString(map)) =>
+            StandardView(map, None, flds - "map")
+          case _ =>
+            CommonJSView(flds)
+        }
+      case _ =>
+        deserializationError(f"Malfromed view document $json")
+    }
+
+    def write(view: ViewDoc): JsValue = view match {
+      case StandardView(map, Some(reduce), extra) =>
+        JsObject(extra.updated("map", JsString(map)).updated("reduce", JsString(reduce)))
+      case StandardView(map, None, extra) =>
+        JsObject(extra.updated("map", JsString(map)))
+      case CommonJSView(code) =>
+        JsObject(code)
+    }
+
+  }
 
   implicit val rewriteRuleFormat = jsonFormat4(RewriteRule)
 
@@ -73,13 +98,14 @@ trait SohvaProtocol extends DefaultJsonProtocol with MangoProtocol with CouchFor
         val shows = fields.get("shows").map(_.convertTo[Map[String, String]]).getOrElse(Map())
         val lists = fields.get("lists").map(_.convertTo[Map[String, String]]).getOrElse(Map())
         val rewrites = fields.get("rewrites").map(_.convertTo[List[RewriteRule]]).getOrElse(Nil)
-        DesignDoc(id, language, views, validate_doc_update, updates, filters, shows, lists, rewrites).withRev(rev)
+        val extra = fields - "_id" - "_rev" - "language" - "views" - "validate_doc_update" - "updates" - "filters" - "shows" - "lists" - "rewrites"
+        DesignDoc(id, language, views, validate_doc_update, updates, filters, shows, lists, rewrites, extra).withRev(rev)
       case _ =>
         deserializationError(f"Malfromed design document $json")
     }
 
     def write(d: DesignDoc): JsObject = {
-      val DesignDoc(id, language, views, validate_doc_update, updates, filters, shows, lists, rewrites) = d
+      val DesignDoc(id, language, views, validate_doc_update, updates, filters, shows, lists, rewrites, extra) = d
       val fields = List(
         Some("_id" -> id.toJson),
         d._rev.map("_rev" -> _.toJson),
@@ -93,7 +119,7 @@ trait SohvaProtocol extends DefaultJsonProtocol with MangoProtocol with CouchFor
         if (views.isEmpty) None else Some("rewrites" -> rewrites.toJson))
         .flatten
         .toMap
-      JsObject(fields)
+      JsObject(extra ++ fields)
     }
   }
 

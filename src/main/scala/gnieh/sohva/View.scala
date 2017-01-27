@@ -196,7 +196,12 @@ private class TemporaryView(
   lazy val postData: String = viewDoc.toJson.compactPrint
 
 }
-case class ViewDoc(map: String, reduce: Option[String])
+
+sealed trait ViewDoc
+
+case class StandardView(map: String, reduce: Option[String], libs: Map[String, JsValue]) extends ViewDoc
+
+case class CommonJSView(libs: Map[String, JsValue]) extends ViewDoc
 
 /** ''Warning'': This is low-level API, and might break compatibility even between patch releases
  *

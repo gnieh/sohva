@@ -53,7 +53,7 @@ class Design(val db: Database,
     for {
       ex <- exists
       cr <- if (ex) throw new SohvaException(f"Failed to create design. A design with the name $name already exists.")
-      else db.saveDoc(DesignDoc("_design/" + name, language, Map(), None, Map(), Map(), Map(), Map(), Nil))
+      else db.saveDoc(DesignDoc("_design/" + name, language, Map(), None, Map(), Map(), Map(), Map(), Nil, Map()))
     } yield cr
 
   /** Returns the design document from the couchdb instance.
@@ -75,8 +75,16 @@ class Design(val db: Database,
    */
   def saveView(viewName: String,
     mapFun: String,
-    reduceFun: Option[String] = None): Future[Unit] =
-    saveView(viewName, ViewDoc(mapFun, reduceFun))
+    reduceFun: Option[String] = None,
+    extra: Map[String, JsValue] = Map()): Future[Unit] =
+    saveView(viewName, StandardView(mapFun, reduceFun, extra))
+
+  /**
+   * Creates or updates the view library named `lib` in this design with the given name.
+   *  If the design does not exist yet, it is created.
+   */
+  def saveViewLib(code: Map[String, JsValue]): Future[Unit] =
+    saveView("lib", CommonJSView(code))
 
   /** Creates or updates the view in this design with the given name.
    *  If the design does not exist yet, it is created.
@@ -94,7 +102,7 @@ class Design(val db: Database,
         design.copy(views = design.views + (viewName -> view)).withRev(design._rev)
       case None =>
         // the design does not exist...
-        DesignDoc("_design/" + name, language, Map(viewName -> view), None, Map(), Map(), Map(), Map(), Nil)
+        DesignDoc("_design/" + name, language, Map(viewName -> view), None, Map(), Map(), Map(), Map(), Nil, Map())
     }
 
   /** Deletes the view with the given name from the design */
@@ -131,7 +139,7 @@ class Design(val db: Database,
         design.copy(shows = design.shows.updated(showName, showFun)).withRev(design._rev)
       case None =>
         // the design does not exist...
-        DesignDoc("_design/" + name, language, Map(), None, Map(), Map(showName -> showFun), Map(), Map(), Nil)
+        DesignDoc("_design/" + name, language, Map(), None, Map(), Map(showName -> showFun), Map(), Map(), Nil, Map())
     }
 
   /** Deletes the show function with the given name from the design */
@@ -168,7 +176,7 @@ class Design(val db: Database,
         design.copy(lists = design.lists.updated(listName, listFun)).withRev(design._rev)
       case None =>
         // the design does not exist...
-        DesignDoc("_design/" + name, language, Map(), None, Map(), Map(), Map(), Map(listName -> listFun), Nil)
+        DesignDoc("_design/" + name, language, Map(), None, Map(), Map(), Map(), Map(listName -> listFun), Nil, Map())
     }
 
   /** Deletes the list function with the given name from the design */
@@ -205,7 +213,7 @@ class Design(val db: Database,
         design.copy(updates = design.updates.updated(updateName, updateFun)).withRev(design._rev)
       case None =>
         // the design does not exist...
-        DesignDoc("_design/" + name, language, Map(), None, Map(updateName -> updateFun), Map(), Map(), Map(), Nil)
+        DesignDoc("_design/" + name, language, Map(), None, Map(updateName -> updateFun), Map(), Map(), Map(), Nil, Map())
     }
 
   /** Deletes the update function with the given name from the design */
@@ -242,7 +250,7 @@ class Design(val db: Database,
         design.copy(validate_doc_update = Some(validateFun)).withRev(design._rev)
       case None =>
         // the design does not exist...
-        DesignDoc("_design/" + name, language, Map(), Some(validateFun), Map(), Map(), Map(), Map(), Nil)
+        DesignDoc("_design/" + name, language, Map(), Some(validateFun), Map(), Map(), Map(), Map(), Nil, Map())
     }
 
   /** Deletes the document validation function from the design */
@@ -276,7 +284,7 @@ class Design(val db: Database,
         design.copy(filters = design.filters.updated(filterName, filterFun)).withRev(design._rev)
       case None =>
         // the design does not exist yet
-        DesignDoc("_design/" + name, language, Map(), None, Map(), Map(filterName -> filterFun), Map(), Map(), Nil)
+        DesignDoc("_design/" + name, language, Map(), None, Map(), Map(filterName -> filterFun), Map(), Map(), Nil, Map())
     }
 
   /** Deletes the filter identified by its name from the design document */
@@ -311,7 +319,7 @@ class Design(val db: Database,
         design.copy(rewrites = rules).withRev(design._rev)
       case None =>
         // the design does not exist...
-        DesignDoc("_design/" + name, language, Map(), None, Map(), Map(), Map(), Map(), rules)
+        DesignDoc("_design/" + name, language, Map(), None, Map(), Map(), Map(), Map(), rules, Map())
     }
 
   /** Retrieves the rewrite rules associated to this design document. */
@@ -346,6 +354,7 @@ case class DesignDoc(
   filters: Map[String, String],
   shows: Map[String, String],
   lists: Map[String, String],
-  rewrites: Seq[RewriteRule]) extends IdRev
+  rewrites: Seq[RewriteRule],
+  libs: Map[String, JsValue]) extends IdRev
 
 case class RewriteRule(from: String, to: String, method: String, query: Map[String, String])
