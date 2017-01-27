@@ -101,62 +101,68 @@ object ObjectType {
 }
 
 /** The base of a selector, it is one of the conditions on fields.  */
-class SelectorBase(field: String) {
+class SelectorBase private[mango] (field: Option[String]) {
+
+  private def makeSelector(inner: Selector): Selector =
+    field match {
+      case Some(field) => Field(field, inner)
+      case None        => inner
+    }
 
   /** Creates a `$eq` condition. */
   def ===[T: JsonWriter](value: T): Selector =
-    Field(field, Eq(value.toJson))
+    makeSelector(Eq(value.toJson))
 
   /** Creates a `$ne` condition. */
   def !==[T: JsonWriter](value: T): Selector =
-    Field(field, Ne(value.toJson))
+    makeSelector(Ne(value.toJson))
 
   /** Creates a `$lt` condition. */
   def <[T: JsonWriter](value: T): Selector =
-    Field(field, Lt(value.toJson))
+    makeSelector(Lt(value.toJson))
 
   /** Creates a `$lte` condition. */
   def <=[T: JsonWriter](value: T): Selector =
-    Field(field, Lte(value.toJson))
+    makeSelector(Lte(value.toJson))
 
   /** Creates a `$lt` condition. */
   def >[T: JsonWriter](value: T): Selector =
-    Field(field, Gt(value.toJson))
+    makeSelector(Gt(value.toJson))
 
   /** Creates a `$gte` condition. */
   def >=[T: JsonWriter](value: T): Selector =
-    Field(field, Gte(value.toJson))
+    makeSelector(Gte(value.toJson))
 
   /** Creates a `$exists true` condition. */
   def exists: Selector =
-    Field(field, Exists(true))
+    makeSelector(Exists(true))
 
   /** Creates a `$exists false` condition. */
   def doesNotExist: Selector =
-    Field(field, Exists(false))
+    makeSelector(Exists(false))
 
   /** Creates a `$type` condition. */
   def hasType(tpe: String): Selector =
-    Field(field, Type(ObjectType(tpe)))
+    makeSelector(Type(ObjectType(tpe)))
 
   /** Creates a `$in` condition. */
   def in[T: JsonWriter](values: Seq[T]): Selector =
-    Field(field, In(values.map(_.toJson)))
+    makeSelector(In(values.map(_.toJson)))
 
   /** Creates a `$nin` condition. */
   def notIn[T: JsonWriter](values: Seq[T]): Selector =
-    Field(field, Nin(values.map(_.toJson)))
+    makeSelector(Nin(values.map(_.toJson)))
 
   /** Creates a `$size` condition. */
   def hasSize(s: Int): Selector =
-    Field(field, Size(s))
+    makeSelector(Size(s))
 
   def %(d: Int): ModuloBase =
     new ModuloBase(field, d)
 
   /** Creates a `$regex` condition. */
   def matches(re: String): Selector =
-    Field(field, Regex(re))
+    makeSelector(Regex(re))
 
   /** Creates a `$all` selector. */
   def containsAll[T: JsonWriter](values: Seq[T]): Selector =
@@ -168,14 +174,17 @@ class SelectorBase(field: String) {
 
   /** Creates a `$elemMatch` selector. */
   def contains(sel: Selector): Selector =
-    Field(field, ElemMatch(sel))
+    makeSelector(ElemMatch(sel))
 
 }
 
-class ModuloBase(field: String, divisor: Int) {
+class ModuloBase private[mango] (field: Option[String], divisor: Int) {
 
   /** Creates a `$mod` condition. */
   def ===(r: Int): Selector =
-    Field(field, Mod(divisor, r))
+    field match {
+      case Some(field) => Field(field, Mod(divisor, r))
+      case None        => Mod(divisor, r)
+    }
 
 }
