@@ -15,6 +15,8 @@
 */
 package gnieh.sohva
 
+import mango._
+
 import spray.json._
 
 import akka.actor._
@@ -60,6 +62,8 @@ class ChangeStream(database: Database) {
     conflicts: Boolean = false,
     descending: Boolean = false,
     filter: Option[String] = None,
+    selector: Option[Selector] = None,
+    designOnly: Boolean = false,
     includeDocs: Boolean = false,
     attachments: Boolean = false,
     attEncodingInfo: Boolean = false,
@@ -84,17 +88,28 @@ class ChangeStream(database: Database) {
         case Right(s)    => "since" -> CompactPrinter(s)
       },
       style.map(s => "style" -> s),
-      view.map(v => "view" -> v)).flatten
+      view.map(v => "view" -> v)).flatten.toMap
 
-    if (docIds.isEmpty)
-      for (resp <- database.http(HttpRequest(uri = uri <<? parameters)))
-        yield resp.convertTo[Changes]
-    else
-      for {
-        entity <- Marshal(docIds).to[RequestEntity]
-        resp <- database.http(HttpRequest(uri = uri <<? parameters))
-      } yield resp.convertTo[Changes]
+    val request = selector match {
+      case Some(selector) =>
+        for {
+          entity <- Marshal(Map("selector" -> selector)).to[RequestEntity]
+        } yield HttpRequest(HttpMethods.POST, uri = uri <<? parameters.updated("filter", "_selector"), entity = entity)
+      case None =>
+        if (docIds.isEmpty)
+          Future.successful(HttpRequest(uri = uri <<? parameters))
+        else if (designOnly)
+          Future.successful(HttpRequest(uri = uri <<? parameters.updated("filter", "_design")))
+        else
+          for {
+            entity <- Marshal(docIds).to[RequestEntity]
+          } yield HttpRequest(HttpMethods.POST, uri = uri <<? parameters.updated("filter", "_doc_ids"), entity = entity)
+    }
 
+    for {
+      req <- request
+      resp <- database.http(req)
+    } yield resp.convertTo[Changes]
   }
 
   /** Returns a continuous stream representing the changes in the database. Each change produces an element in the stream.
@@ -111,6 +126,8 @@ class ChangeStream(database: Database) {
     conflicts: Boolean = false,
     descending: Boolean = false,
     filter: Option[String] = None,
+    selector: Option[Selector] = None,
+    designOnly: Boolean = false,
     includeDocs: Boolean = false,
     attachments: Boolean = false,
     attEncodingInfo: Boolean = false,
@@ -137,11 +154,27 @@ class ChangeStream(database: Database) {
         case Right(s)    => "since" -> CompactPrinter(s)
       },
       style.map(s => "style" -> s),
-      view.map(v => "view" -> v)).flatten
+      view.map(v => "view" -> v)).flatten.toMap
+
+    val request = selector match {
+      case Some(selector) =>
+        for {
+          entity <- Marshal(Map("selector" -> selector)).to[RequestEntity]
+        } yield HttpRequest(HttpMethods.POST, uri = uri <<? parameters.updated("filter", "_selector"), entity = entity)
+      case None =>
+        if (docIds.isEmpty)
+          Future.successful(HttpRequest(uri = uri <<? parameters))
+        else if (designOnly)
+          Future.successful(HttpRequest(uri = uri <<? parameters.updated("filter", "_design")))
+        else
+          for {
+            entity <- Marshal(docIds).to[RequestEntity]
+          } yield HttpRequest(HttpMethods.POST, uri = uri <<? parameters.updated("filter", "_doc_ids"), entity = entity)
+    }
 
     Source.fromFuture(
-      for (entity <- if (docIds.isEmpty) Future.successful(HttpEntity.Empty) else Marshal(Map("doc_ids" -> docIds)).to[RequestEntity])
-        yield database.couch.prepare(HttpRequest(if (docIds.isEmpty) HttpMethods.GET else HttpMethods.POST, uri = uri <<? parameters, entity = entity)))
+      for (req <- request)
+        yield database.couch.prepare(req))
       .via(database.couch.connectionFlow)
       .flatMapConcat(_.entity.dataBytes)
       .via(Framing.delimiter(ByteString("\n"), Int.MaxValue))
