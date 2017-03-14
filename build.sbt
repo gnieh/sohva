@@ -8,7 +8,7 @@ lazy val globalSettings = Seq(
   licenses += ("The Apache Software License, Version 2.0" -> url("http://www.apache.org/licenses/LICENSE-2.0.txt")),
   homepage := Some(url("https://github.com/gnieh/sohva")),
   version := "2.1.0-SNAPSHOT",
-  scalaVersion := "2.12.0",
+  scalaVersion := "2.12.1",
   crossScalaVersions := Seq("2.12.0", "2.11.8"),
   libraryDependencies ++= globalDependencies,
   parallelExecution := false,
@@ -27,11 +27,11 @@ lazy val scalariform = scalariformSettings ++ Seq(
 )
 
 lazy val globalDependencies = Seq(
-  "org.scalatest" %% "scalatest" % "3.0.0" % "test",
-  "com.typesafe.akka" %% "akka-http-spray-json" % "10.0.0",
-  "org.gnieh" %% "diffson-spray-json" % "2.1.0",
-  "io.spray" %% "spray-json" % "1.3.2",
-  "org.slf4j" % "slf4j-api" % "1.7.21"
+  "org.scalatest" %% "scalatest" % "3.0.1" % "test",
+  "com.typesafe.akka" %% "akka-http-spray-json" % "10.0.4",
+  "org.gnieh" %% "diffson-spray-json" % "2.1.2",
+  "io.spray" %% "spray-json" % "1.3.3",
+  "org.slf4j" % "slf4j-api" % "1.7.24"
 )
 
 lazy val publishSettings = Seq(
