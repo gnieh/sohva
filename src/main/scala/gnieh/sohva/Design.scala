@@ -79,8 +79,7 @@ class Design(val db: Database,
     extra: Map[String, JsValue] = Map()): Future[Unit] =
     saveView(viewName, StandardView(mapFun, reduceFun, extra))
 
-  /**
-   * Creates or updates the view library named `lib` in this design with the given name.
+  /** Creates or updates the view library named `lib` in this design with the given name.
    *  If the design does not exist yet, it is created.
    */
   def saveViewLib(code: Map[String, JsValue]): Future[Unit] =
