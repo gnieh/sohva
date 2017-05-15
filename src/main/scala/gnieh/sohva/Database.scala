@@ -256,13 +256,27 @@ class Database private[sohva] (
   /** Exposes the interface for managing local (non-replicating) documents. */
   object local extends Local(this)
 
-  /** Creates or updates a bunch of documents into the database. */
-  def saveDocs[T: CouchFormat](docs: Iterable[T], all_or_nothing: Boolean = false): Future[List[DbResult]] =
+  /** Performs bulk document update. */
+  @deprecated("`all_or_nothing` was removed in CouchDB 2.0 and will have no effect", "Sohva 2.2.0")
+  def bulkDocs[T: CouchFormat](operations: Iterable[BulkOp[T]], all_or_nothing: Boolean): Future[List[DbResult]] =
     for {
-      entity <- Marshal(BulkSave(all_or_nothing, docs.map(_.toJson))).to[RequestEntity]
+      entity <- Marshal(BulkSave(all_or_nothing, operations.map(_.toJson))).to[RequestEntity]
       raw <- couch.http(HttpRequest(HttpMethods.POST, uri = uri / "_bulk_docs", entity = entity)) withFailureMessage
-        f"Failed to bulk save documents to $uri"
+        f"Failed to bulk update documents to $uri"
     } yield bulkSaveResult(raw)
+
+  /** Performs bulk document update. */
+  def bulkDocs[T: CouchFormat](operations: Iterable[BulkOp[T]]): Future[List[DbResult]] =
+    bulkDocs(operations, false)
+
+  /** Creates or updates a bunch of documents into the database. */
+  @deprecated("`all_or_nothing` was removed in CouchDB 2.0 and will have no effect", "Sohva 2.2.0")
+  def saveDocs[T: CouchFormat](docs: Iterable[T], all_or_nothing: Boolean): Future[List[DbResult]] =
+    bulkDocs(docs.map(Save(_)), all_or_nothing)
+
+  /** Creates or updates a bunch of documents into the database. */
+  def saveDocs[T: CouchFormat](docs: Iterable[T]): Future[List[DbResult]] =
+    saveDocs(docs, false)
 
   private def saveRawDocs(docs: Iterable[JsValue], all_or_nothing: Boolean = false): Future[List[DbResult]] =
     for {
@@ -359,17 +373,27 @@ class Database private[sohva] (
    *  for each identifier in the document list. One can choose the update strategy
    *  by setting the parameter `all_or_nothing` to `true` or `false`.
    */
-  def deleteDocs(ids: Iterable[String], all_or_nothing: Boolean = false): Future[List[DbResult]] =
+  @deprecated("`all_or_nothing` was removed in CouchDB 2.0 and will have no effect", "Sohva 2.2.0")
+  def deleteDocs(ids: Iterable[String], all_or_nothing: Boolean): Future[List[DbResult]] =
     for {
       revs <- getDocRevisions(ids)
       res <- deleteDocRevs(revs, all_or_nothing)
     } yield res
 
   /**
+   * Deletes a bunch of documents at once returning the results
+   *  for each identifier in the document list. One can choose the update strategy
+   *  by setting the parameter `all_or_nothing` to `true` or `false`.
+   */
+  def deleteDocs(ids: Iterable[String]): Future[List[DbResult]] =
+    deleteDocs(ids, false)
+
+  /**
    * Deletes a bunch of document revisions at once returning the results
    *  for each identifier in the document list. One can choose the update strategy
    *  by setting the parameter `all_or_nothing` to `true` or `false`.
    */
+  @deprecated("`all_or_nothing` was removed in CouchDB 2.0 and will have no effect", "Sohva 2.2.0")
   def deleteDocRevs(docs: List[(String, String)], all_or_nothing: Boolean = false): Future[List[DbResult]] =
     for {
       entity <- Marshal(JsObject(
@@ -386,6 +410,14 @@ class Database private[sohva] (
       raw <- couch.http(
         HttpRequest(HttpMethods.POST, uri = uri / "_bulk_docs", entity = entity)).withFailureMessage(f"Failed to bulk delete document revisions ${docs.mkString("[", ", ", "]")} from $uri")
     } yield bulkSaveResult(raw)
+
+  /**
+   * Deletes a bunch of document revisions at once returning the results
+   *  for each identifier in the document list. One can choose the update strategy
+   *  by setting the parameter `all_or_nothing` to `true` or `false`.
+   */
+  def deleteDocRevs(docs: List[(String, String)]): Future[List[DbResult]] =
+    deleteDocRevs(docs, false)
 
   /**
    * Attaches the given file to the given document id.

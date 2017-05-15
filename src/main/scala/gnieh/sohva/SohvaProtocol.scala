@@ -147,6 +147,15 @@ trait SohvaProtocol extends DefaultJsonProtocol with MangoProtocol with CouchFor
 
   private[sohva] implicit val uuidsFormat = jsonFormat1(Uuids)
 
+  implicit def BulkOpWriter[T: CouchFormat]: JsonWriter[BulkOp[T]] = new JsonWriter[BulkOp[T]] {
+
+    def write(op: BulkOp[T]): JsValue = op match {
+      case Delete(id, rev) => JsObject(Map("_id" -> JsString(id), "_rev" -> JsString(rev), "_deleted" -> JsBoolean(true)))
+      case Save(doc)       => doc.toJson
+    }
+
+  }
+
   implicit object DbResultFormat extends RootJsonFormat[DbResult] {
 
     def read(value: JsValue): DbResult =
