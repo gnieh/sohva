@@ -19,6 +19,7 @@ script:
 
 # create an admin user
 before_script:
+  - sudo chmod +x /usr/local/bin/sbt
   - curl -X PUT -d '"true"' localhost:5984/_config/couch_httpd_oauth/use_users_db
   - curl -X PUT -d '"admin"' localhost:5984/_config/admins/admin
   - echo 'testOptions in Test += Tests.Argument(TestFrameworks.ScalaTest, "-l", "org.gnieh.sohva.NoTravis")' > local.sbt
