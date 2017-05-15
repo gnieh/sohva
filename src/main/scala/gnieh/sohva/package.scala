@@ -46,7 +46,7 @@ package object sohva {
   // register the COPY method
   val COPY = HttpMethod.custom("COPY")
 
-  val now = Some(Left("now"))
+  val now = Now
 
   private[sohva] implicit class EnhencedCloseable[T <: Closeable](val closeable: T) extends AnyVal {
 

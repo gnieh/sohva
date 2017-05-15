@@ -57,7 +57,15 @@ class ChangeStream(database: Database) {
   import database.couch.system
   import database.couch.ec
 
+  private def makeSince(old: Option[Either[String, JsValue]]) = old match {
+    case Some(Left("now")) => Now
+    case Some(Left(_))     => Origin
+    case Some(Right(js))   => UpdateSequence(js)
+    case None              => Origin
+  }
+
   /** Returns a one-shot view of changes for this database. */
+  @deprecated("Use the `current` stream instead.", "Sohva 2.2.0")
   def once(docIds: Iterable[String] = Vector.empty[String],
     conflicts: Boolean = false,
     descending: Boolean = false,
@@ -71,6 +79,36 @@ class ChangeStream(database: Database) {
     limit: Option[Int] = None,
     since: Option[Either[String, JsValue]] = None,
     style: Option[String] = None,
+    view: Option[String] = None): Future[Changes] =
+    current(docIds = docIds,
+      conflicts = conflicts,
+      descending = descending,
+      filter = filter,
+      selector = selector,
+      designOnly = designOnly,
+      includeDocs = includeDocs,
+      attachments = attachments,
+      attEncodingInfo = attEncodingInfo,
+      lastEventId = lastEventId,
+      limit = limit,
+      since = makeSince(since),
+      style = style,
+      view = view)
+
+  /** Returns a one-shot view of changes for this database. */
+  def current(docIds: Iterable[String] = Vector.empty[String],
+    conflicts: Boolean = false,
+    descending: Boolean = false,
+    filter: Option[String] = None,
+    selector: Option[Selector] = None,
+    designOnly: Boolean = false,
+    includeDocs: Boolean = false,
+    attachments: Boolean = false,
+    attEncodingInfo: Boolean = false,
+    lastEventId: Option[Int] = None,
+    limit: Option[Int] = None,
+    since: Since = Origin,
+    style: Option[String] = None,
     view: Option[String] = None): Future[Changes] = {
 
     val parameters = List(
@@ -82,11 +120,7 @@ class ChangeStream(database: Database) {
       if (attEncodingInfo) Some("att_encoding_info" -> "true") else None,
       lastEventId.map(n => "last-event-id" -> n.toString),
       limit.map(n => "limit" -> n.toString),
-      since.map {
-        case Left("now") => "since" -> "now"
-        case Left(s)     => throw new SohvaException(f"Unsupported `since` value $s")
-        case Right(s)    => "since" -> CompactPrinter(s)
-      },
+      since.option.map(s => "since" -> s),
       style.map(s => "style" -> s),
       view.map(v => "view" -> v)).flatten.toMap
 
@@ -122,6 +156,7 @@ class ChangeStream(database: Database) {
    *  killSwitch.shutdown()
    *  }}}
    */
+  @deprecated("Use the `all` stream instead.", "Sohva 2.2.0")
   def stream(docIds: Iterable[String] = Vector.empty[String],
     conflicts: Boolean = false,
     descending: Boolean = false,
@@ -134,6 +169,45 @@ class ChangeStream(database: Database) {
     lastEventId: Option[Int] = None,
     limit: Option[Int] = None,
     since: Option[Either[String, JsValue]] = None,
+    style: Option[String] = None,
+    view: Option[String] = None): Source[Change, UniqueKillSwitch] =
+    all(docIds = docIds,
+      conflicts = conflicts,
+      descending = descending,
+      filter = filter,
+      selector = selector,
+      designOnly = designOnly,
+      includeDocs = includeDocs,
+      attachments = attachments,
+      attEncodingInfo = attEncodingInfo,
+      lastEventId = lastEventId,
+      limit = limit,
+      since = makeSince(since),
+      style = style,
+      view = view)
+
+  /** Returns a continuous stream representing the changes in the database. Each change produces an element in the stream.
+   *  The returned stream can be cancelled using the kill switch returned by materializing it.
+   *  E.g. if you want to log the changes to the console and shut it down after a while, you can write
+   *  {{{
+   *  val stream = db.changes.stream()
+   *  val killSwitch = stream.toMat(Sink.foreach(println _))(Keep.left).run()
+   *  ...
+   *  killSwitch.shutdown()
+   *  }}}
+   */
+  def all(docIds: Iterable[String] = Vector.empty[String],
+    conflicts: Boolean = false,
+    descending: Boolean = false,
+    filter: Option[String] = None,
+    selector: Option[Selector] = None,
+    designOnly: Boolean = false,
+    includeDocs: Boolean = false,
+    attachments: Boolean = false,
+    attEncodingInfo: Boolean = false,
+    lastEventId: Option[Int] = None,
+    limit: Option[Int] = None,
+    since: Since = Origin,
     style: Option[String] = None,
     view: Option[String] = None): Source[Change, UniqueKillSwitch] = {
 
@@ -148,11 +222,7 @@ class ChangeStream(database: Database) {
       if (attEncodingInfo) Some("att_encoding_info" -> "true") else None,
       lastEventId.map(n => "last-event-id" -> n.toString),
       limit.map(n => "limit" -> n.toString),
-      since.map {
-        case Left("now") => "since" -> "now"
-        case Left(s)     => throw new SohvaException(f"Unsupported `since` value $s")
-        case Right(s)    => "since" -> CompactPrinter(s)
-      },
+      since.option.map(s => "since" -> s),
       style.map(s => "style" -> s),
       view.map(v => "view" -> v)).flatten.toMap
 

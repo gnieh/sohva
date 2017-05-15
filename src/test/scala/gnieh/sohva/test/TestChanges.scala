@@ -32,7 +32,7 @@ class TestChanges extends AsyncSohvaTestSpec with Matchers {
 
   "registering to a database since now" should "not return previous events" in {
 
-    val stream = db.changes.stream(since = now)
+    val stream = db.changes.all(since = now)
 
     val (kill, res) = stream.toMat(Sink.fold(0) { case (c, _) => c + 1 })(Keep.both).run()
 
@@ -45,7 +45,7 @@ class TestChanges extends AsyncSohvaTestSpec with Matchers {
 
   it should "be notified about new events" taggedAs (NoTravis) in {
 
-    val stream = db.changes.stream(since = now, style = Some("all_docs"))
+    val stream = db.changes.all(since = now, style = Some("all_docs"))
 
     val res = stream.takeWithin(5.seconds).toMat(Sink.fold(0) { case (c, _) => c + 1 })(Keep.right).run()
 
@@ -60,7 +60,7 @@ class TestChanges extends AsyncSohvaTestSpec with Matchers {
 
   it should "not be notified anymore when closed" taggedAs (NoTravis) in {
 
-    val stream = db.changes.stream(since = now, style = Some("all_docs"))
+    val stream = db.changes.all(since = now, style = Some("all_docs"))
 
     val (kill, res) = stream.toMat(Sink.fold(0) { case (c, _) => c + 1 })(Keep.both).run()
 
@@ -77,7 +77,7 @@ class TestChanges extends AsyncSohvaTestSpec with Matchers {
 
   "several registered stream" should "all be notified" taggedAs (NoTravis) in {
 
-    val stream = db.changes.stream(since = now, style = Some("all_docs")).takeWithin(1.seconds).toMat(Sink.fold(0) { case (c, _) => c + 1 })(Keep.right)
+    val stream = db.changes.all(since = now, style = Some("all_docs")).takeWithin(1.seconds).toMat(Sink.fold(0) { case (c, _) => c + 1 })(Keep.right)
 
     val res1 = stream.run()
     val res2 = stream.run()
