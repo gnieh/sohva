@@ -60,6 +60,7 @@ final case class Not(selector: Selector) extends Combination
 final case class Nor(selectors: Seq[Selector]) extends Combination
 final case class All(values: Seq[JsValue]) extends Combination
 final case class ElemMatch(selector: Selector) extends Combination
+final case class AllMatch(selector: Selector) extends Combination
 
 sealed trait Condition extends Operator
 
@@ -175,6 +176,10 @@ class SelectorBase private[mango] (field: Option[String]) {
   /** Creates a `$elemMatch` selector. */
   def contains(sel: Selector): Selector =
     makeSelector(ElemMatch(sel))
+
+  /** Creates a `$allMatch` selector. */
+  def forall(sel: Selector): Selector =
+    makeSelector(AllMatch(sel))
 
 }
 
