@@ -1,4 +1,3 @@
-import com.typesafe.sbt.SbtScalariform._
 import scalariform.formatter.preferences._
 
 lazy val globalSettings = Seq(
@@ -17,12 +16,13 @@ lazy val globalSettings = Seq(
   scalacOptions in (Compile, doc) ++= Seq("-groups")
 )
 
-lazy val scalariform = scalariformSettings ++ Seq(
-  ScalariformKeys.preferences :=
-    ScalariformKeys.preferences.value
+lazy val scalariform = Seq(
+  scalariformAutoformat := true,
+  scalariformPreferences :=
+    scalariformPreferences.value
       .setPreference(AlignSingleLineCaseStatements, true)
-      .setPreference(DoubleIndentClassDeclaration, true)
-      .setPreference(PreserveDanglingCloseParenthesis, true)
+      .setPreference(DoubleIndentConstructorArguments, true)
+      .setPreference(DanglingCloseParenthesis, Preserve)
       .setPreference(MultilineScaladocCommentsStartOnFirstLine, true)
 )
 
@@ -72,11 +72,11 @@ lazy val publishSettings = Seq(
 
 lazy val sohva = project.in(file("."))
   .dependsOn(json % "compile-internal, test-internal")
-  .enablePlugins(SiteScaladocPlugin, JekyllPlugin)
-  .settings(globalSettings: _*)
-  .settings(publishSettings: _*)
-  .settings(osgiSettings: _*)
-  .settings(scalariform: _*)
+  .enablePlugins(SiteScaladocPlugin, JekyllPlugin, SbtOsgi)
+  .settings(globalSettings)
+  .settings(publishSettings)
+  .settings(osgiSettings)
+  .settings(scalariform)
   .settings (
     name := "sohva",
     description := "Couchdb client library",
@@ -98,7 +98,8 @@ lazy val sohva = project.in(file("."))
     OsgiKeys.privatePackage := Seq())
 
 lazy val json = project.in(file("sohva-json"))
-  .settings(globalSettings: _*)
+  .settings(globalSettings)
+  .settings(scalariform)
   .settings(
     libraryDependencies ++= globalDependencies,
     libraryDependencies += scalaVersion("org.scala-lang" % "scala-reflect" % _).value)
