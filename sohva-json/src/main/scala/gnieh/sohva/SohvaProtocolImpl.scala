@@ -31,8 +31,7 @@ trait CouchFormat[T] extends RootJsonFormat[T] {
 
 trait CouchFormatImpl {
 
-  def couchFormat[T]: CouchFormat[T] =
-    macro CouchFormatImpl.couchFormat[T]
+  def couchFormat[T]: CouchFormat[T] = macro CouchFormatImpl.couchFormat[T]
 
 }
 
@@ -43,7 +42,7 @@ object CouchFormatImpl {
 
     val tpe = weakTypeOf[T]
 
-    if(!tpe.typeSymbol.asClass.isCaseClass)
+    if (!tpe.typeSymbol.asClass.isCaseClass)
       c.abort(c.enclosingPosition, s"${tpe} is not a case class. `couchFormat' can only generate a RootJsonFormat[T] for case classes!")
 
     val methodNames = tpe.decls.toList.collect {

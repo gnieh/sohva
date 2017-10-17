@@ -42,11 +42,13 @@ import akka.http.scaladsl.model._
  *  @author Lucas Satabin
  *
  */
-class CouchClient(val host: String = "localhost",
+class CouchClient(
+    val host: String = "localhost",
     val port: Int = 5984,
     val ssl: Boolean = false)(
-        implicit val system: ActorSystem,
-        val timeout: Timeout) extends CouchDB {
+    implicit
+    val system: ActorSystem,
+    val timeout: Timeout) extends CouchDB {
 
   implicit def ec: ExecutionContext =
     system.dispatcher

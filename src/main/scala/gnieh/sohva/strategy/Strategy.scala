@@ -35,7 +35,8 @@ trait Strategy {
    *  When `JNothing` is returned no further try is performed and the saving is considered succesful by
    *  keeping the current version in the database.
    */
-  def apply(baseDoc: Option[JsValue],
+  def apply(
+    baseDoc: Option[JsValue],
     lastDoc: Option[JsValue],
     currentDoc: JsValue): Option[JsValue]
 }

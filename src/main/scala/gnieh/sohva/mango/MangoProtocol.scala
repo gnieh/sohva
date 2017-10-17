@@ -115,6 +115,7 @@ trait MangoProtocol extends DefaultJsonProtocol {
       case Nor(sub)         => JsObject(Map("$nor" -> JsArray(sub.map(write).toVector)))
       case All(values)      => JsObject(Map("$all" -> JsArray(values.toVector)))
       case ElemMatch(sub)   => JsObject(Map("$elemMatch" -> write(sub)))
+      case AllMatch(sub)    => JsObject(Map("$allMatch" -> write(sub)))
       case Eq(value)        => JsObject(Map("$eq" -> value))
       case Ne(value)        => JsObject(Map("$ne" -> value))
       case Lt(value)        => JsObject(Map("$lt" -> value))

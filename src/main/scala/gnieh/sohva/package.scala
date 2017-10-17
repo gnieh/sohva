@@ -25,8 +25,7 @@ import scala.concurrent.{
   Future
 }
 
-/**
- * Contains all the classes needed to interact with a couchdb server.
+/** Contains all the classes needed to interact with a couchdb server.
  *  Classes in this package allows the user to:
  *  - create/delete new databases into a couchdb instance,
  *  - create/update/delete documents into a couchdb database,
@@ -62,7 +61,7 @@ package object sohva {
 
     def /(part: Option[String]) = part match {
       case Some(part) => uri.withPath(part.split("/").foldLeft(uri.path)(_ / _))
-      case None => uri
+      case None       => uri
     }
 
     def <<?(params: Map[String, String]): Uri =
@@ -74,7 +73,7 @@ package object sohva {
     def <<?(param: Option[(String, String)]): Uri =
       param match {
         case Some(param) => uri.withQuery(Uri.Query(param))
-        case None => uri
+        case None        => uri
       }
 
   }

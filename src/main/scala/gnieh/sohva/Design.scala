@@ -26,7 +26,8 @@ import akka.http.scaladsl.model._
  *
  *  @author Lucas Satabin
  */
-class Design(val db: Database,
+class Design(
+    val db: Database,
     val name: String,
     val language: String) {
 
@@ -73,7 +74,8 @@ class Design(val db: Database,
    *  with the given name, map function and reduce function.
    *  If the design does not exist yet, it is created.
    */
-  def saveView(viewName: String,
+  def saveView(
+    viewName: String,
     mapFun: String,
     reduceFun: Option[String] = None,
     extra: Map[String, JsValue] = Map()): Future[Unit] =
@@ -345,15 +347,15 @@ class Design(val db: Database,
 }
 
 case class DesignDoc(
-  _id: String,
-  language: String,
-  views: Map[String, ViewDoc],
-  validate_doc_update: Option[String],
-  updates: Map[String, String],
-  filters: Map[String, String],
-  shows: Map[String, String],
-  lists: Map[String, String],
-  rewrites: Seq[RewriteRule],
-  libs: Map[String, JsValue]) extends IdRev
+    _id: String,
+    language: String,
+    views: Map[String, ViewDoc],
+    validate_doc_update: Option[String],
+    updates: Map[String, String],
+    filters: Map[String, String],
+    shows: Map[String, String],
+    lists: Map[String, String],
+    rewrites: Seq[RewriteRule],
+    libs: Map[String, JsValue]) extends IdRev
 
 case class RewriteRule(from: String, to: String, method: String, query: Map[String, String])

@@ -69,8 +69,7 @@ class View(
     update_seq: Boolean = false): Future[RawViewResult] = {
 
     // build options
-    val options = List(
-      key.map(k => "key" -> k.toJson.compactPrint),
+    val options = List(key.map(k => "key" -> k.toJson.compactPrint),
       if (keys.nonEmpty) Some("keys" -> keys.toJson.compactPrint) else None,
       startkey.map(k => "startkey" -> k.toJson.compactPrint),
       startkey_docid.map("startkey_docid" -> _),
@@ -124,8 +123,7 @@ class View(
     update_seq: Boolean = false): Future[ViewResult[Key, Value, Doc]] = {
 
     // build options
-    val options = List(
-      key.map(k => "key" -> k.toJson.compactPrint),
+    val options = List(key.map(k => "key" -> k.toJson.compactPrint),
       if (keys.nonEmpty) Some("keys" -> keys.toJson.compactPrint) else None,
       startkey.map(k => "startkey" -> k.toJson.compactPrint),
       startkey_docid.map("startkey_docid" -> _),
@@ -174,18 +172,18 @@ class View(
  *  @author Lucas Satabin
  */
 private class BuiltInView(
-  db: Database,
-  view: String)
-    extends View("", db, view) {
+    db: Database,
+    view: String)
+  extends View("", db, view) {
 
   override protected[this] val uri = db.uri / view
 
 }
 
 private class TemporaryView(
-  db: Database,
-  viewDoc: ViewDoc)
-    extends BuiltInView(db, "_temp_view") {
+    db: Database,
+    viewDoc: ViewDoc)
+  extends BuiltInView(db, "_temp_view") {
 
   import SohvaProtocol._
 
@@ -208,10 +206,10 @@ case class CommonJSView(libs: Map[String, JsValue]) extends ViewDoc
  *  @group LowLevel
  */
 final case class RawViewResult(
-  total_rows: Long,
-  offset: Long,
-  rows: List[RawRow],
-  update_seq: Option[Long])
+    total_rows: Long,
+    offset: Long,
+    rows: List[RawRow],
+    update_seq: Option[Long])
 
 /** ''Warning'': This is low-level API, and might break compatibility even between patch releases
  *
@@ -224,10 +222,10 @@ sealed trait RawRow
  *  @group LowLevel
  */
 final case class SuccessRawRow(
-  id: Option[String],
-  key: JsValue,
-  value: JsValue,
-  doc: Option[JsObject]) extends RawRow
+    id: Option[String],
+    key: JsValue,
+    value: JsValue,
+    doc: Option[JsObject]) extends RawRow
 
 /** ''Warning'': This is low-level API, and might break compatibility even between patch releases
  *
@@ -298,7 +296,7 @@ final case class ViewResult[Key, Value, Doc](
 }
 
 case class Row[Key, Value, Doc](
-  id: Option[String],
-  key: Key,
-  value: Value,
-  doc: Option[Doc] = None)
+    id: Option[String],
+    key: Key,
+    value: Value,
+    doc: Option[Doc] = None)

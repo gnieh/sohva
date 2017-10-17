@@ -58,8 +58,7 @@ import akka.actor._
 
 import akka.util.ByteString
 
-/**
- * Gives the user access to the different operations available on a database.
+/** Gives the user access to the different operations available on a database.
  *  Among other operations this is the key class to get access to the documents
  *  of this database.
  *
@@ -103,8 +102,7 @@ class Database private[sohva] (
   /** Exposes the interface to change stream for this database. */
   object changes extends ChangeStream(this)
 
-  /**
-   * Creates this database in the couchdb instance if it does not already exist.
+  /** Creates this database in the couchdb instance if it does not already exist.
    *  Returns <code>true</code> iff the database was actually created.
    */
   def create: Future[Boolean] =
@@ -121,8 +119,7 @@ class Database private[sohva] (
         yield couch.ok(result)
     }
 
-  /**
-   * Deletes this database in the couchdb instance if it exists.
+  /** Deletes this database in the couchdb instance if it exists.
    *  Returns <code>true</code> iff the database was actually deleted.
    */
   def delete: Future[Boolean] =
@@ -140,7 +137,8 @@ class Database private[sohva] (
     }
 
   @deprecated("Use `allDocs` instead", "2.0.0")
-  def _all_docs(key: Option[String] = None,
+  def _all_docs(
+    key: Option[String] = None,
     keys: Iterable[String] = Nil,
     startkey: Option[String] = None,
     startkey_docid: Option[String] = None,
@@ -154,7 +152,8 @@ class Database private[sohva] (
     allDocs(key, keys, startkey, startkey_docid, endkey, endkey_docid, limit, stale, descending, skip, inclusive_end)
 
   /** Returns the list of identifiers of the documents in this database */
-  def allDocs(key: Option[String] = None,
+  def allDocs(
+    key: Option[String] = None,
     keys: Iterable[String] = Nil,
     startkey: Option[String] = None,
     startkey_docid: Option[String] = None,
@@ -166,8 +165,7 @@ class Database private[sohva] (
     skip: Int = 0,
     inclusive_end: Boolean = true): Future[List[String]] =
     for {
-      res <- builtInView("_all_docs").query[String, Map[String, String], JsObject](
-        key = key,
+      res <- builtInView("_all_docs").query[String, Map[String, String], JsObject](key = key,
         keys = keys,
         startkey = startkey,
         startkey_docid = startkey_docid,
@@ -181,16 +179,14 @@ class Database private[sohva] (
       ) withFailureMessage f"Failed to access _all_docs view for $uri"
     } yield for (Row(Some(id), _, _, _) <- res.rows) yield id
 
-  /**
-   * Returns the raw representation of the document identified by the given id if it exists.
+  /** Returns the raw representation of the document identified by the given id if it exists.
    *  @group LowLevel
    */
   @deprecated("Use `getDocById` with return type `JsValue` instead", "2.0.0")
   def getRawDocById(id: String, revision: Option[String] = None): Future[Option[JsValue]] =
     getDocById[JsValue](id, revision)
 
-  /**
-   * Returns all the documents with given identifiers and of the given type.
+  /** Returns all the documents with given identifiers and of the given type.
    *  If the document with an identifier exists in the database but has not the
    *  required type, it is not added to the result
    */
@@ -211,19 +207,17 @@ class Database private[sohva] (
         f"Failed to fetch document revisions by IDs $ids from $uri"
     } yield res.rows.flatMap {
       case Row(Some(id), _, value, _) => Some(id -> value("rev"))
-      case Row(None, _, _, _) => None
+      case Row(None, _, _, _)         => None
     }
 
-  /**
-   * Finds documents using the declarative mango query syntax. See [[sohva.mango]] for details.
+  /** Finds documents using the declarative mango query syntax. See [[sohva.mango]] for details.
    *
    *  @group CouchDB2
    */
   def find[T <: AnyRef: JsonReader](selector: Selector, fields: Iterable[String] = Nil, sort: Seq[Sort], limit: Option[Int] = None, skip: Option[Int] = None, use_index: Option[UseIndex] = None): Future[SearchResult[T]] =
     find[T](Query(selector, fields, sort, limit, skip, use_index))
 
-  /**
-   * Finds documents using the declarative mango query syntax. See [[sohva.mango]] for details.
+  /** Finds documents using the declarative mango query syntax. See [[sohva.mango]] for details.
    *
    *  @group CouchDB2
    */
@@ -235,8 +229,7 @@ class Database private[sohva] (
     } yield res.convertTo[SearchResult[T]]
   }
 
-  /**
-   * Explains how the query is run by the CouchDB server.
+  /** Explains how the query is run by the CouchDB server.
    *
    *  @group CouchDB2
    */
@@ -246,8 +239,7 @@ class Database private[sohva] (
       expl <- couch.http(HttpRequest(HttpMethods.POST, uri = uri / "_explain", entity = entity)).withFailureMessage(f"Failed while querying document on database $uri")
     } yield expl.convertTo[Explanation]
 
-  /**
-   * Exposes the interface for managing indices.
+  /** Exposes the interface for managing indices.
    *
    *  @group CouchDB2
    */
@@ -288,8 +280,7 @@ class Database private[sohva] (
   private[this] def bulkSaveResult(json: JsValue) =
     json.convertTo[List[DbResult]]
 
-  /**
-   * Creates a document in the database and returns its identifier and revision.
+  /** Creates a document in the database and returns its identifier and revision.
    *  If the json version of the object has a `_id` field, this identifier is used for the document,
    *  otherwise a new one is generated.
    */
@@ -306,16 +297,14 @@ class Database private[sohva] (
         } yield OkResult(ok, Some(id), Some(rev))
     }
 
-  /**
-   * Creates a set of documents in the database and returns theirs identifiers and revision.
+  /** Creates a set of documents in the database and returns theirs identifiers and revision.
    *  If the json version of an object has a `_id` field, this identifier is used for the document,
    *  otherwise a new one is generated.
    */
   def createDocs[T: JsonWriter](docs: Iterable[T]): Future[List[DbResult]] =
     saveRawDocs(docs.map(_.toJson))
 
-  /**
-   * Copies the origin document to the target document.
+  /** Copies the origin document to the target document.
    *  If the target does not exist, it is created, otherwise it is updated and the target
    *  revision must be provided
    */
@@ -326,8 +315,7 @@ class Database private[sohva] (
       ) withFailureMessage f"Failed to copy from $origin at $originRev to $target at $targetRev from $uri"
     ) yield couch.ok(res)
 
-  /**
-   * Patches the document identified by the given identifier in the given revision.
+  /** Patches the document identified by the given identifier in the given revision.
    *  This will work if the revision is the last one, or if it is not but the automatic
    *  conflict manager manages to solve the potential conflicts.
    *  The patched revision is returned. If something went wrong, an exception is raised
@@ -346,8 +334,7 @@ class Database private[sohva] (
       Future.failed(new SohvaException("Uknown document to patch: " + id))
   }
 
-  /**
-   * Deletes the document identified by the given id from the database.
+  /** Deletes the document identified by the given id from the database.
    *  If the document exists it is deleted and the method returns `true`,
    *  otherwise returns `false`.
    */
@@ -368,8 +355,7 @@ class Database private[sohva] (
         Future.successful(false)
     }
 
-  /**
-   * Deletes a bunch of documents at once returning the results
+  /** Deletes a bunch of documents at once returning the results
    *  for each identifier in the document list. One can choose the update strategy
    *  by setting the parameter `all_or_nothing` to `true` or `false`.
    */
@@ -380,16 +366,14 @@ class Database private[sohva] (
       res <- deleteDocRevs(revs, all_or_nothing)
     } yield res
 
-  /**
-   * Deletes a bunch of documents at once returning the results
+  /** Deletes a bunch of documents at once returning the results
    *  for each identifier in the document list. One can choose the update strategy
    *  by setting the parameter `all_or_nothing` to `true` or `false`.
    */
   def deleteDocs(ids: Iterable[String]): Future[List[DbResult]] =
     deleteDocs(ids, false)
 
-  /**
-   * Deletes a bunch of document revisions at once returning the results
+  /** Deletes a bunch of document revisions at once returning the results
    *  for each identifier in the document list. One can choose the update strategy
    *  by setting the parameter `all_or_nothing` to `true` or `false`.
    */
@@ -397,11 +381,9 @@ class Database private[sohva] (
   def deleteDocRevs(docs: List[(String, String)], all_or_nothing: Boolean = false): Future[List[DbResult]] =
     for {
       entity <- Marshal(JsObject(
-        Map(
-          "all_or_nothing" -> all_or_nothing.toJson,
+        Map("all_or_nothing" -> all_or_nothing.toJson,
           "docs" -> docs.map {
-            case (id, rev) => JsObject(
-              "_id" -> id.toJson,
+            case (id, rev) => JsObject("_id" -> id.toJson,
               "_rev" -> rev.toJson,
               "_deleted" -> true.toJson)
           }.toJson
@@ -411,23 +393,21 @@ class Database private[sohva] (
         HttpRequest(HttpMethods.POST, uri = uri / "_bulk_docs", entity = entity)).withFailureMessage(f"Failed to bulk delete document revisions ${docs.mkString("[", ", ", "]")} from $uri")
     } yield bulkSaveResult(raw)
 
-  /**
-   * Deletes a bunch of document revisions at once returning the results
+  /** Deletes a bunch of document revisions at once returning the results
    *  for each identifier in the document list. One can choose the update strategy
    *  by setting the parameter `all_or_nothing` to `true` or `false`.
    */
   def deleteDocRevs(docs: List[(String, String)]): Future[List[DbResult]] =
     deleteDocRevs(docs, false)
 
-  /**
-   * Attaches the given file to the given document id.
+  /** Attaches the given file to the given document id.
    *  This method returns `true` iff the file was attached to the document.
    */
   def attachTo(docId: String, file: File, contentType: String): Future[Boolean] = {
     // first get the last revision of the document (if it exists)
     for {
       mime <- ContentType.parse(contentType) match {
-        case Left(_) => Future.failed(new SohvaException(f"Wrong media type $contentType"))
+        case Left(_)     => Future.failed(new SohvaException(f"Wrong media type $contentType"))
         case Right(mime) => Future.successful(mime)
       }
       rev <- getDocRevision(docId)
@@ -436,14 +416,14 @@ class Database private[sohva] (
     } yield couch.ok(res)
   }
 
-  /**
-   * Attaches the given file (given as an input stream) to the given document id.
+  /** Attaches the given file (given as an input stream) to the given document id.
    *  If no mime type is given, sohva tries to guess the mime type of the file
    *  itself. It it does not manage to identify the mime type, the file won't be
    *  attached...
    *  This method returns `true` iff the file was attached to the document.
    */
-  def attachTo(docId: String,
+  def attachTo(
+    docId: String,
     attachment: String,
     stream: InputStream,
     contentType: String): Future[Boolean] = {
@@ -460,8 +440,7 @@ class Database private[sohva] (
     attachTo(docId, file, contentType)
   }
 
-  /**
-   * Returns the given attachment for the given docId.
+  /** Returns the given attachment for the given docId.
    *  It returns the mime type if any given in the response and the input stream
    *  to read the response from the server.
    */
@@ -497,8 +476,7 @@ class Database private[sohva] (
         f"Failed to fetch security doc from $uri"
     ) yield extractSecurityDoc(doc)
 
-  /**
-   * Creates or updates the security document.
+  /** Creates or updates the security document.
    *  Security documents are special documents with no `_id` nor `_rev` fields.
    */
   def saveSecurityDoc(doc: SecurityDoc): Future[Boolean] =
@@ -512,15 +490,13 @@ class Database private[sohva] (
   def design(designName: String, language: String = "javascript"): Design =
     new Design(this, designName, language)
 
-  /**
-   * Returns a built-in view of this database, identified by its name.
+  /** Returns a built-in view of this database, identified by its name.
    *  E.g. `_all_docs`.
    */
   def builtInView(view: String): View =
     new BuiltInView(this, view)
 
-  /**
-   * Returns a temporary view of this database, specified by the `ViewDoc`.
+  /** Returns a temporary view of this database, specified by the `ViewDoc`.
    *
    *  @group CouchDB1
    */
@@ -633,25 +609,25 @@ class Database private[sohva] (
 }
 
 final case class InfoResult(
-  compact_running: Boolean,
-  db_name: String,
-  disk_format_version: Int,
-  disk_size: Long,
-  doc_count: Long,
-  doc_del_count: Long,
-  data_size: Long,
-  instance_start_time: String,
-  purge_seq: Long,
-  update_seq: JsValue,
-  sizes: Option[Sizes],
-  other: Option[Map[String, JsValue]])
+    compact_running: Boolean,
+    db_name: String,
+    disk_format_version: Int,
+    disk_size: Long,
+    doc_count: Long,
+    doc_del_count: Long,
+    data_size: Long,
+    instance_start_time: String,
+    purge_seq: Long,
+    update_seq: JsValue,
+    sizes: Option[Sizes],
+    other: Option[Map[String, JsValue]])
 
 final case class Sizes(file: Long, external: Long, active: Long)
 
 final case class DocUpdate(
-  ok: Boolean,
-  id: String,
-  rev: String)
+    ok: Boolean,
+    id: String,
+    rev: String)
 
 private[sohva] final case class BulkDocs[T](rows: List[BulkDocRow[T]])
 

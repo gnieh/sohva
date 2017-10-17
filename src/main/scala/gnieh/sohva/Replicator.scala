@@ -29,7 +29,7 @@ import scala.concurrent.Future
  *  @author Lucas Satabin
  */
 class Replicator(name: String, couch: CouchDB, credit: Int, strategy: Strategy)
-    extends Database(name, couch, credit, strategy) {
+  extends Database(name, couch, credit, strategy) {
 
   import SohvaProtocol._
 
@@ -88,14 +88,14 @@ case class RemoteDb(url: URL) extends DbRef(url.toString)
  *  @author Lucas Satabin
  */
 case class Replication(
-  _id: String,
-  source: DbRef,
-  target: DbRef,
-  continuous: Option[Boolean] = None,
-  create_target: Option[Boolean] = None,
-  _replication_id: Option[String] = None,
-  _replication_state: Option[String] = None,
-  _replication_state_time: Option[String] = None,
-  doc_ids: List[String] = Nil,
-  user_ctx: Option[UserCtx] = None) extends IdRev
+    _id: String,
+    source: DbRef,
+    target: DbRef,
+    continuous: Option[Boolean] = None,
+    create_target: Option[Boolean] = None,
+    _replication_id: Option[String] = None,
+    _replication_state: Option[String] = None,
+    _replication_state_time: Option[String] = None,
+    doc_ids: List[String] = Nil,
+    user_ctx: Option[UserCtx] = None) extends IdRev
 
