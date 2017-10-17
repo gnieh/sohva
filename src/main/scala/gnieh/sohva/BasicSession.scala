@@ -26,11 +26,11 @@ import akka.http.scaladsl.model.headers.BasicHttpCredentials
  *  @author Lucas Satabin
  */
 class BasicSession protected[sohva] (
-  val username: String,
-  val password: String,
-  val couch: CouchClient)
-    extends CouchDB
-    with Session {
+    val username: String,
+    val password: String,
+    val couch: CouchClient)
+  extends CouchDB
+  with Session {
 
   val host =
     couch.host

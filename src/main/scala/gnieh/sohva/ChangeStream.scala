@@ -66,7 +66,8 @@ class ChangeStream(database: Database) {
 
   /** Returns a one-shot view of changes for this database. */
   @deprecated("Use the `current` stream instead.", "Sohva 2.2.0")
-  def once(docIds: Iterable[String] = Vector.empty[String],
+  def once(
+    docIds: Iterable[String] = Vector.empty[String],
     conflicts: Boolean = false,
     descending: Boolean = false,
     filter: Option[String] = None,
@@ -96,7 +97,8 @@ class ChangeStream(database: Database) {
       view = view)
 
   /** Returns a one-shot view of changes for this database. */
-  def current(docIds: Iterable[String] = Vector.empty[String],
+  def current(
+    docIds: Iterable[String] = Vector.empty[String],
     conflicts: Boolean = false,
     descending: Boolean = false,
     filter: Option[String] = None,
@@ -111,8 +113,7 @@ class ChangeStream(database: Database) {
     style: Option[String] = None,
     view: Option[String] = None): Future[Changes] = {
 
-    val parameters = List(
-      if (conflicts) Some("conflicts" -> "true") else None,
+    val parameters = List(if (conflicts) Some("conflicts" -> "true") else None,
       if (descending) Some("descending" -> "true") else None,
       filter.map(s => "filter" -> s),
       if (includeDocs) Some("include_docs" -> "true") else None,
@@ -157,7 +158,8 @@ class ChangeStream(database: Database) {
    *  }}}
    */
   @deprecated("Use the `all` stream instead.", "Sohva 2.2.0")
-  def stream(docIds: Iterable[String] = Vector.empty[String],
+  def stream(
+    docIds: Iterable[String] = Vector.empty[String],
     conflicts: Boolean = false,
     descending: Boolean = false,
     filter: Option[String] = None,
@@ -196,7 +198,8 @@ class ChangeStream(database: Database) {
    *  killSwitch.shutdown()
    *  }}}
    */
-  def all(docIds: Iterable[String] = Vector.empty[String],
+  def all(
+    docIds: Iterable[String] = Vector.empty[String],
     conflicts: Boolean = false,
     descending: Boolean = false,
     filter: Option[String] = None,
@@ -211,8 +214,7 @@ class ChangeStream(database: Database) {
     style: Option[String] = None,
     view: Option[String] = None): Source[Change, UniqueKillSwitch] = {
 
-    val parameters = List(
-      Some("heartbeat" -> "5000"),
+    val parameters = List(Some("heartbeat" -> "5000"),
       Some("feed" -> "continuous"),
       if (conflicts) Some("conflicts" -> "true") else None,
       if (descending) Some("descending" -> "true") else None,

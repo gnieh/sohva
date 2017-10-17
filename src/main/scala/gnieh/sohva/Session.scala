@@ -74,13 +74,15 @@ case class UserCtx(name: Option[String], roles: List[String])
 /** Authentication information indicating the authentication database,
  *  the handler used and the authentication method
  */
-case class AuthInfo(authentication_db: String,
-  authentication_handlers: List[String],
-  authenticated: Option[String])
+case class AuthInfo(
+    authentication_db: String,
+    authentication_handlers: List[String],
+    authenticated: Option[String])
 
 /** A couchdb user has a name, a password and a lit of roles. */
-case class UserInfo(val name: String,
-  val roles: List[String])
+case class UserInfo(
+    val name: String,
+    val roles: List[String])
 
 case class CouchUser(
     val name: String,

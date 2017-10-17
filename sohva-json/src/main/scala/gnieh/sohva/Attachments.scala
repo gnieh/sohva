@@ -31,10 +31,11 @@ trait Attachments {
 
 }
 
-final case class Attachment(content_type: String,
-  revpos: Int,
-  digest: String,
-  length: Int,
-  stub: Boolean,
-  encoded_length: Option[Int] = None,
-  encoding: Option[String] = None)
+final case class Attachment(
+    content_type: String,
+    revpos: Int,
+    digest: String,
+    length: Int,
+    stub: Boolean,
+    encoded_length: Option[Int] = None,
+    encoding: Option[String] = None)

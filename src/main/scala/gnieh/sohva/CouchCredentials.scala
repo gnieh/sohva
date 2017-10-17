@@ -18,12 +18,12 @@ package gnieh.sohva
 sealed trait CouchCredentials
 
 final case class LoginPasswordCredentials(
-  username: String,
-  password: String) extends CouchCredentials
+    username: String,
+    password: String) extends CouchCredentials
 
 final case class OAuthCredentials(
-  consumerKey: String,
-  consumerSecret: String,
-  token: String,
-  secret: String) extends CouchCredentials
+    consumerKey: String,
+    consumerSecret: String,
+    token: String,
+    secret: String) extends CouchCredentials
 

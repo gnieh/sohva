@@ -27,13 +27,13 @@ import akka.http.scaladsl.model._
  *  @author Lucas Satabin
  */
 class OAuthSession protected[sohva] (
-  val consumerKey: String,
-  consumerSecret: String,
-  val token: String,
-  secret: String,
-  val couch: CouchClient)
-    extends CouchDB
-    with Session {
+    val consumerKey: String,
+    consumerSecret: String,
+    val token: String,
+    secret: String,
+    val couch: CouchClient)
+  extends CouchDB
+  with Session {
 
   val host =
     couch.host

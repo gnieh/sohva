@@ -57,8 +57,7 @@ object OAuth {
       }
 
       // prepare the OAuth parameters
-      val oauthParams = Map(
-        "oauth_consumer_key" -> consumerKey,
+      val oauthParams = Map("oauth_consumer_key" -> consumerKey,
         "oauth_signature_method" -> "HMAC-SHA1",
         "oauth_timestamp" -> timestamp,
         "oauth_nonce" -> nonce,

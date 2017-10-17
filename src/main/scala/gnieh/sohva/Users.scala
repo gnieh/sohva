@@ -45,7 +45,8 @@ class Users(couch: CouchDB) {
   /** Adds a new user with the given role list to the user database,
    *  and returns the new instance.
    */
-  def add(name: String,
+  def add(
+    name: String,
     password: String,
     roles: List[String] = Nil): Future[Boolean] = {
 
