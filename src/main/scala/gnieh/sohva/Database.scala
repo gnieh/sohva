@@ -165,7 +165,8 @@ class Database private[sohva] (
     skip: Int = 0,
     inclusive_end: Boolean = true): Future[List[String]] =
     for {
-      res <- builtInView("_all_docs").query[String, Map[String, String], JsObject](key = key,
+      res <- builtInView("_all_docs").query[String, Map[String, String], JsObject](
+        key = key,
         keys = keys,
         startkey = startkey,
         startkey_docid = startkey_docid,
@@ -381,9 +382,11 @@ class Database private[sohva] (
   def deleteDocRevs(docs: List[(String, String)], all_or_nothing: Boolean = false): Future[List[DbResult]] =
     for {
       entity <- Marshal(JsObject(
-        Map("all_or_nothing" -> all_or_nothing.toJson,
+        Map(
+          "all_or_nothing" -> all_or_nothing.toJson,
           "docs" -> docs.map {
-            case (id, rev) => JsObject("_id" -> id.toJson,
+            case (id, rev) => JsObject(
+              "_id" -> id.toJson,
               "_rev" -> rev.toJson,
               "_deleted" -> true.toJson)
           }.toJson

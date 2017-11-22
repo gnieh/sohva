@@ -106,7 +106,8 @@ trait SohvaProtocol extends DefaultJsonProtocol with MangoProtocol with CouchFor
 
     def write(d: DesignDoc): JsObject = {
       val DesignDoc(id, language, views, validate_doc_update, updates, filters, shows, lists, rewrites, extra) = d
-      val fields = List(Some("_id" -> id.toJson),
+      val fields = List(
+        Some("_id" -> id.toJson),
         d._rev.map("_rev" -> _.toJson),
         Some("language" -> language.toJson),
         if (views.isEmpty) None else Some("views" -> views.toJson),
@@ -199,7 +200,8 @@ trait SohvaProtocol extends DefaultJsonProtocol with MangoProtocol with CouchFor
     }
 
     def write(user: CouchUser): JsObject = {
-      val fields1 = Map("_id" -> JsString(user._id),
+      val fields1 = Map(
+        "_id" -> JsString(user._id),
         "name" -> JsString(user.name),
         "type" -> JsString("user"),
         "roles" -> JsArray(user.roles.map(JsString(_)): _*),

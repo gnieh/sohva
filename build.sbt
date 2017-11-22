@@ -39,11 +39,12 @@ lazy val publishSettings = Seq(
   publishMavenStyle := true,
   publishArtifact in Test := false,
   // The Nexus repo we're publishing to.
-  publishTo := (version { (v: String) =>
-    val nexus = "https://oss.sonatype.org/"
-      if (v.trim.endsWith("SNAPSHOT")) Some("snapshots" at nexus + "content/repositories/snapshots")
-      else Some("releases" at nexus + "service/local/staging/deploy/maven2")
-  }).value,
+  publishTo := Some(
+  if (isSnapshot.value)
+    Opts.resolver.sonatypeSnapshots
+  else
+    Opts.resolver.sonatypeStaging
+  ),
   pomIncludeRepository := { x => false },
   pomExtra := (
     <scm>

@@ -139,7 +139,8 @@ object StructuralMergeStrategy extends Strategy {
         case (op @ Remove(path, _)) :: tail1 =>
           // drop all modifications that applies to `path` or one of its children from the second patch
           // if the path is an array pointer, also shifts subsequent elements in the array by -1
-          loop(tail1,
+          loop(
+            tail1,
             shift(ops2 filterNot (modifiesChild(_, path)), path, -1),
             op :: acc)
         case (op @ Add(path, _)) :: tail1 =>
@@ -148,7 +149,8 @@ object StructuralMergeStrategy extends Strategy {
             loop(tail1, ops2, acc)
           } else {
             // if the path is an array pointer, also shifts subsequent elements in the array by +1
-            loop(tail1,
+            loop(
+              tail1,
               shift(ops2, path, 1),
               op :: acc)
           }

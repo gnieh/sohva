@@ -100,7 +100,8 @@ abstract class CouchDB {
 
   def dbUpdates(timeout: Option[Int] = None, heartbeat: Boolean = true): Source[DbUpdate, UniqueKillSwitch] = {
 
-    val parameters = List(Some("feed" -> "continuous"),
+    val parameters = List(
+      Some("feed" -> "continuous"),
       timeout.map(t => "timeout" -> t.toString),
       Some("heartbeat" -> heartbeat.toString)).flatten
 

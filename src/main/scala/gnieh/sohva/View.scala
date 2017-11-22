@@ -69,7 +69,8 @@ class View(
     update_seq: Boolean = false): Future[RawViewResult] = {
 
     // build options
-    val options = List(key.map(k => "key" -> k.toJson.compactPrint),
+    val options = List(
+      key.map(k => "key" -> k.toJson.compactPrint),
       if (keys.nonEmpty) Some("keys" -> keys.toJson.compactPrint) else None,
       startkey.map(k => "startkey" -> k.toJson.compactPrint),
       startkey_docid.map("startkey_docid" -> _),
@@ -123,7 +124,8 @@ class View(
     update_seq: Boolean = false): Future[ViewResult[Key, Value, Doc]] = {
 
     // build options
-    val options = List(key.map(k => "key" -> k.toJson.compactPrint),
+    val options = List(
+      key.map(k => "key" -> k.toJson.compactPrint),
       if (keys.nonEmpty) Some("keys" -> keys.toJson.compactPrint) else None,
       startkey.map(k => "startkey" -> k.toJson.compactPrint),
       startkey_docid.map("startkey_docid" -> _),

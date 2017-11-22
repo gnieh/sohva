@@ -81,7 +81,8 @@ class ChangeStream(database: Database) {
     since: Option[Either[String, JsValue]] = None,
     style: Option[String] = None,
     view: Option[String] = None): Future[Changes] =
-    current(docIds = docIds,
+    current(
+      docIds = docIds,
       conflicts = conflicts,
       descending = descending,
       filter = filter,
@@ -113,7 +114,8 @@ class ChangeStream(database: Database) {
     style: Option[String] = None,
     view: Option[String] = None): Future[Changes] = {
 
-    val parameters = List(if (conflicts) Some("conflicts" -> "true") else None,
+    val parameters = List(
+      if (conflicts) Some("conflicts" -> "true") else None,
       if (descending) Some("descending" -> "true") else None,
       filter.map(s => "filter" -> s),
       if (includeDocs) Some("include_docs" -> "true") else None,
@@ -173,7 +175,8 @@ class ChangeStream(database: Database) {
     since: Option[Either[String, JsValue]] = None,
     style: Option[String] = None,
     view: Option[String] = None): Source[Change, UniqueKillSwitch] =
-    all(docIds = docIds,
+    all(
+      docIds = docIds,
       conflicts = conflicts,
       descending = descending,
       filter = filter,
@@ -214,7 +217,8 @@ class ChangeStream(database: Database) {
     style: Option[String] = None,
     view: Option[String] = None): Source[Change, UniqueKillSwitch] = {
 
-    val parameters = List(Some("heartbeat" -> "5000"),
+    val parameters = List(
+      Some("heartbeat" -> "5000"),
       Some("feed" -> "continuous"),
       if (conflicts) Some("conflicts" -> "true") else None,
       if (descending) Some("descending" -> "true") else None,
