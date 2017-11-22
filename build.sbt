@@ -6,6 +6,7 @@ lazy val globalSettings = Seq(
   organization := "org.gnieh",
   licenses += ("The Apache Software License, Version 2.0" -> url("http://www.apache.org/licenses/LICENSE-2.0.txt")),
   homepage := Some(url("https://github.com/gnieh/sohva")),
+  scmInfo := Some(ScmInfo(url("https://github.com/gnieh/sohva"), "git@github.com:gnieh/sohva.git")),
   version := "2.3.0-SNAPSHOT",
   scalaVersion := "2.12.4",
   crossScalaVersions := Seq("2.12.2", "2.11.8"),
@@ -73,7 +74,7 @@ lazy val publishSettings = Seq(
 
 lazy val sohva = project.in(file("."))
   .dependsOn(json % "compile-internal, test-internal")
-  .enablePlugins(SiteScaladocPlugin, JekyllPlugin, SbtOsgi)
+  .enablePlugins(SiteScaladocPlugin, JekyllPlugin, SbtOsgi, GhpagesPlugin)
   .settings(globalSettings)
   .settings(publishSettings)
   .settings(osgiSettings)
@@ -87,6 +88,7 @@ lazy val sohva = project.in(file("."))
     sources in (Compile, doc) ++= sources.in(json, Compile, doc).value,
     com.typesafe.sbt.site.jekyll.JekyllPlugin.autoImport.requiredGems := Map(
         "jekyll" -> "3.3.0"),
+    git.remoteRepo := scmInfo.value.get.connection,
     resourceDirectories in Compile := List(),
     OsgiKeys.exportPackage := Seq(
       "gnieh.sohva",
