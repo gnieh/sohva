@@ -50,19 +50,17 @@
 
 <p>In Sohva you can use this feature using the <code class="highlighter-rouge">replicator</code>.</p>
 
-<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">val</span> <span class="n">replicator</span> <span class="k">=</span> <span class="n">couch</span><span class="o">.</span><span class="n">replicator</span>
-</code></pre>
-</div>
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">val</span> <span class="n">replicator</span> <span class="k">=</span> <span class="n">couch</span><span class="o">.</span><span class="n">replicator</span>
+</code></pre></div></div>
 
 <p>The <a href="/latest/api/index.html#gnieh.sohva.Replicator">Replicator</a> class provides methods to start and stop replication.</p>
 
-<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">val</span> <span class="n">replication</span> <span class="k">=</span> <span class="nc">Replication</span><span class="o">(</span><span class="s">"replication1"</span><span class="o">,</span> <span class="nc">LocalDb</span><span class="o">(</span><span class="s">"source_db"</span><span class="o">),</span> <span class="nc">RemoteDb</span><span class="o">(</span><span class="k">new</span> <span class="nc">URL</span><span class="o">(</span><span class="s">"http://host/5984/target_db"</span><span class="o">),</span> <span class="n">continuous</span> <span class="k">=</span> <span class="nc">Some</span><span class="o">(</span><span class="kc">true</span><span class="o">))</span>
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">val</span> <span class="n">replication</span> <span class="k">=</span> <span class="nc">Replication</span><span class="o">(</span><span class="s">"replication1"</span><span class="o">,</span> <span class="nc">LocalDb</span><span class="o">(</span><span class="s">"source_db"</span><span class="o">),</span> <span class="nc">RemoteDb</span><span class="o">(</span><span class="k">new</span> <span class="nc">URL</span><span class="o">(</span><span class="s">"http://host/5984/target_db"</span><span class="o">),</span> <span class="n">continuous</span> <span class="k">=</span> <span class="nc">Some</span><span class="o">(</span><span class="kc">true</span><span class="o">))</span>
 
 <span class="n">replicator</span><span class="o">.</span><span class="n">start</span><span class="o">(</span><span class="n">replication</span><span class="o">)</span>
 <span class="c1">// after a while
 </span><span class="n">replicator</span><span class="o">.</span><span class="n">stop</span><span class="o">(</span><span class="s">"replication1"</span><span class="o">)</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
       </div>
     </div>
@@ -77,18 +75,6 @@
           <li><a class="page-link" href="/latest/api/">API documentation</a></li>
         
           
-          <li><a class="page-link" href="/mango/">Mango Queries</a></li>
-          
-        
-          
-          <li><a class="page-link" href="/changes/">Being notified about changes</a></li>
-          
-        
-          
-          <li><a class="page-link" href="/sessions/">Sessions</a></li>
-          
-        
-          
           <li><a class="page-link" href="/replication/">Database Replication</a></li>
           
         
@@ -97,11 +83,23 @@
           
         
           
-          <li><a class="page-link" href="/synchronous/">Using Sohva synchronously</a></li>
+          <li><a class="page-link" href="/sessions/">Sessions</a></li>
           
         
           
           <li><a class="page-link" href="/basic/">Getting Started</a></li>
+          
+        
+          
+          <li><a class="page-link" href="/mango/">Mango Queries</a></li>
+          
+        
+          
+          <li><a class="page-link" href="/changes/">Being notified about changes</a></li>
+          
+        
+          
+          <li><a class="page-link" href="/synchronous/">Using Sohva synchronously</a></li>
           
         
           

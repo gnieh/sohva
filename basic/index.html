@@ -84,7 +84,10 @@
 
 <p>Because sohva is based on akka, it needs to have an actor system implicitly available in scope, along with a timeout, so that futures can be scheduled with timeout.</p>
 
-<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">import</span> <span class="nn">gnieh.sohva._</span>
+<div class="language-scala highlighter-rouge">
+  <div class="highlight">
+    <pre class="highlight">
+      <code><span class="k">import</span> <span class="nn">gnieh.sohva._</span>
 <span class="k">import</span> <span class="nn">akka.actor.ActorSystem</span>
 <span class="k">import</span> <span class="nn">akka.util.Timeout</span>
 <span class="k">import</span> <span class="nn">scala.concurrent.duration._</span>
@@ -93,7 +96,9 @@
 <span class="k">implicit</span> <span class="k">val</span> <span class="n">timeout</span> <span class="k">=</span> <span class="nc">Timeout</span><span class="o">(</span><span class="mf">5.</span><span class="n">seconds</span><span class="o">)</span>
 
 <span class="k">val</span> <span class="n">couch</span> <span class="k">=</span> <span class="k">new</span> <span class="nc">CouchClient</span>
-</code></pre>
+</code>
+    </pre>
+  </div>
 </div>
 
 <p>The constructors takes several parameters with default values, for more information refer to <a href="/latest/api/#gnieh.sohva.CouchClient">the class documentation</a>.</p>
@@ -104,8 +109,13 @@
 
 <p>If you use Sohva it is probably because you want access to databases. The CouchDB client allows you to get a database representation by using the <code class="highlighter-rouge">database</code> method which returns a <a href="/latest/api/index.html#gnieh.sohva.Database">Database</a> object.</p>
 
-<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">val</span> <span class="n">db</span> <span class="k">=</span> <span class="n">couch</span><span class="o">.</span><span class="n">database</span><span class="o">(</span><span class="s">"db_name"</span><span class="o">)</span>
-</code></pre>
+<div class="language-scala highlighter-rouge">
+  <div class="highlight">
+    <pre class="highlight">
+      <code><span class="k">val</span> <span class="n">db</span> <span class="k">=</span> <span class="n">couch</span><span class="o">.</span><span class="n">database</span><span class="o">(</span><span class="s">"db_name"</span><span class="o">)</span>
+</code>
+    </pre>
+  </div>
 </div>
 
 <h2 id="tocAnchor-1-3">The documents</h2>
@@ -115,10 +125,15 @@ As an example, let’s define the usual <code class="highlighter-rouge">Post</co
 
 <p>First define a basic case class representing this document.</p>
 
-<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">import</span> <span class="nn">java.util.Date</span>
+<div class="language-scala highlighter-rouge">
+  <div class="highlight">
+    <pre class="highlight">
+      <code><span class="k">import</span> <span class="nn">java.util.Date</span>
 
 <span class="k">case</span> <span class="k">class</span> <span class="nc">Post</span><span class="o">(</span><span class="nc">_id</span><span class="k">:</span> <span class="kt">String</span><span class="o">,</span> <span class="k">var</span> <span class="n">title</span><span class="k">:</span> <span class="kt">String</span><span class="o">,</span> <span class="n">content</span><span class="k">:</span> <span class="kt">String</span><span class="o">,</span> <span class="n">author</span><span class="k">:</span> <span class="kt">String</span><span class="o">,</span> <span class="n">date</span><span class="k">:</span> <span class="kt">Date</span><span class="o">,</span> <span class="n">tags</span><span class="k">:</span> <span class="kt">Vector</span><span class="o">[</span><span class="kt">String</span><span class="o">])</span>  <span class="k">extends</span> <span class="nc">IdRev</span>
-</code></pre>
+</code>
+    </pre>
+  </div>
 </div>
 
 <p>The <code class="highlighter-rouge">IdRev</code> trait gives you the mechanics to automatically handle revisions. It is not required to extend this trait, you can define your own case class with your custom id and rev fields. The idea is that a document saved into and retrieved from a CouchDB database must have a typeclass of type <a href="/latest/api/index.html#gnieh.sohva.CouchFormat">CouchFormat</a>.</p>
@@ -127,10 +142,15 @@ As an example, let’s define the usual <code class="highlighter-rouge">Post</co
 
 <p>If your document class extends the <code class="highlighter-rouge">IdRev</code> trait, you use the macro <code class="highlighter-rouge">couchFormat</code> provided by the <a href="/latest/api/index.html#gnieh.sohva.SohvaProtocol">SohvaProtocol</a>.</p>
 
-<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">import</span> <span class="nn">SohvaProtocol._</span>
+<div class="language-scala highlighter-rouge">
+  <div class="highlight">
+    <pre class="highlight">
+      <code><span class="k">import</span> <span class="nn">SohvaProtocol._</span>
 
 <span class="k">implicit</span> <span class="k">val</span> <span class="n">postFormat</span> <span class="k">=</span> <span class="n">couchFormat</span><span class="o">[</span><span class="kt">Post</span><span class="o">]</span>
-</code></pre>
+</code>
+    </pre>
+  </div>
 </div>
 
 <p>If your class do not extend the <code class="highlighter-rouge">IdRev</code> trait or you want to have custom format for it, you can use the <a href="/latest/api/index.html#gnieh.sohva.SohvaProtocol@couchFormatF[T](id:T=&gt;String,rev:T=&gt;Option[String],withRevF:(T,Option[String])=&gt;T)(implicitevidence$1:spray.json.JsonFormat[T]):gnieh.sohva.CouchFormat[T]">couchFormatF</a> method from the protocol, which requires you to provide the <code class="highlighter-rouge">JsonFormat</code> to use to (de)serialize the document and the way to access, the identifier, the revision, and to get a copy of the document with the revision changed.</p>
@@ -144,7 +164,10 @@ As an example, let’s define the usual <code class="highlighter-rouge">Post</co
 <p>The database object we obtained previously exposes all the methods required to save, update, retrieve and delete objects from a CouchDB database.
 Basic examples of these operations are:</p>
 
-<div class="language-scala highlighter-rouge"><pre class="highlight"><code>
+<div class="language-scala highlighter-rouge">
+  <div class="highlight">
+    <pre class="highlight">
+      <code>
 <span class="k">val</span> <span class="n">post1</span> <span class="k">=</span> <span class="nc">Post</span><span class="o">(</span><span class="s">"post1"</span><span class="o">,</span> <span class="s">"My First Post"</span><span class="o">,</span> <span class="s">"This is my very first post"</span><span class="o">,</span> <span class="s">"lucas"</span><span class="o">,</span> <span class="k">new</span> <span class="nc">Date</span><span class="o">,</span> <span class="nc">Vector</span><span class="o">(</span><span class="s">"test"</span><span class="o">,</span> <span class="s">"post"</span><span class="o">))</span>
 <span class="k">val</span> <span class="n">post2</span> <span class="k">=</span> <span class="nc">Post</span><span class="o">(</span><span class="s">"post2"</span><span class="o">,</span> <span class="s">"My Second Post"</span><span class="o">,</span> <span class="s">"I have nothing more to say"</span><span class="o">,</span> <span class="s">"lucas"</span><span class="o">,</span> <span class="k">new</span> <span class="nc">Date</span><span class="o">,</span> <span class="nc">Vector</span><span class="o">(</span><span class="s">"post"</span><span class="o">))</span>
 
@@ -154,7 +177,9 @@ Basic examples of these operations are:</p>
   <span class="n">p1</span> <span class="k">&lt;-</span> <span class="n">db</span><span class="o">.</span><span class="n">getDocById</span><span class="o">[</span><span class="kt">Post</span><span class="o">](</span><span class="s">"post1"</span><span class="o">)</span>
   <span class="k">_</span> <span class="k">&lt;-</span> <span class="n">db</span><span class="o">.</span><span class="n">deleteDoc</span><span class="o">(</span><span class="n">savedPost2</span><span class="o">)</span>
 <span class="o">}</span> <span class="n">println</span><span class="o">(</span><span class="s">"I am done testing"</span><span class="o">)</span>
-</code></pre>
+</code>
+    </pre>
+  </div>
 </div>
 
 <p>Refer to the <a href="/latest/api/index.html#gnieh.sohva.Database">class documentation</a> for more details.</p>
@@ -163,18 +188,28 @@ Basic examples of these operations are:</p>
 
 <p>Finally, another notable feature of CouchDB is the designs and views. From a database representation in sohva you may easily access designs through the <code class="highlighter-rouge">design</code> method.</p>
 
-<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">val</span> <span class="n">design</span> <span class="k">=</span> <span class="n">db</span><span class="o">.</span><span class="n">design</span><span class="o">(</span><span class="s">"my_design"</span><span class="o">)</span>
-</code></pre>
+<div class="language-scala highlighter-rouge">
+  <div class="highlight">
+    <pre class="highlight">
+      <code><span class="k">val</span> <span class="n">design</span> <span class="k">=</span> <span class="n">db</span><span class="o">.</span><span class="n">design</span><span class="o">(</span><span class="s">"my_design"</span><span class="o">)</span>
+</code>
+    </pre>
+  </div>
 </div>
 
 <p>The returned <a href="/latest/api/index.html#gnieh.sohva.Design">Design</a> class exposes methods to create and manages views, updates, filters, rewrites, and list.</p>
 
 <p>The views are of particular interest in Sohva, as they make it possible to query aggregated documents from the database.</p>
 
-<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">val</span> <span class="n">view</span> <span class="k">=</span> <span class="n">design</span><span class="o">.</span><span class="n">view</span><span class="o">(</span><span class="s">"my_view"</span><span class="o">)</span>
+<div class="language-scala highlighter-rouge">
+  <div class="highlight">
+    <pre class="highlight">
+      <code><span class="k">val</span> <span class="n">view</span> <span class="k">=</span> <span class="n">design</span><span class="o">.</span><span class="n">view</span><span class="o">(</span><span class="s">"my_view"</span><span class="o">)</span>
 
 <span class="n">view</span><span class="o">.</span><span class="n">query</span><span class="o">[</span><span class="kt">Key</span>, <span class="kt">Value</span>, <span class="kt">Post</span><span class="o">](</span><span class="n">keys</span> <span class="k">=</span> <span class="nc">List</span><span class="o">(</span><span class="s">"post1"</span><span class="o">,</span> <span class="s">"post2"</span><span class="o">))</span>
-</code></pre>
+</code>
+    </pre>
+  </div>
 </div>
 
 <p>The <code class="highlighter-rouge">query</code> method takes a lot of different parameters, matching the feature in CouchDB. For more details, refer to the <a href="/latest/api/index.html#gnieh.sohva.View@query[Key,Value,Doc](key:Option[Key],keys:List[Key],startkey:Option[Key],startkey_docid:Option[String],endkey:Option[Key],endkey_docid:Option[String],limit:Int,stale:Option[String],descending:Boolean,skip:Int,group:Boolean,group_level:Int,reduce:Boolean,include_docs:Boolean,inclusive_end:Boolean,update_seq:Boolean)(implicitevidence$1:spray.json.JsonFormat[Key],implicitevidence$2:spray.json.JsonReader[Value],implicitevidence$3:spray.json.JsonReader[Doc]):scala.concurrent.Future[gnieh.sohva.ViewResult[Key,Value,Doc]]">documentation</a></p>
@@ -192,18 +227,6 @@ Basic examples of these operations are:</p>
           <li><a class="page-link" href="/latest/api/">API documentation</a></li>
         
           
-          <li><a class="page-link" href="/mango/">Mango Queries</a></li>
-          
-        
-          
-          <li><a class="page-link" href="/changes/">Being notified about changes</a></li>
-          
-        
-          
-          <li><a class="page-link" href="/sessions/">Sessions</a></li>
-          
-        
-          
           <li><a class="page-link" href="/replication/">Database Replication</a></li>
           
         
@@ -212,11 +235,23 @@ Basic examples of these operations are:</p>
           
         
           
-          <li><a class="page-link" href="/synchronous/">Using Sohva synchronously</a></li>
+          <li><a class="page-link" href="/sessions/">Sessions</a></li>
           
         
           
           <li><a class="page-link" href="/basic/">Getting Started</a></li>
+          
+        
+          
+          <li><a class="page-link" href="/mango/">Mango Queries</a></li>
+          
+        
+          
+          <li><a class="page-link" href="/changes/">Being notified about changes</a></li>
+          
+        
+          
+          <li><a class="page-link" href="/synchronous/">Using Sohva synchronously</a></li>
           
         
           

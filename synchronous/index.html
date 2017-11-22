@@ -48,7 +48,7 @@
       <div class="wrapper">
         <p>Sohva is an asynchronous library but you may want to use it in a synchronous context. You can easily define your own wrapper to make all call to sohva synchronous</p>
 
-<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">import</span> <span class="nn">scala.language.implicitConversions</span>
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">import</span> <span class="nn">scala.language.implicitConversions</span>
 
 <span class="k">implicit</span> <span class="k">def</span> <span class="n">synced</span><span class="o">[</span><span class="kt">T</span><span class="o">](</span><span class="n">result</span><span class="k">:</span> <span class="kt">Future</span><span class="o">[</span><span class="kt">T</span><span class="o">])</span><span class="k">:</span> <span class="kt">T</span> <span class="o">=</span>
   <span class="k">try</span> <span class="o">{</span>
@@ -58,8 +58,7 @@
   <span class="o">}</span>
 
 <span class="k">val</span> <span class="n">post</span><span class="k">:</span> <span class="kt">Option</span><span class="o">[</span><span class="kt">Post</span><span class="o">]</span> <span class="k">=</span> <span class="n">db</span><span class="o">.</span><span class="n">getDocById</span><span class="o">(</span><span class="s">"post1"</span><span class="o">)</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
       </div>
     </div>
@@ -74,18 +73,6 @@
           <li><a class="page-link" href="/latest/api/">API documentation</a></li>
         
           
-          <li><a class="page-link" href="/mango/">Mango Queries</a></li>
-          
-        
-          
-          <li><a class="page-link" href="/changes/">Being notified about changes</a></li>
-          
-        
-          
-          <li><a class="page-link" href="/sessions/">Sessions</a></li>
-          
-        
-          
           <li><a class="page-link" href="/replication/">Database Replication</a></li>
           
         
@@ -94,11 +81,23 @@
           
         
           
-          <li><a class="page-link" href="/synchronous/">Using Sohva synchronously</a></li>
+          <li><a class="page-link" href="/sessions/">Sessions</a></li>
           
         
           
           <li><a class="page-link" href="/basic/">Getting Started</a></li>
+          
+        
+          
+          <li><a class="page-link" href="/mango/">Mango Queries</a></li>
+          
+        
+          
+          <li><a class="page-link" href="/changes/">Being notified about changes</a></li>
+          
+        
+          
+          <li><a class="page-link" href="/synchronous/">Using Sohva synchronously</a></li>
           
         
           

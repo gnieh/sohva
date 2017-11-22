@@ -65,9 +65,7 @@
         <span class="kind">package</span>
       </span>
       <span class="symbol">
-        <a title="" href="../../index.html">
-              <span class="name">root</span>
-            </a>
+        <a title="" href="../../index.html"><span class="name">root</span></a>
       </span>
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../../index.html" class="extype" name="_root_">root</a></dd></dl></div>
@@ -83,9 +81,7 @@
         <span class="kind">package</span>
       </span>
       <span class="symbol">
-        <a title="" href="../index.html">
-              <span class="name">gnieh</span>
-            </a>
+        <a title="" href="../index.html"><span class="name">gnieh</span></a>
       </span>
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../../index.html" class="extype" name="_root_">root</a></dd></dl></div>
@@ -101,9 +97,7 @@
         <span class="kind">package</span>
       </span>
       <span class="symbol">
-        <a title="Contains all the classes needed to interact with a couchdb server." href="index.html">
-              <span class="name">sohva</span>
-            </a>
+        <a title="Contains all the classes needed to interact with a couchdb server." href="index.html"><span class="name">sohva</span></a>
       </span>
       
       <p class="shortcomment cmt">Contains all the classes needed to interact with a couchdb server.</p><div class="fullcomment"><div class="comment cmt"><p>Contains all the classes needed to interact with a couchdb server.
@@ -121,9 +115,7 @@
         <span class="kind">class</span>
       </span>
       <span class="symbol">
-        <a title="Gives the user access to the different operations available on a database." href="Database.html">
-              <span class="name">Database</span>
-            </a><span class="result"> extends <a href="DocumentOps.html" class="extype" name="gnieh.sohva.DocumentOps">DocumentOps</a></span>
+        <a title="Gives the user access to the different operations available on a database." href="Database.html"><span class="name">Database</span></a><span class="result"> extends <a href="DocumentOps.html" class="extype" name="gnieh.sohva.DocumentOps">DocumentOps</a></span>
       </span>
       
       <p class="shortcomment cmt">Gives the user access to the different operations available on a database.</p><div class="fullcomment"><div class="comment cmt"><p>Gives the user access to the different operations available on a database.
@@ -134,21 +126,15 @@
     </li><li class="current-entities indented3">
                         <span class="separator"></span>
                         <a class="object" href="" title="Exposes the interface to change stream for this database."></a>
-                        <a href="" title="Exposes the interface to change stream for this database.">
-                          changes
-                        </a>
+                        <a href="" title="Exposes the interface to change stream for this database.">changes</a>
                       </li><li class="current-entities indented3">
                         <span class="separator"></span>
                         <a class="object" href="Database$index$.html" title="Exposes the interface for managing indices."></a>
-                        <a href="Database$index$.html" title="Exposes the interface for managing indices.">
-                          index
-                        </a>
+                        <a href="Database$index$.html" title="Exposes the interface for managing indices.">index</a>
                       </li><li class="current-entities indented3">
                         <span class="separator"></span>
                         <a class="object" href="Database$local$.html" title="Exposes the interface for managing local (non-replicating) documents."></a>
-                        <a href="Database$local$.html" title="Exposes the interface for managing local (non-replicating) documents.">
-                          local
-                        </a>
+                        <a href="Database$local$.html" title="Exposes the interface for managing local (non-replicating) documents.">local</a>
                       </li>
               </ul>
             </div>
@@ -282,6 +268,27 @@
       </span>
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+    </li><li name="gnieh.sohva.ChangeStream#all" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="all(docIds:Iterable[String],conflicts:Boolean,descending:Boolean,filter:Option[String],selector:Option[gnieh.sohva.mango.Selector],designOnly:Boolean,includeDocs:Boolean,attachments:Boolean,attEncodingInfo:Boolean,lastEventId:Option[Int],limit:Option[Int],since:gnieh.sohva.Since,style:Option[String],view:Option[String]):akka.stream.scaladsl.Source[gnieh.sohva.Change,akka.stream.UniqueKillSwitch]"></a><a id="all(Iterable[String],Boolean,Boolean,Option[String],Option[Selector],Boolean,Boolean,Boolean,Boolean,Option[Int],Option[Int],Since,Option[String],Option[String]):Source[Change,UniqueKillSwitch]"></a>
+      <span class="permalink">
+      <a href="../../gnieh/sohva/Database$changes$.html#all(docIds:Iterable[String],conflicts:Boolean,descending:Boolean,filter:Option[String],selector:Option[gnieh.sohva.mango.Selector],designOnly:Boolean,includeDocs:Boolean,attachments:Boolean,attEncodingInfo:Boolean,lastEventId:Option[Int],limit:Option[Int],since:gnieh.sohva.Since,style:Option[String],view:Option[String]):akka.stream.scaladsl.Source[gnieh.sohva.Change,akka.stream.UniqueKillSwitch]" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">all</span><span class="params">(<span name="docIds">docIds: <span class="extype" name="scala.Iterable">Iterable</span>[<span class="extype" name="scala.Predef.String">String</span>] = <span class="symbol">Vector.empty[String]</span></span>, <span name="conflicts">conflicts: <span class="extype" name="scala.Boolean">Boolean</span> = <span class="symbol">false</span></span>, <span name="descending">descending: <span class="extype" name="scala.Boolean">Boolean</span> = <span class="symbol">false</span></span>, <span name="filter">filter: <span class="extype" name="scala.Option">Option</span>[<span class="extype" name="scala.Predef.String">String</span>] = <span class="symbol">None</span></span>, <span name="selector">selector: <span class="extype" name="scala.Option">Option</span>[<a href="mango/Selector.html" class="extype" name="gnieh.sohva.mango.Selector">Selector</a>] = <span class="symbol">None</span></span>, <span name="designOnly">designOnly: <span class="extype" name="scala.Boolean">Boolean</span> = <span class="symbol">false</span></span>, <span name="includeDocs">includeDocs: <span class="extype" name="scala.Boolean">Boolean</span> = <span class="symbol">false</span></span>, <span name="attachments">attachments: <span class="extype" name="scala.Boolean">Boolean</span> = <span class="symbol">false</span></span>, <span name="attEncodingInfo">attEncodingInfo: <span class="extype" name="scala.Boolean">Boolean</span> = <span class="symbol">false</span></span>, <span name="lastEventId">lastEventId: <span class="extype" name="scala.Option">Option</span>[<span class="extype" name="scala.Int">Int</span>] = <span class="symbol">None</span></span>, <span name="limit">limit: <span class="extype" name="scala.Option">Option</span>[<span class="extype" name="scala.Int">Int</span>] = <span class="symbol">None</span></span>, <span name="since">since: <a href="Since.html" class="extype" name="gnieh.sohva.Since">Since</a> = <span class="symbol"><span class="name"><a href="Origin$.html">Origin</a></span></span></span>, <span name="style">style: <span class="extype" name="scala.Option">Option</span>[<span class="extype" name="scala.Predef.String">String</span>] = <span class="symbol">None</span></span>, <span name="view">view: <span class="extype" name="scala.Option">Option</span>[<span class="extype" name="scala.Predef.String">String</span>] = <span class="symbol">None</span></span>)</span><span class="result">: <span class="extype" name="akka.stream.scaladsl.Source">Source</span>[<a href="Change.html" class="extype" name="gnieh.sohva.Change">Change</a>, <span class="extype" name="akka.stream.UniqueKillSwitch">UniqueKillSwitch</span>]</span>
+      </span>
+      
+      <p class="shortcomment cmt">Returns a continuous stream representing the changes in the database.</p><div class="fullcomment"><div class="comment cmt"><p>Returns a continuous stream representing the changes in the database. Each change produces an element in the stream.
+ The returned stream can be cancelled using the kill switch returned by materializing it.
+ E.g. if you want to log the changes to the console and shut it down after a while, you can write</p><pre><span class="kw">val</span> stream = db.changes.stream()
+<span class="kw">val</span> killSwitch = stream.toMat(Sink.foreach(println _))(Keep.left).run()
+...
+killSwitch.shutdown()</pre></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="ChangeStream.html" class="extype" name="gnieh.sohva.ChangeStream">ChangeStream</a></dd></dl></div>
     </li><li name="scala.Any#asInstanceOf" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="asInstanceOf[T0]:T0"></a>
       <span class="permalink">
@@ -313,13 +320,31 @@
         <span class="name">clone</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.AnyRef">AnyRef</span></span>
       </span>
       
-      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a href="../../java$lang.html" class="extype" name="java.lang">java.lang</a>] </dd><dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a href="../../java/lang/index.html" class="extype" name="java.lang">java.lang</a>] </dd><dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
+                <span class="name">@native</span><span class="args">()</span>
+              
                 <span class="name">@throws</span><span class="args">(<span>
       
       <span class="defval" name="classOf[java.lang.CloneNotSupportedException]">...</span>
     </span>)</span>
               
         </dd></dl></div>
+    </li><li name="gnieh.sohva.ChangeStream#current" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="current(docIds:Iterable[String],conflicts:Boolean,descending:Boolean,filter:Option[String],selector:Option[gnieh.sohva.mango.Selector],designOnly:Boolean,includeDocs:Boolean,attachments:Boolean,attEncodingInfo:Boolean,lastEventId:Option[Int],limit:Option[Int],since:gnieh.sohva.Since,style:Option[String],view:Option[String]):scala.concurrent.Future[gnieh.sohva.Changes]"></a><a id="current(Iterable[String],Boolean,Boolean,Option[String],Option[Selector],Boolean,Boolean,Boolean,Boolean,Option[Int],Option[Int],Since,Option[String],Option[String]):Future[Changes]"></a>
+      <span class="permalink">
+      <a href="../../gnieh/sohva/Database$changes$.html#current(docIds:Iterable[String],conflicts:Boolean,descending:Boolean,filter:Option[String],selector:Option[gnieh.sohva.mango.Selector],designOnly:Boolean,includeDocs:Boolean,attachments:Boolean,attEncodingInfo:Boolean,lastEventId:Option[Int],limit:Option[Int],since:gnieh.sohva.Since,style:Option[String],view:Option[String]):scala.concurrent.Future[gnieh.sohva.Changes]" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">current</span><span class="params">(<span name="docIds">docIds: <span class="extype" name="scala.Iterable">Iterable</span>[<span class="extype" name="scala.Predef.String">String</span>] = <span class="symbol">Vector.empty[String]</span></span>, <span name="conflicts">conflicts: <span class="extype" name="scala.Boolean">Boolean</span> = <span class="symbol">false</span></span>, <span name="descending">descending: <span class="extype" name="scala.Boolean">Boolean</span> = <span class="symbol">false</span></span>, <span name="filter">filter: <span class="extype" name="scala.Option">Option</span>[<span class="extype" name="scala.Predef.String">String</span>] = <span class="symbol">None</span></span>, <span name="selector">selector: <span class="extype" name="scala.Option">Option</span>[<a href="mango/Selector.html" class="extype" name="gnieh.sohva.mango.Selector">Selector</a>] = <span class="symbol">None</span></span>, <span name="designOnly">designOnly: <span class="extype" name="scala.Boolean">Boolean</span> = <span class="symbol">false</span></span>, <span name="includeDocs">includeDocs: <span class="extype" name="scala.Boolean">Boolean</span> = <span class="symbol">false</span></span>, <span name="attachments">attachments: <span class="extype" name="scala.Boolean">Boolean</span> = <span class="symbol">false</span></span>, <span name="attEncodingInfo">attEncodingInfo: <span class="extype" name="scala.Boolean">Boolean</span> = <span class="symbol">false</span></span>, <span name="lastEventId">lastEventId: <span class="extype" name="scala.Option">Option</span>[<span class="extype" name="scala.Int">Int</span>] = <span class="symbol">None</span></span>, <span name="limit">limit: <span class="extype" name="scala.Option">Option</span>[<span class="extype" name="scala.Int">Int</span>] = <span class="symbol">None</span></span>, <span name="since">since: <a href="Since.html" class="extype" name="gnieh.sohva.Since">Since</a> = <span class="symbol"><span class="name"><a href="Origin$.html">Origin</a></span></span></span>, <span name="style">style: <span class="extype" name="scala.Option">Option</span>[<span class="extype" name="scala.Predef.String">String</span>] = <span class="symbol">None</span></span>, <span name="view">view: <span class="extype" name="scala.Option">Option</span>[<span class="extype" name="scala.Predef.String">String</span>] = <span class="symbol">None</span></span>)</span><span class="result">: <span class="extype" name="scala.concurrent.Future">Future</span>[<a href="Changes.html" class="extype" name="gnieh.sohva.Changes">Changes</a>]</span>
+      </span>
+      
+      <p class="shortcomment cmt">Returns a one-shot view of changes for this database.</p><div class="fullcomment"><div class="comment cmt"><p>Returns a one-shot view of changes for this database.</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="ChangeStream.html" class="extype" name="gnieh.sohva.ChangeStream">ChangeStream</a></dd></dl></div>
     </li><li name="scala.AnyRef#eq" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="eq(x$1:AnyRef):Boolean"></a><a id="eq(AnyRef):Boolean"></a>
       <span class="permalink">
@@ -367,7 +392,7 @@
         <span class="name">finalize</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
       
-      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a href="../../java$lang.html" class="extype" name="java.lang">java.lang</a>] </dd><dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Attributes</dt><dd>protected[<a href="../../java/lang/index.html" class="extype" name="java.lang">java.lang</a>] </dd><dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
                 <span class="name">@throws</span><span class="args">(<span>
       
       <span class="symbol">classOf[java.lang.Throwable]</span>
@@ -389,7 +414,10 @@
         <span class="name">getClass</span><span class="params">()</span><span class="result">: <span class="extype" name="java.lang.Class">Class</span>[_]</span>
       </span>
       
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd><dt>Annotations</dt><dd>
+                <span class="name">@native</span><span class="args">()</span>
+              
+        </dd></dl></div>
     </li><li name="scala.AnyRef#hashCode" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="hashCode():Int"></a>
       <span class="permalink">
@@ -405,7 +433,10 @@
         <span class="name">hashCode</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Int">Int</span></span>
       </span>
       
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd><dt>Annotations</dt><dd>
+                <span class="name">@native</span><span class="args">()</span>
+              
+        </dd></dl></div>
     </li><li name="scala.Any#isInstanceOf" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="isInstanceOf[T0]:Boolean"></a>
       <span class="permalink">
@@ -453,7 +484,10 @@
         <span class="name">notify</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
       
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
+                <span class="name">@native</span><span class="args">()</span>
+              
+        </dd></dl></div>
     </li><li name="scala.AnyRef#notifyAll" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="notifyAll():Unit"></a>
       <span class="permalink">
@@ -469,44 +503,10 @@
         <span class="name">notifyAll</span><span class="params">()</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
       
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
-    </li><li name="gnieh.sohva.ChangeStream#once" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="once(docIds:Iterable[String],conflicts:Boolean,descending:Boolean,filter:Option[String],selector:Option[gnieh.sohva.mango.Selector],designOnly:Boolean,includeDocs:Boolean,attachments:Boolean,attEncodingInfo:Boolean,lastEventId:Option[Int],limit:Option[Int],since:Option[Either[String,spray.json.JsValue]],style:Option[String],view:Option[String]):scala.concurrent.Future[gnieh.sohva.Changes]"></a><a id="once(Iterable[String],Boolean,Boolean,Option[String],Option[Selector],Boolean,Boolean,Boolean,Boolean,Option[Int],Option[Int],Option[Either[String,JsValue]],Option[String],Option[String]):Future[Changes]"></a>
-      <span class="permalink">
-      <a href="../../gnieh/sohva/Database$changes$.html#once(docIds:Iterable[String],conflicts:Boolean,descending:Boolean,filter:Option[String],selector:Option[gnieh.sohva.mango.Selector],designOnly:Boolean,includeDocs:Boolean,attachments:Boolean,attEncodingInfo:Boolean,lastEventId:Option[Int],limit:Option[Int],since:Option[Either[String,spray.json.JsValue]],style:Option[String],view:Option[String]):scala.concurrent.Future[gnieh.sohva.Changes]" title="Permalink">
-        <i class="material-icons"></i>
-      </a>
-    </span>
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name">once</span><span class="params">(<span name="docIds">docIds: <span class="extype" name="scala.Iterable">Iterable</span>[<span class="extype" name="scala.Predef.String">String</span>] = <span class="symbol">Vector.empty[String]</span></span>, <span name="conflicts">conflicts: <span class="extype" name="scala.Boolean">Boolean</span> = <span class="symbol">false</span></span>, <span name="descending">descending: <span class="extype" name="scala.Boolean">Boolean</span> = <span class="symbol">false</span></span>, <span name="filter">filter: <span class="extype" name="scala.Option">Option</span>[<span class="extype" name="scala.Predef.String">String</span>] = <span class="symbol">None</span></span>, <span name="selector">selector: <span class="extype" name="scala.Option">Option</span>[<a href="mango/Selector.html" class="extype" name="gnieh.sohva.mango.Selector">Selector</a>] = <span class="symbol">None</span></span>, <span name="designOnly">designOnly: <span class="extype" name="scala.Boolean">Boolean</span> = <span class="symbol">false</span></span>, <span name="includeDocs">includeDocs: <span class="extype" name="scala.Boolean">Boolean</span> = <span class="symbol">false</span></span>, <span name="attachments">attachments: <span class="extype" name="scala.Boolean">Boolean</span> = <span class="symbol">false</span></span>, <span name="attEncodingInfo">attEncodingInfo: <span class="extype" name="scala.Boolean">Boolean</span> = <span class="symbol">false</span></span>, <span name="lastEventId">lastEventId: <span class="extype" name="scala.Option">Option</span>[<span class="extype" name="scala.Int">Int</span>] = <span class="symbol">None</span></span>, <span name="limit">limit: <span class="extype" name="scala.Option">Option</span>[<span class="extype" name="scala.Int">Int</span>] = <span class="symbol">None</span></span>, <span name="since">since: <span class="extype" name="scala.Option">Option</span>[<span class="extype" name="scala.Either">Either</span>[<span class="extype" name="scala.Predef.String">String</span>, <span class="extype" name="spray.json.JsValue">JsValue</span>]] = <span class="symbol">None</span></span>, <span name="style">style: <span class="extype" name="scala.Option">Option</span>[<span class="extype" name="scala.Predef.String">String</span>] = <span class="symbol">None</span></span>, <span name="view">view: <span class="extype" name="scala.Option">Option</span>[<span class="extype" name="scala.Predef.String">String</span>] = <span class="symbol">None</span></span>)</span><span class="result">: <span class="extype" name="scala.concurrent.Future">Future</span>[<a href="Changes.html" class="extype" name="gnieh.sohva.Changes">Changes</a>]</span>
-      </span>
-      
-      <p class="shortcomment cmt">Returns a one-shot view of changes for this database.</p><div class="fullcomment"><div class="comment cmt"><p>Returns a one-shot view of changes for this database.</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="ChangeStream.html" class="extype" name="gnieh.sohva.ChangeStream">ChangeStream</a></dd></dl></div>
-    </li><li name="gnieh.sohva.ChangeStream#stream" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="stream(docIds:Iterable[String],conflicts:Boolean,descending:Boolean,filter:Option[String],selector:Option[gnieh.sohva.mango.Selector],designOnly:Boolean,includeDocs:Boolean,attachments:Boolean,attEncodingInfo:Boolean,lastEventId:Option[Int],limit:Option[Int],since:Option[Either[String,spray.json.JsValue]],style:Option[String],view:Option[String]):akka.stream.scaladsl.Source[gnieh.sohva.Change,akka.stream.UniqueKillSwitch]"></a><a id="stream(Iterable[String],Boolean,Boolean,Option[String],Option[Selector],Boolean,Boolean,Boolean,Boolean,Option[Int],Option[Int],Option[Either[String,JsValue]],Option[String],Option[String]):Source[Change,UniqueKillSwitch]"></a>
-      <span class="permalink">
-      <a href="../../gnieh/sohva/Database$changes$.html#stream(docIds:Iterable[String],conflicts:Boolean,descending:Boolean,filter:Option[String],selector:Option[gnieh.sohva.mango.Selector],designOnly:Boolean,includeDocs:Boolean,attachments:Boolean,attEncodingInfo:Boolean,lastEventId:Option[Int],limit:Option[Int],since:Option[Either[String,spray.json.JsValue]],style:Option[String],view:Option[String]):akka.stream.scaladsl.Source[gnieh.sohva.Change,akka.stream.UniqueKillSwitch]" title="Permalink">
-        <i class="material-icons"></i>
-      </a>
-    </span>
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name">stream</span><span class="params">(<span name="docIds">docIds: <span class="extype" name="scala.Iterable">Iterable</span>[<span class="extype" name="scala.Predef.String">String</span>] = <span class="symbol">Vector.empty[String]</span></span>, <span name="conflicts">conflicts: <span class="extype" name="scala.Boolean">Boolean</span> = <span class="symbol">false</span></span>, <span name="descending">descending: <span class="extype" name="scala.Boolean">Boolean</span> = <span class="symbol">false</span></span>, <span name="filter">filter: <span class="extype" name="scala.Option">Option</span>[<span class="extype" name="scala.Predef.String">String</span>] = <span class="symbol">None</span></span>, <span name="selector">selector: <span class="extype" name="scala.Option">Option</span>[<a href="mango/Selector.html" class="extype" name="gnieh.sohva.mango.Selector">Selector</a>] = <span class="symbol">None</span></span>, <span name="designOnly">designOnly: <span class="extype" name="scala.Boolean">Boolean</span> = <span class="symbol">false</span></span>, <span name="includeDocs">includeDocs: <span class="extype" name="scala.Boolean">Boolean</span> = <span class="symbol">false</span></span>, <span name="attachments">attachments: <span class="extype" name="scala.Boolean">Boolean</span> = <span class="symbol">false</span></span>, <span name="attEncodingInfo">attEncodingInfo: <span class="extype" name="scala.Boolean">Boolean</span> = <span class="symbol">false</span></span>, <span name="lastEventId">lastEventId: <span class="extype" name="scala.Option">Option</span>[<span class="extype" name="scala.Int">Int</span>] = <span class="symbol">None</span></span>, <span name="limit">limit: <span class="extype" name="scala.Option">Option</span>[<span class="extype" name="scala.Int">Int</span>] = <span class="symbol">None</span></span>, <span name="since">since: <span class="extype" name="scala.Option">Option</span>[<span class="extype" name="scala.Either">Either</span>[<span class="extype" name="scala.Predef.String">String</span>, <span class="extype" name="spray.json.JsValue">JsValue</span>]] = <span class="symbol">None</span></span>, <span name="style">style: <span class="extype" name="scala.Option">Option</span>[<span class="extype" name="scala.Predef.String">String</span>] = <span class="symbol">None</span></span>, <span name="view">view: <span class="extype" name="scala.Option">Option</span>[<span class="extype" name="scala.Predef.String">String</span>] = <span class="symbol">None</span></span>)</span><span class="result">: <span class="extype" name="akka.stream.scaladsl.Source">Source</span>[<a href="Change.html" class="extype" name="gnieh.sohva.Change">Change</a>, <span class="extype" name="akka.stream.UniqueKillSwitch">UniqueKillSwitch</span>]</span>
-      </span>
-      
-      <p class="shortcomment cmt">Returns a continuous stream representing the changes in the database.</p><div class="fullcomment"><div class="comment cmt"><p>Returns a continuous stream representing the changes in the database. Each change produces an element in the stream.
- The returned stream can be cancelled using the kill switch returned by materializing it.
- E.g. if you want to log the changes to the console and shut it down after a while, you can write</p><pre><span class="kw">val</span> stream = db.changes.stream()
-<span class="kw">val</span> killSwitch = stream.toMat(Sink.foreach(println _))(Keep.left).run()
-...
-killSwitch.shutdown()</pre></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="ChangeStream.html" class="extype" name="gnieh.sohva.ChangeStream">ChangeStream</a></dd></dl></div>
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
+                <span class="name">@native</span><span class="args">()</span>
+              
+        </dd></dl></div>
     </li><li name="scala.AnyRef#synchronized" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="synchronized[T0](x$1:=&gt;T0):T0"></a><a id="synchronized[T0](⇒T0):T0"></a>
       <span class="permalink">
@@ -599,6 +599,8 @@ killSwitch.shutdown()</pre></div><dl class="attributes block"> <dt>Definition Cl
       </span>
       
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd><dt>Annotations</dt><dd>
+                <span class="name">@native</span><span class="args">()</span>
+              
                 <span class="name">@throws</span><span class="args">(<span>
       
       <span class="defval" name="classOf[java.lang.InterruptedException]">...</span>
@@ -611,7 +613,53 @@ killSwitch.shutdown()</pre></div><dl class="attributes block"> <dt>Definition Cl
 
         
 
-        
+        <div class="values members">
+              <h3>Deprecated Value Members</h3>
+              <ol><li name="gnieh.sohva.ChangeStream#once" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="once(docIds:Iterable[String],conflicts:Boolean,descending:Boolean,filter:Option[String],selector:Option[gnieh.sohva.mango.Selector],designOnly:Boolean,includeDocs:Boolean,attachments:Boolean,attEncodingInfo:Boolean,lastEventId:Option[Int],limit:Option[Int],since:Option[Either[String,spray.json.JsValue]],style:Option[String],view:Option[String]):scala.concurrent.Future[gnieh.sohva.Changes]"></a><a id="once(Iterable[String],Boolean,Boolean,Option[String],Option[Selector],Boolean,Boolean,Boolean,Boolean,Option[Int],Option[Int],Option[Either[String,JsValue]],Option[String],Option[String]):Future[Changes]"></a>
+      <span class="permalink">
+      <a href="../../gnieh/sohva/Database$changes$.html#once(docIds:Iterable[String],conflicts:Boolean,descending:Boolean,filter:Option[String],selector:Option[gnieh.sohva.mango.Selector],designOnly:Boolean,includeDocs:Boolean,attachments:Boolean,attEncodingInfo:Boolean,lastEventId:Option[Int],limit:Option[Int],since:Option[Either[String,spray.json.JsValue]],style:Option[String],view:Option[String]):scala.concurrent.Future[gnieh.sohva.Changes]" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name deprecated" title="Deprecated: (Since version Sohva 2.2.0) Use the current stream instead.">once</span><span class="params">(<span name="docIds">docIds: <span class="extype" name="scala.Iterable">Iterable</span>[<span class="extype" name="scala.Predef.String">String</span>] = <span class="symbol">Vector.empty[String]</span></span>, <span name="conflicts">conflicts: <span class="extype" name="scala.Boolean">Boolean</span> = <span class="symbol">false</span></span>, <span name="descending">descending: <span class="extype" name="scala.Boolean">Boolean</span> = <span class="symbol">false</span></span>, <span name="filter">filter: <span class="extype" name="scala.Option">Option</span>[<span class="extype" name="scala.Predef.String">String</span>] = <span class="symbol">None</span></span>, <span name="selector">selector: <span class="extype" name="scala.Option">Option</span>[<a href="mango/Selector.html" class="extype" name="gnieh.sohva.mango.Selector">Selector</a>] = <span class="symbol">None</span></span>, <span name="designOnly">designOnly: <span class="extype" name="scala.Boolean">Boolean</span> = <span class="symbol">false</span></span>, <span name="includeDocs">includeDocs: <span class="extype" name="scala.Boolean">Boolean</span> = <span class="symbol">false</span></span>, <span name="attachments">attachments: <span class="extype" name="scala.Boolean">Boolean</span> = <span class="symbol">false</span></span>, <span name="attEncodingInfo">attEncodingInfo: <span class="extype" name="scala.Boolean">Boolean</span> = <span class="symbol">false</span></span>, <span name="lastEventId">lastEventId: <span class="extype" name="scala.Option">Option</span>[<span class="extype" name="scala.Int">Int</span>] = <span class="symbol">None</span></span>, <span name="limit">limit: <span class="extype" name="scala.Option">Option</span>[<span class="extype" name="scala.Int">Int</span>] = <span class="symbol">None</span></span>, <span name="since">since: <span class="extype" name="scala.Option">Option</span>[<span class="extype" name="scala.Either">Either</span>[<span class="extype" name="scala.Predef.String">String</span>, <span class="extype" name="spray.json.JsValue">JsValue</span>]] = <span class="symbol">None</span></span>, <span name="style">style: <span class="extype" name="scala.Option">Option</span>[<span class="extype" name="scala.Predef.String">String</span>] = <span class="symbol">None</span></span>, <span name="view">view: <span class="extype" name="scala.Option">Option</span>[<span class="extype" name="scala.Predef.String">String</span>] = <span class="symbol">None</span></span>)</span><span class="result">: <span class="extype" name="scala.concurrent.Future">Future</span>[<a href="Changes.html" class="extype" name="gnieh.sohva.Changes">Changes</a>]</span>
+      </span>
+      
+      <p class="shortcomment cmt">Returns a one-shot view of changes for this database.</p><div class="fullcomment"><div class="comment cmt"><p>Returns a one-shot view of changes for this database.</p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="ChangeStream.html" class="extype" name="gnieh.sohva.ChangeStream">ChangeStream</a></dd><dt>Annotations</dt><dd>
+                <span class="name">@deprecated</span>
+              
+        </dd><dt>Deprecated</dt><dd class="cmt"><p><i>(Since version Sohva 2.2.0)</i> Use the <code>current</code> stream instead.</p></dd></dl></div>
+    </li><li name="gnieh.sohva.ChangeStream#stream" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="stream(docIds:Iterable[String],conflicts:Boolean,descending:Boolean,filter:Option[String],selector:Option[gnieh.sohva.mango.Selector],designOnly:Boolean,includeDocs:Boolean,attachments:Boolean,attEncodingInfo:Boolean,lastEventId:Option[Int],limit:Option[Int],since:Option[Either[String,spray.json.JsValue]],style:Option[String],view:Option[String]):akka.stream.scaladsl.Source[gnieh.sohva.Change,akka.stream.UniqueKillSwitch]"></a><a id="stream(Iterable[String],Boolean,Boolean,Option[String],Option[Selector],Boolean,Boolean,Boolean,Boolean,Option[Int],Option[Int],Option[Either[String,JsValue]],Option[String],Option[String]):Source[Change,UniqueKillSwitch]"></a>
+      <span class="permalink">
+      <a href="../../gnieh/sohva/Database$changes$.html#stream(docIds:Iterable[String],conflicts:Boolean,descending:Boolean,filter:Option[String],selector:Option[gnieh.sohva.mango.Selector],designOnly:Boolean,includeDocs:Boolean,attachments:Boolean,attEncodingInfo:Boolean,lastEventId:Option[Int],limit:Option[Int],since:Option[Either[String,spray.json.JsValue]],style:Option[String],view:Option[String]):akka.stream.scaladsl.Source[gnieh.sohva.Change,akka.stream.UniqueKillSwitch]" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name deprecated" title="Deprecated: (Since version Sohva 2.2.0) Use the all stream instead.">stream</span><span class="params">(<span name="docIds">docIds: <span class="extype" name="scala.Iterable">Iterable</span>[<span class="extype" name="scala.Predef.String">String</span>] = <span class="symbol">Vector.empty[String]</span></span>, <span name="conflicts">conflicts: <span class="extype" name="scala.Boolean">Boolean</span> = <span class="symbol">false</span></span>, <span name="descending">descending: <span class="extype" name="scala.Boolean">Boolean</span> = <span class="symbol">false</span></span>, <span name="filter">filter: <span class="extype" name="scala.Option">Option</span>[<span class="extype" name="scala.Predef.String">String</span>] = <span class="symbol">None</span></span>, <span name="selector">selector: <span class="extype" name="scala.Option">Option</span>[<a href="mango/Selector.html" class="extype" name="gnieh.sohva.mango.Selector">Selector</a>] = <span class="symbol">None</span></span>, <span name="designOnly">designOnly: <span class="extype" name="scala.Boolean">Boolean</span> = <span class="symbol">false</span></span>, <span name="includeDocs">includeDocs: <span class="extype" name="scala.Boolean">Boolean</span> = <span class="symbol">false</span></span>, <span name="attachments">attachments: <span class="extype" name="scala.Boolean">Boolean</span> = <span class="symbol">false</span></span>, <span name="attEncodingInfo">attEncodingInfo: <span class="extype" name="scala.Boolean">Boolean</span> = <span class="symbol">false</span></span>, <span name="lastEventId">lastEventId: <span class="extype" name="scala.Option">Option</span>[<span class="extype" name="scala.Int">Int</span>] = <span class="symbol">None</span></span>, <span name="limit">limit: <span class="extype" name="scala.Option">Option</span>[<span class="extype" name="scala.Int">Int</span>] = <span class="symbol">None</span></span>, <span name="since">since: <span class="extype" name="scala.Option">Option</span>[<span class="extype" name="scala.Either">Either</span>[<span class="extype" name="scala.Predef.String">String</span>, <span class="extype" name="spray.json.JsValue">JsValue</span>]] = <span class="symbol">None</span></span>, <span name="style">style: <span class="extype" name="scala.Option">Option</span>[<span class="extype" name="scala.Predef.String">String</span>] = <span class="symbol">None</span></span>, <span name="view">view: <span class="extype" name="scala.Option">Option</span>[<span class="extype" name="scala.Predef.String">String</span>] = <span class="symbol">None</span></span>)</span><span class="result">: <span class="extype" name="akka.stream.scaladsl.Source">Source</span>[<a href="Change.html" class="extype" name="gnieh.sohva.Change">Change</a>, <span class="extype" name="akka.stream.UniqueKillSwitch">UniqueKillSwitch</span>]</span>
+      </span>
+      
+      <p class="shortcomment cmt">Returns a continuous stream representing the changes in the database.</p><div class="fullcomment"><div class="comment cmt"><p>Returns a continuous stream representing the changes in the database. Each change produces an element in the stream.
+ The returned stream can be cancelled using the kill switch returned by materializing it.
+ E.g. if you want to log the changes to the console and shut it down after a while, you can write</p><pre><span class="kw">val</span> stream = db.changes.stream()
+<span class="kw">val</span> killSwitch = stream.toMat(Sink.foreach(println _))(Keep.left).run()
+...
+killSwitch.shutdown()</pre></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="ChangeStream.html" class="extype" name="gnieh.sohva.ChangeStream">ChangeStream</a></dd><dt>Annotations</dt><dd>
+                <span class="name">@deprecated</span>
+              
+        </dd><dt>Deprecated</dt><dd class="cmt"><p><i>(Since version Sohva 2.2.0)</i> Use the <code>all</code> stream instead.</p></dd></dl></div>
+    </li></ol>
+            </div>
         </div>
 
         <div id="inheritedMembers">

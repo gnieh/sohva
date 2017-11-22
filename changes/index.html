@@ -75,8 +75,13 @@ Once materialized, the streams provided by Sohva can return a <code class="highl
 
 <p>Given a <code class="highlighter-rouge">CouchClient</code> or a session, you can be notified about updates in databases</p>
 
-<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">val</span> <span class="n">stream</span> <span class="k">=</span> <span class="n">couch</span><span class="o">.</span><span class="n">dbUpdates</span><span class="o">()</span>
-</code></pre>
+<div class="language-scala highlighter-rouge">
+  <div class="highlight">
+    <pre class="highlight">
+      <code><span class="k">val</span> <span class="n">stream</span> <span class="k">=</span> <span class="n">couch</span><span class="o">.</span><span class="n">dbUpdates</span><span class="o">()</span>
+</code>
+    </pre>
+  </div>
 </div>
 
 <p>you can provide a timeout and a heartbeat to this method.</p>
@@ -85,12 +90,17 @@ Once materialized, the streams provided by Sohva can return a <code class="highl
 
 <p>A more interesting change stream is the one on databases, allowing to be notified about all document updates.</p>
 
-<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">val</span> <span class="n">stream</span> <span class="k">=</span> <span class="n">db</span><span class="o">.</span><span class="n">changes</span><span class="o">.</span><span class="n">stream</span><span class="o">()</span>
+<div class="language-scala highlighter-rouge">
+  <div class="highlight">
+    <pre class="highlight">
+      <code><span class="k">val</span> <span class="n">stream</span> <span class="k">=</span> <span class="n">db</span><span class="o">.</span><span class="n">changes</span><span class="o">.</span><span class="n">stream</span><span class="o">()</span>
 <span class="c1">// print on stdout all the events
 </span><span class="k">val</span> <span class="n">killSwitch</span> <span class="k">=</span> <span class="n">stream</span><span class="o">.</span><span class="n">toMat</span><span class="o">(</span><span class="nc">Sink</span><span class="o">.</span><span class="n">foreach</span><span class="o">(</span><span class="n">println</span> <span class="k">_</span><span class="o">))(</span><span class="nc">Keep</span><span class="o">.</span><span class="n">left</span><span class="o">).</span><span class="n">run</span><span class="o">()</span>
 <span class="c1">// wait a while and close the stream
 </span><span class="n">killSwitch</span><span class="o">.</span><span class="n">shutdown</span><span class="o">()</span>
-</code></pre>
+</code>
+    </pre>
+  </div>
 </div>
 
 <p>This method takes several parameters to reflect the underlying CouchDB API, refer to <a href="/latest/api/index.html#gnieh.sohva.ChangeStream">the documentation</a> for details.</p>
@@ -108,18 +118,6 @@ Once materialized, the streams provided by Sohva can return a <code class="highl
           <li><a class="page-link" href="/latest/api/">API documentation</a></li>
         
           
-          <li><a class="page-link" href="/mango/">Mango Queries</a></li>
-          
-        
-          
-          <li><a class="page-link" href="/changes/">Being notified about changes</a></li>
-          
-        
-          
-          <li><a class="page-link" href="/sessions/">Sessions</a></li>
-          
-        
-          
           <li><a class="page-link" href="/replication/">Database Replication</a></li>
           
         
@@ -128,11 +126,23 @@ Once materialized, the streams provided by Sohva can return a <code class="highl
           
         
           
-          <li><a class="page-link" href="/synchronous/">Using Sohva synchronously</a></li>
+          <li><a class="page-link" href="/sessions/">Sessions</a></li>
           
         
           
           <li><a class="page-link" href="/basic/">Getting Started</a></li>
+          
+        
+          
+          <li><a class="page-link" href="/mango/">Mango Queries</a></li>
+          
+        
+          
+          <li><a class="page-link" href="/changes/">Being notified about changes</a></li>
+          
+        
+          
+          <li><a class="page-link" href="/synchronous/">Using Sohva synchronously</a></li>
           
         
           

@@ -81,20 +81,30 @@
 
 <p>To start a basic authentication session, use the <code class="highlighter-rouge">startBasicSession</code> method.</p>
 
-<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">val</span> <span class="n">session</span> <span class="k">=</span> <span class="n">couch</span><span class="o">.</span><span class="n">startBasicSession</span><span class="o">(</span><span class="s">"username"</span><span class="o">,</span> <span class="s">"password"</span><span class="o">)</span>
+<div class="language-scala highlighter-rouge">
+  <div class="highlight">
+    <pre class="highlight">
+      <code><span class="k">val</span> <span class="n">session</span> <span class="k">=</span> <span class="n">couch</span><span class="o">.</span><span class="n">startBasicSession</span><span class="o">(</span><span class="s">"username"</span><span class="o">,</span> <span class="s">"password"</span><span class="o">)</span>
 
 <span class="k">val</span> <span class="n">db</span> <span class="k">=</span> <span class="n">session</span><span class="o">.</span><span class="n">database</span><span class="o">(</span><span class="s">"test"</span><span class="o">)</span>
-</code></pre>
+</code>
+    </pre>
+  </div>
 </div>
 
 <h2 id="tocAnchor-1-2">OAuth authentication</h2>
 
 <p>To start an OAuth session, use the <code class="highlighter-rouge">startOAuthSession</code> method.</p>
 
-<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">val</span> <span class="n">session</span> <span class="k">=</span> <span class="n">couch</span><span class="o">.</span><span class="n">startOAuthSession</span><span class="o">(</span><span class="s">"consumer_key"</span><span class="o">,</span> <span class="s">"consumer_secret"</span><span class="o">,</span> <span class="s">"token"</span><span class="o">,</span> <span class="s">"secret"</span><span class="o">)</span>
+<div class="language-scala highlighter-rouge">
+  <div class="highlight">
+    <pre class="highlight">
+      <code><span class="k">val</span> <span class="n">session</span> <span class="k">=</span> <span class="n">couch</span><span class="o">.</span><span class="n">startOAuthSession</span><span class="o">(</span><span class="s">"consumer_key"</span><span class="o">,</span> <span class="s">"consumer_secret"</span><span class="o">,</span> <span class="s">"token"</span><span class="o">,</span> <span class="s">"secret"</span><span class="o">)</span>
 
 <span class="k">val</span> <span class="n">db</span> <span class="k">=</span> <span class="n">session</span><span class="o">.</span><span class="n">database</span><span class="o">(</span><span class="s">"test"</span><span class="o">)</span>
-</code></pre>
+</code>
+    </pre>
+  </div>
 </div>
 
       </div>
@@ -110,18 +120,6 @@
           <li><a class="page-link" href="/latest/api/">API documentation</a></li>
         
           
-          <li><a class="page-link" href="/mango/">Mango Queries</a></li>
-          
-        
-          
-          <li><a class="page-link" href="/changes/">Being notified about changes</a></li>
-          
-        
-          
-          <li><a class="page-link" href="/sessions/">Sessions</a></li>
-          
-        
-          
           <li><a class="page-link" href="/replication/">Database Replication</a></li>
           
         
@@ -130,11 +128,23 @@
           
         
           
-          <li><a class="page-link" href="/synchronous/">Using Sohva synchronously</a></li>
+          <li><a class="page-link" href="/sessions/">Sessions</a></li>
           
         
           
           <li><a class="page-link" href="/basic/">Getting Started</a></li>
+          
+        
+          
+          <li><a class="page-link" href="/mango/">Mango Queries</a></li>
+          
+        
+          
+          <li><a class="page-link" href="/changes/">Being notified about changes</a></li>
+          
+        
+          
+          <li><a class="page-link" href="/synchronous/">Using Sohva synchronously</a></li>
           
         
           
