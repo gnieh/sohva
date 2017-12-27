@@ -37,8 +37,12 @@ class Index(db: Database) {
   import db.couch.ec
 
   /** Creates a new index for the given fields and optional name and design. */
-  def create(fields: Vector[Sort], ddoc: Option[String] = None, name: Option[String] = None): Future[IndexCreationResult] = {
-    val jsFields = Seq("index" -> JsObject(Map("fields" -> fields.toJson))) ++ ddoc.map("ddoc" -> _.toJson) ++ name.map("name" -> _.toJson)
+  def create(
+    fields: Vector[Sort],
+    ddoc: Option[String] = None,
+    name: Option[String] = None,
+    partial_filter_selector: Option[Selector] = None): Future[IndexCreationResult] = {
+    val jsFields = Seq("index" -> JsObject(Map("fields" -> fields.toJson) ++ partial_filter_selector.map("partial_filter_selector" -> _.toJson))) ++ ddoc.map("ddoc" -> _.toJson) ++ name.map("name" -> _.toJson)
     for {
       entity <- Marshal(JsObject(jsFields: _*)).to[RequestEntity]
       res <- db.couch.http(HttpRequest(HttpMethods.POST, uri = uri, entity = entity))
@@ -66,4 +70,4 @@ final case class IndexInfo(total_rows: Int, indexes: Vector[IndexDef])
 
 final case class IndexDef(ddoc: Option[String], name: String, `type`: String, `def`: Def)
 
-final case class Def(fields: Vector[Sort])
+final case class Def(fields: Vector[Sort], partial_filter_selector: Option[Selector])
