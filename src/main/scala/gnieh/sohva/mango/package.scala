@@ -48,12 +48,6 @@ package object mango {
   def find: Query =
     Query(Empty, Nil, Nil, None, None, None, None, None, None, None, None, None)
 
-  object Without extends Enumeration {
-    val Fields, Sort, Limit, Skip, Index, R, Bookmark, Update, Stable, Stale, ExecutionStats = Value
-  }
-
-  type Without = Without.Value
-
   val fields = Without.Fields
 
   val sort = Without.Sort
