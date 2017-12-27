@@ -17,4 +17,11 @@
 package gnieh.sohva
 package mango
 
-final case class SearchResult[T](docs: Vector[T], warning: Option[String])
+final case class SearchResult[T](docs: Vector[T], warning: Option[String], execution_stats: Option[ExecutionStats])
+
+final case class ExecutionStats(
+    total_keys_examined: Int,
+    total_docs_examined: Int,
+    total_quorum_docs_examined: Int,
+    results_returned: Int,
+    execution_time_ms: Double)
