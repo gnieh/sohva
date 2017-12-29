@@ -12,7 +12,13 @@ branches:
     - 2.0.x
 
 # start the couchdb service (runs in admin party)
-services: couchdb
+addons:
+  apt:
+    sources:
+      - sourceline: deb https://apache.bintray.com/couchdb-deb trusty main
+        key_url: https://couchdb.apache.org/repo/bintray-pubkey.asc
+    packages:
+      - couchdb
 
 script:
   - sbt clean coverage test coverageReport coverageAggregate
