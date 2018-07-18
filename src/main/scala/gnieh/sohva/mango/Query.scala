@@ -19,7 +19,7 @@ package mango
 
 import spray.json._
 
-final case class Query(selector: Selector, fields: Iterable[String], sort: Seq[Sort], limit: Option[Int], skip: Option[Int], use_index: Option[UseIndex]) {
+final case class Query(selector: Selector, fields: Iterable[String], sort: Seq[Sort], limit: Option[Int], skip: Option[Int], use_index: Option[UseIndex], r: Option[Int] = None, bookmark: Option[String] = None) {
 
   /** Creates a query with a new selector. */
   def where(sel: Selector): Query =
@@ -49,6 +49,10 @@ final case class Query(selector: Selector, fields: Iterable[String], sort: Seq[S
   def use(idx: (String, String)): Query =
     copy(use_index = Some(Right(idx)))
 
+  /** Creates a query with a new quorum. */
+  def r(i: Int): Query =
+    copy(r = Some(i))
+
   /** Creates a query where some properties are removed. */
   def without(without: Without*): Query =
     without.foldLeft(this) {
@@ -62,6 +66,10 @@ final case class Query(selector: Selector, fields: Iterable[String], sort: Seq[S
         q.copy(skip = None)
       case (q, Without.Index) =>
         q.copy(use_index = None)
+      case (q, Without.R) =>
+        q.copy(r = None)
+      case (q, Without.Bookmark) =>
+        q.copy(bookmark = None)
     }
 
 }

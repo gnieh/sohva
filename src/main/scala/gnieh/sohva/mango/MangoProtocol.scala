@@ -132,7 +132,7 @@ trait MangoProtocol extends DefaultJsonProtocol {
     }
   }
 
-  implicit val queryFormat = jsonFormat6(Query)
+  implicit val queryFormat = jsonFormat9(Query)
 
   implicit val indexCreationResultFormat = jsonFormat3(IndexCreationResult)
 

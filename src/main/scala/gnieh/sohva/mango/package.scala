@@ -49,7 +49,7 @@ package object mango {
     Query(Empty, Nil, Nil, None, None, None)
 
   object Without extends Enumeration {
-    val Fields, Sort, Limit, Skip, Index = Value
+    val Fields, Sort, Limit, Skip, Index, R, Bookmark = Value
   }
 
   type Without = Without.Value
@@ -63,5 +63,9 @@ package object mango {
   val skip = Without.Skip
 
   val index = Without.Index
+
+  val r = Without.R
+
+  val bookmark = Without.Bookmark
 
 }
