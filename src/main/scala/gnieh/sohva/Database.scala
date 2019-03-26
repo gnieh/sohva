@@ -620,7 +620,7 @@ final case class InfoResult(
     doc_del_count: Long,
     data_size: Long,
     instance_start_time: String,
-    purge_seq: Long,
+    purge_seq: JsValue,
     update_seq: JsValue,
     sizes: Option[Sizes],
     other: Option[Map[String, JsValue]])
