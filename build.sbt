@@ -33,7 +33,8 @@ lazy val globalDependencies = Seq(
   "com.typesafe.akka" %% "akka-stream-testkit" % "2.5.8",
   "org.gnieh" %% "diffson-spray-json" % "2.2.4",
   "io.spray" %% "spray-json" % "1.3.4",
-  "org.slf4j" % "slf4j-api" % "1.7.25"
+  "org.slf4j" % "slf4j-api" % "1.7.25",
+  "com.beachape" %% "enumeratum" % "1.5.12"
 )
 
 lazy val publishSettings = Seq(

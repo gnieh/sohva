@@ -19,7 +19,19 @@ package mango
 
 import spray.json._
 
-final case class Query(selector: Selector, fields: Iterable[String], sort: Seq[Sort], limit: Option[Int], skip: Option[Int], use_index: Option[UseIndex]) {
+final case class Query(
+    selector: Selector,
+    fields: Iterable[String],
+    sort: Seq[Sort],
+    limit: Option[Int],
+    skip: Option[Int],
+    use_index: Option[UseIndex],
+    r: Option[Int],
+    bookmark: Option[String],
+    update: Option[Boolean],
+    stable: Option[Boolean],
+    stale: Option[Boolean],
+    execution_stats: Option[Boolean]) {
 
   /** Creates a query with a new selector. */
   def where(sel: Selector): Query =
@@ -49,6 +61,30 @@ final case class Query(selector: Selector, fields: Iterable[String], sort: Seq[S
   def use(idx: (String, String)): Query =
     copy(use_index = Some(Right(idx)))
 
+  /** Creates a query with a new read quorum. */
+  def r(quorum: Int): Query =
+    copy(r = Some(quorum))
+
+  /** Creates a query with a new bookmark. */
+  def bookmark(b: String): Query =
+    copy(bookmark = Some(b))
+
+  /** Creates a query with a new update. */
+  def update(u: Boolean): Query =
+    copy(update = Some(u))
+
+  /** Creates a query with a new stable. */
+  def stable(s: Boolean): Query =
+    copy(stable = Some(s))
+
+  /** Creates a query with a new stale. */
+  def stale(s: Boolean): Query =
+    copy(stale = Some(s))
+
+  /** Creates a query with a new execution_stats. */
+  def execution_stats(s: Boolean): Query =
+    copy(execution_stats = Some(s))
+
   /** Creates a query where some properties are removed. */
   def without(without: Without*): Query =
     without.foldLeft(this) {
@@ -62,6 +98,18 @@ final case class Query(selector: Selector, fields: Iterable[String], sort: Seq[S
         q.copy(skip = None)
       case (q, Without.Index) =>
         q.copy(use_index = None)
+      case (q, Without.R) =>
+        q.copy(r = None)
+      case (q, Without.Bookmark) =>
+        q.copy(bookmark = None)
+      case (q, Without.Update) =>
+        q.copy(update = None)
+      case (q, Without.Stable) =>
+        q.copy(stable = None)
+      case (q, Without.Stale) =>
+        q.copy(stale = None)
+      case (q, Without.ExecutionStats) =>
+        q.copy(execution_stats = None)
     }
 
 }

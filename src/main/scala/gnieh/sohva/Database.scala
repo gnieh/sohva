@@ -215,8 +215,20 @@ class Database private[sohva] (
    *
    *  @group CouchDB2
    */
-  def find[T <: AnyRef: JsonReader](selector: Selector, fields: Iterable[String] = Nil, sort: Seq[Sort], limit: Option[Int] = None, skip: Option[Int] = None, use_index: Option[UseIndex] = None): Future[SearchResult[T]] =
-    find[T](Query(selector, fields, sort, limit, skip, use_index))
+  def find[T <: AnyRef: JsonReader](
+    selector: Selector,
+    fields: Iterable[String] = Nil,
+    sort: Seq[Sort],
+    limit: Option[Int] = None,
+    skip: Option[Int] = None,
+    use_index: Option[UseIndex] = None,
+    r: Option[Int],
+    bookmark: Option[String],
+    update: Option[Boolean] = None,
+    stable: Option[Boolean] = None,
+    stale: Option[Boolean] = None,
+    execution_stats: Option[Boolean] = None): Future[SearchResult[T]] =
+    find[T](Query(selector, fields, sort, limit, skip, use_index, r, bookmark, update, stable, stale, execution_stats))
 
   /** Finds documents using the declarative mango query syntax. See [[sohva.mango]] for details.
    *

@@ -15,13 +15,25 @@
 * limitations under the License.
 */
 package gnieh.sohva
-package mango
 
-final case class SearchResult[T](docs: Vector[T], warning: Option[String], execution_stats: Option[ExecutionStats])
+import enumeratum._
 
-final case class ExecutionStats(
-    total_keys_examined: Int,
-    total_docs_examined: Int,
-    total_quorum_docs_examined: Int,
-    results_returned: Int,
-    execution_time_ms: Double)
+sealed trait Without extends EnumEntry
+
+object Without extends Enum[Without] {
+
+  val values = findValues
+
+  object Fields extends Without
+  object Sort extends Without
+  object Limit extends Without
+  object Skip extends Without
+  object Index extends Without
+  object R extends Without
+  object Bookmark extends Without
+  object Update extends Without
+  object Stable extends Without
+  object Stale extends Without
+  object ExecutionStats extends Without
+
+}
